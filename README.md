@@ -4,6 +4,8 @@ A 5D Tetra-Sphere Kleinverse of your own!
 
 That you can share with friends! (and chat in)
 
+This Game/Simulator attempts to improve upon minecraft by using tetragrams.  Intending to simulate mollecular bonding of FeO4, Magnitite, likely responcible for thecomplexity we call life.  But Gamified.
+
 ### Install ###
 
 python -m venv tetcraft
