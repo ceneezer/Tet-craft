@@ -1,6 +1,6 @@
-### TET~CRAFT ###
+## TET~CRAFT ##
 
-## A 5D Tetra-Sphere Kleinverse of your own! ##
+### A 5D Tetra-Sphere Kleinverse of your own! ###
 
 That you can share with friends! (and chat in - non-destructively)
 
