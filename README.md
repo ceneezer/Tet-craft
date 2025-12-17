@@ -30,7 +30,7 @@ python tetra.py <options>
 
 ### Psuedocode ###
 
-TetCraft Program Explained in Pseudo-Code \
+TetCraft Program Explained in Pseudo-Code 
 1. Configuration & Constants
 
 This section defines the global parameters that govern the simulation's behavior.
