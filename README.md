@@ -34,10 +34,12 @@ The more, the sooner, don't make me beg further!
 
 ### Install ###
 
-python -m venv tetcraft \
+Download/copypasta tetra.py (you don't *need* the rest) \
+python -m venv tetcraft (after, place tetra.py inside)\
 cd tetcraft \
 source bin/activate \
 pip install numpy pygame numba \
+(optional) git pull (url) \
 python tetra.py <options> 
 
 ### Psuedocode ###
