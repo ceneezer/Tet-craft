@@ -16,7 +16,7 @@ The environment is a 4 or Tetra-Sphere, which maps a Klien bottles topology, in 
 
 In these Kleinverses, each new fact misunderstood creates a ner star.
 
-As I understand it, the edge of the observable universe is an event horizon, and we are being pulled towards it's center infinitly far away, in the future which never fully forms. "Spagetifying" though of course not really, merely "living" - only a shrinking - young-> old becomes biger->smaller, everything else shrinking along with us.  Outside the event horizon, is hyperspacially linked to this center, that never quite forms - it only allows us to experience time and seperation.
+As I understand it, the edge of the observable universe is an event horizon, and we are being pulled towards it's center infinitly far away, in the future which never fully forms. "Spagetifying" though of course not really, merely "living" - only a shrinking - young-> old becomes biger->smaller, everything else shrinking along with us (including the rulers).  Outside the event horizon, is hyperspacially linked to this center, that never quite forms - it only allows us to experience time and seperation.
 
 Best wishes to you all, I may soon explore once again. #opWorldPeace
 
