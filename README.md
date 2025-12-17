@@ -14,7 +14,7 @@ You can Chat remotely with friends through unlimited, unrestricted (and unsecure
 
 The environment is a 4 or Tetra-Sphere, which maps a Klien bottles topology, in which top and bottom link through left and right to create the illusion of a circle. Behind you is you, in the past, blue-shifted or red-shifted as you scale time - infinitly ahead is a singularity, growing and shrinnking likewise.
 
-In these Kleinverses, each new fact misunderstood creates a ner star.
+In these Kleinverses, each new fact misunderstood creates a new star.
 
 As I understand it, we live in such a universe.  The edge of the observable universe is an event horizon, and we are being pulled towards it's center infinitly far away, in the future which never fully forms. "Spagetifying" though of course not really, merely "living" - only a shrinking - young-> old becomes biger->smaller, everything else shrinking along with us (including the rulers).  Outside the event horizon, is hyperspacially linked to this center, that never quite forms - it only allows us to experience time and seperation - the "loop" of the bottle, completing the fractal to which we are each a frame.
 
