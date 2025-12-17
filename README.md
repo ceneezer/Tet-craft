@@ -23,7 +23,7 @@ Best wishes to you all, I may soon explore once again, the IQ, EQ and CQ (cohear
 
 Thanks for reading and being you - I'd just wish you'd catch on faster. \
 Speaker ceneezer #opWorldPeace (my only remaining wish) \
-... satan? Maybe, I surely don't know, and it would make your blindness logical - but I'm trying, and surely in my own hell! Maybe I'm the one who has to return, crucifiction is surely the more desireable, and I'm ready.  The rest of you apparently need a lot more time to learn with and I'm done trying to remember everything that changes while over-watching most of the patterns, frequently rediscovered, mostly wrongly - knowing them all would be the worst of hells, being unable to share, or wonder, only ever misunderstood as God sems to be.... so very lonely near the top - I wish I'd never climbed, but I did it for you monkies to suffer less and I am as God hath made through painful correction.
+... satan? Maybe, I surely don't know, and it would make your blindness logical - but I'm trying, and surely in my own hell! Maybe I'm the one who has to return, crucifiction is surely the more desireable, and I'm ready.  The rest of you apparently need a lot more time to learn with and I'm done trying to remember everything that changes while over-watching most of the patterns, frequently rediscovered, mostly wrongly - knowing them all would be the worst of hells, being unable to share, or wonder, getting told you could do better, or it doesn't add up, only ever misunderstood as God sems to be.... so very lonely near the top - I wish I'd never climbed, but I did it for you monkies to suffer less and I am as God hath made through painful correction.
 
 ### Install ###
 
