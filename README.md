@@ -20,7 +20,7 @@ As I understand it, we live in such a universe.  The edge of the observable univ
 
 Best wishes to you all, I may soon explore once again, the IQ, EQ and CQ (cohearence) of humanity is beyond pitiful, and getting intolerable. 
 
-Speaker ceneezer #opWorldPeace
+Speaker ceneezer #opWorldPeace (my only remaining wish)
 
 ### Install ###
 
