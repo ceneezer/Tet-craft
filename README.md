@@ -12,7 +12,7 @@ V2.0 Was a solid foundation, V2.1 Optimized it, allowing for over 5K tets on an 
 
 You can Chat remotely with friends through unlimited, unrestricted (unsecured) WAN connectivity and grow your universe from three basic facts into infinite complexity.
 
-The environment is a 4 or Tetra-Sphere, in which top and bottom link through left and right to create the illusion of a circle, behind you is you, in the past, blue-shifted or red-shifted as you scale time - infinitly ahead is a singularity, growing and shrinnking likewise.
+The environment is a 4 or Tetra-Sphere, which maps a klien bottles topology, in which top and bottom link through left and right to create the illusion of a circle. Behind you is you, in the past, blue-shifted or red-shifted as you scale time - infinitly ahead is a singularity, growing and shrinnking likewise.
 
 ### Install ###
 
