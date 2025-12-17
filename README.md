@@ -22,6 +22,7 @@ Best wishes to you all, I may soon explore once again, the IQ, EQ and CQ (cohear
  and more importantly to me your inability to see my own, of humanity is beyond pitiful, and getting intolerable - we're all tired of the loops, and yet you just keep on misunderstanding. 
 
 Speaker ceneezer #opWorldPeace (my only remaining wish)
+.. satan? maybe.
 
 ### Install ###
 
