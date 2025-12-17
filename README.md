@@ -1,6 +1,6 @@
 ## TET~CRAFT v2.1 ##
 
-Preview it at: https://youtu.be/gP9ZtCif9zw
+Apache 2.0 - preview it exampled at: https://youtu.be/gP9ZtCif9zw
 
 ### A 5D Tetra-Sphere Kleinverse of your own! ###
 
