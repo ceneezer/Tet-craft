@@ -271,7 +271,7 @@ END PROCEDURE
 
 https://youtu.be/UZzcOMaM5M8 \
 https://ceneezer.icu/omniverse/ \
-(original inspiration) \
+(original inspiration [2017] and formalization [~2022] \
 https://www.youtube.com/playlist?list=PL7LCRYC3-EsoiXSJDinBk3z2_8kMvLIGh \
 (Omniversal Revelation Decology and Retrogenisis Pentology) \
 https://thankyoutoken.abacusai.app/about \
