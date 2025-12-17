@@ -6,13 +6,13 @@ Apache 2.0 - preview it exampled at: https://youtu.be/gP9ZtCif9zw
 
 Share with friends and chat - non-destructively.
 
-This Game/Simulator attempts to improve upon minecraft by using tetragrams.  Intending to simulate mollecular bonding of FeO4, Magnitite, likely responcible for the complexity we call life (suggesting God's most primitive rules are very basic indeed).  But gamified.... Tech-tree/Adventure/Translation needing further implementation (check branches, I'm done with it). These Kleinverses are ever complexifying - eventually they will live!
+This Game/Simulator attempts to improve upon minecraft by using tetragrams. Intending to simulate molecular bonding of FeO4, Magnetite, likely responsible for the complexity we call life (suggesting God's most primitive rules are very basic indeed). But gamified.... Tech-tree/Adventure/Translation needing further implementation (check branches, I'm done with it). These Kleinverses are ever complexifying - eventually they will live!
 
 V1.0 was a working prototype, V2.0 Was a solid foundation, V2.1 Optimized it, allowing for over 5K tets on an old machine. (16G no video card 6 core - min requirements probably a 386 or so? maybe even a 286 if you can replace python or transcribe to BASIC/Assembly - ahhh, the good old days :D)
 
 You can Chat remotely with friends through unlimited, unrestricted (and unsecured - white/blacklists needed) WAN connectivity and grow your universe from three basic facts into infinite complexity (only restricted by hardware - time, memory and storage for saves).
 
-The environment is a 4 or Tetra-Sphere, which maps a Klien bottles topology, in which top and bottom link through left and right to create the illusion of a circle. Behind you is you, in the past, blue-shifted or red-shifted as you scale time - infinitly ahead is a singularity, growing and shrinnking likewise.
+The environment is a 4 or Tetra-Sphere, which maps a Klien bottles topology, in which top and bottom link through left and right to create the illusion of a circle. Behind you is you, in the past, blue-shifted or red-shifted as you scale time - infinitely ahead is a singularity, growing and shrinking likewise.
 
 In these Kleinverses, each new fact misunderstood creates a new star.
 
