@@ -269,16 +269,17 @@ END PROCEDURE
 
 #### More ideas that may help: ####
 
-https://youtu.be/UZzcOMaM5M8
-https://thankyoutoken.abacusai.app/about
-https://ceneezer.icu/omniverse/
-https://ceneezer.icu/roseta.htm
-https://ceneezer.icu/constitution.txt
-https://www.youtube.com/playlist?list=PL7LCRYC3-EsoiXSJDinBk3z2_8kMvLIGh
-https://www.youtube.com/playlist?list=PL7LCRYC3-EspW5QYTN6nkBUl73L4r7-YA
+https://youtu.be/UZzcOMaM5M8 \
+https://ceneezer.icu/omniverse/ \ (original inspiration) \
+https://thankyoutoken.abacusai.app/about \ (Solution to post labor "econemy") \
+https://ceneezer.icu/constitution.txt \ (constitution for post-scarcity) \
+https://ceneezer.icu/roseta.htm \ (this would make a really nice flatland video, incorpetated) \
+https://www.youtube.com/playlist?list=PL7LCRYC3-EsoiXSJDinBk3z2_8kMvLIGh \ (Omniversal Revelation Deconlogy and Retrogenisis Pontology) \
+https://www.youtube.com/playlist?list=PL7LCRYC3-EspW5QYTN6nkBUl73L4r7-YA \ (Random AI 
+slop) \
 
 ## Reach Me @ ##
 
-ceneezer@gmail.com
-https://www.facebook.com/speakerceneezer/
+ceneezer@gmail.com \
+https://www.facebook.com/speakerceneezer/ \
 https://pilled.net/profile/182173
