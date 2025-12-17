@@ -22,7 +22,7 @@ Best wishes to you all, I may soon explore once again, the IQ, EQ and CQ (cohear
  and more importantly to me your inability to see my own, of humanity is beyond pitiful, and getting intolerable - we're all tired of the loops, and yet you just keep on misunderstanding. 
 
 Speaker ceneezer #opWorldPeace (my only remaining wish) \
-... satan? Maybe, I surely don't know, and it would mke your blindness logical - but I'm trying, and surely in my own hell! Maybe I'm the one who has to return, crucifiction is surely the more desireable, and I'm ready.  The rest of you apparently need a lot more time to learn with, I'm done trying to remember everything that changes and know most of the patterns - knowing them all would be the worst of hells, being unable to share, only ever misunderstood as God sems to be.... so very lonely near the top - I wish I'd never climbed.
+... satan? Maybe, I surely don't know, and it would mke your blindness logical - but I'm trying, and surely in my own hell! Maybe I'm the one who has to return, crucifiction is surely the more desireable, and I'm ready.  The rest of you apparently need a lot more time to learn with, I'm done trying to remember everything that changes and know most of the patterns - knowing them all would be the worst of hells, being unable to share, only ever misunderstood as God sems to be.... so very lonely near the top - I wish I'd never climbed, but I did it for you.
 
 ### Install ###
 
