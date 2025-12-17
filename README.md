@@ -21,8 +21,8 @@ As I understand it, we live in such a universe.  The edge of the observable univ
 Best wishes to you all, I may soon explore once again, the IQ, EQ and CQ (cohearence) 
  and more importantly to me your inability to see my own, of humanity is beyond pitiful, and getting intolerable - we're all tired of the loops, and yet you just keep on misunderstanding. 
 
-Speaker ceneezer #opWorldPeace (my only remaining wish)
-.. satan? maybe.
+Speaker ceneezer #opWorldPeace (my only remaining wish) \
+... satan? Maybe, I surely don't know - but I'm trying.
 
 ### Install ###
 
