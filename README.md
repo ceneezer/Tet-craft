@@ -10,7 +10,7 @@ This Game/Simulator attempts to improve upon minecraft by using tetragrams.  Int
 
 V1.0 was a working prototype, V2.0 Was a solid foundation, V2.1 Optimized it, allowing for over 5K tets on an old machine. (16G no video card 6 core - min requirements probably a 386 or so? maybe even a 286 if you can replace python or transcribe to BASIC/Assembly - ahhh, the good old days :D)
 
-You can Chat remotely with friends through unlimited, unrestricted (unsecured) WAN connectivity and grow your universe from three basic facts into infinite complexity (only restricted by hardware - time, memory and storage for saves).
+You can Chat remotely with friends through unlimited, unrestricted (and unsecured) WAN connectivity and grow your universe from three basic facts into infinite complexity (only restricted by hardware - time, memory and storage for saves).
 
 The environment is a 4 or Tetra-Sphere, which maps a Klien bottles topology, in which top and bottom link through left and right to create the illusion of a circle. Behind you is you, in the past, blue-shifted or red-shifted as you scale time - infinitly ahead is a singularity, growing and shrinnking likewise.
 
