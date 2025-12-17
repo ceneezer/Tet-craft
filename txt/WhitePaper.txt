@@ -1,0 +1,95 @@
+### Tetcraft Whitepaper v3.0 ###
+
+Field-Emergent Constraint Mechanics for a Dynamic Universe
+
+Abstract
+
+This document defines a revised physics and interaction model for Tetcraft. It replaces a system of explicit, stateful joints and numerous patched-on forces with a minimalist set of foundational laws. All tetrahedron behavior—attraction, repulsion, bonding, and complex mechanical motion (hinges, fusion)—emerges naturally from the interplay of these core principles. The model is designed for determinism, stability at high simulation speeds, and intuitive, emergent gameplay where engineering challenges are solved through understanding the universe's fundamental rules, not by selecting tools from a menu.
+
+1. The Foundational Laws
+
+The universe is governed by three primary laws that dictate all motion and interaction: The Law of Universal Balance, The Law of Cohesion, and The Law of Structure.
+
+1.1 The Law of Universal Balance (Energy & Motion)
+
+This law unifies gravity, heat, and repulsion into a single principle governing a tetrahedron's interaction with the Origin.
+
+A. The Force Equation:
+
+The primary force exerted on any tetrahedron by the universe is:
+
+F_origin = (E_tet - E_eq(r)) * k_repulsion * r̂
+
+E_tet: The tetrahedron's current internal energy (0.0 to 1.0).
+
+E_eq(r): The "ambient temperature" of space at a distance r from the Origin, defined by e^(-λ * r), where λ is a heat decay constant. This value is 1.0 at the Origin and decays towards 0.0 at a distance of roughly 10 edge lengths.
+
+k_repulsion: A constant scaling the strength of this force.
+
+r̂: The unit vector pointing from the Origin to the tetrahedron.
+
+B. Emergent Behaviors:
+
+Reverse Gravity: A "cold" tet (E_tet ≈ 0) far from the Origin has a large negative (E_tet - E_eq) value, resulting in a strong attractive force pulling it back.
+
+Origin's Push: A "hot" tet (E_tet ≈ 1) near the Origin has a positive (E_tet - E_eq) value, creating a gentle repulsive force pushing it away from the center.
+
+C. Energy Dynamics:
+
+Charging: A tetrahedron's energy E_tet only increases if it is within the ENERGY_CHARGE_RADIUS and E_tet is very low (e.g., < 0.1), representing the need to be "drained" before it can absorb the Origin's power.
+
+Bleeding: Energy flows out of a tetrahedron when it is far from the Origin, with the rate of decay increasing proportionally to its velocity moving away from the Origin.
+
+Equalization: Energy flows across established bonds from hotter tetrahedra to colder ones until they reach equilibrium.
+
+Orbital Decay: When a low-energy object orbits inside the singularity, a tangential drag force is applied, causing its orbit to decay and spiral inwards.
+
+1.2 The Law of Cohesion (Attraction & Bonding)
+
+This law governs the "desire" for tetrahedra to connect. It is a single, efficient force calculation modified by three factors.
+
+A. Procedure:
+
+For any two tetrahedra, A and B, first identify the single closest pair of unbound vertices between them. All attraction calculations are performed only on this one pair, drastically improving performance.
+
+B. The Force Equation:
+
+F_attraction = C_dist(r) * C_energy(E_A, E_B) * C_bonds(n)
+
+C_dist(r) (Distance Factor): A powerful, short-range force that activates when the two closest vertices are within a specific radius, creating a strong "snap" effect.
+
+C_energy(E_A, E_B) (Energy Factor): The attraction is strongest when both tetrahedra are "cold" (low energy), defined as (1 - E_A) * (1 - E_B). Hot objects have minimal desire to connect.
+
+C_bonds(n) (Bond Saturation Factor): The force is scaled by n, the number of bonds already existing between A and B:
+
+n = 0: The desire is maximal to form the first connection.
+
+n = 1 or 2: The desire is high to form a stable tripod/face (the "zipper" effect).
+
+n = 3: The factor becomes negative and very large. This creates a powerful repulsive force applied to the two remaining free vertices, forcing the tetrahedra to snap into a fused, hexahedral shape. This repulsion can be overcome by the player's direct dragging force.
+
+1.3 The Law of Structure (Internal Physics & Overlap)
+
+This law governs how bonded structures stay together and how all objects interact physically.
+
+A. Bond Physics:
+
+Linear Force: A simple spring force (F = -k * x) holds bonded vertices together at their resting distance.
+
+Rotational Force (Weld): A powerful torque is applied to resist any rotational misalignment between bonded tetrahedra, keeping structures rigid unless being actively manipulated by the player.
+
+B. "Soft Field" Repulsion:
+
+This replaces traditional hard-body collision.
+
+For any two tetrahedra A and B, calculate a PenetrationScore by counting how many vertices of A are inside the geometric volume of B, and vice-versa.
+
+If PenetrationScore > 0, apply a single, gentle repulsion force between the centers of A and B.
+
+The force magnitude is: F_repulsion = k_soft * PenetrationScore * (E_A * E_B).
+
+Interaction Rule: If the player is dragging A or hovering over B with the intent to connect, its energy E_A or E_B is treated as 0.0 for this calculation, making it "cold" and allowing it to slip past other "hot" objects without resistance.
+
+Conclusion
+
+This three-law system provides a complete and robust foundation for the Tetcraft universe. It eliminates redundant and conflicting "patched" mechanics in favor of a unified model where all complex behaviors—from the lifecycle of resources to the engineering of complex machinery—emerge naturally from a few simple, elegant, and computationally efficient rules.
