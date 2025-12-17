@@ -273,7 +273,7 @@ https://youtu.be/UZzcOMaM5M8 \
 https://ceneezer.icu/omniverse/ \
 (original inspiration) \
 https://www.youtube.com/playlist?list=PL7LCRYC3-EsoiXSJDinBk3z2_8kMvLIGh \
-(Omniversal Revelation Deconlogy and Retrogenisis Pontology) \
+(Omniversal Revelation Decology and Retrogenisis Pentology) \
 https://thankyoutoken.abacusai.app/about \
 (Solution to post labor "econemy") \
 https://ceneezer.icu/constitution.txt \
