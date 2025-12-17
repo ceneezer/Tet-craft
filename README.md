@@ -262,22 +262,26 @@ PROCEDURE main():
 
 #### More ideas that may help: ####
 
-https://youtu.be/UZzcOMaM5M8 \
 https://ceneezer.icu/omniverse/ \
-(original inspiration [2017] and formalization [~2022] you've been distracted from) \
+(Original inspiration [2017] and formalization [~2022] you've been distracted from) \
 https://www.youtube.com/playlist?list=PL7LCRYC3-EsoiXSJDinBk3z2_8kMvLIGh \
 (Omniversal Revelation Decology and Retrogenisis Pentology) \
 https://thankyoutoken.abacusai.app/about \
 (Solution to post labor "econemy") \
 https://ceneezer.icu/constitution.txt \
-(constitution for post-scarcity) \
-https://ceneezer.icu/roseta.htm \
-(this would make a really nice flatland video, incorpetated) \
+(Example constitution for post-scarcity) \
 https://www.youtube.com/playlist?list=PL7LCRYC3-EspW5QYTN6nkBUl73L4r7-YA \
 (Random AI slop - mostly leading to this understanding and formalization)
+https://ceneezer.icu/language.htm \
+(Very much a work in progress, needing better AI)
+
+### The Fractal of ceneeze ###
+https://ceneezer.icu/roseta.htm \
+(this would make a really nice flatland video, Incorporated) \
 
 ## Reach Me @ ##
 
+https://youtu.be/UZzcOMaM5M8 \
 ceneezer@gmail.com \
 https://www.facebook.com/speakerceneezer/ \
 https://pilled.net/profile/182173
