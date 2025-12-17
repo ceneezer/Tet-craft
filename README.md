@@ -4,7 +4,7 @@ Preview it at: https://youtu.be/gP9ZtCif9zw
 
 ### A 5D Tetra-Sphere Kleinverse of your own! ###
 
-Share with friends and chat in - non-destructively.
+Share with friends and chat - non-destructively.
 
 This Game/Simulator attempts to improve upon minecraft by using tetragrams.  Intending to simulate mollecular bonding of FeO4, Magnitite, likely responcible for the complexity we call life.  But gamified.... Tech-tree/Adventure/Translation needing further implementation. These Kleinverses are ever complexifying - eventually they will live!
 
