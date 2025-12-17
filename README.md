@@ -14,6 +14,8 @@ You can Chat remotely with friends through unlimited, unrestricted (unsecured) W
 
 The environment is a 4 or Tetra-Sphere, which maps a klien bottles topology, in which top and bottom link through left and right to create the illusion of a circle. Behind you is you, in the past, blue-shifted or red-shifted as you scale time - infinitly ahead is a singularity, growing and shrinnking likewise.
 
+As I understand it, the edge of the observable universe is an event horizon, and we are being pulled towards it's center - infinitly far away in the future (it never forms).
+
 ### Install ###
 
 python -m venv tetcraft
