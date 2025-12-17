@@ -1,9 +1,13 @@
 ### Instal ###
 
 python -m venv tetcraft
+
 cd tetcraft
+
 source bin/activate
+
 pip install numpy pygame numba
+
 python tetra.py <options>
 
 ### Psuedocode ###
