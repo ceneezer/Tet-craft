@@ -265,7 +265,9 @@ END PROCEDURE
 
 ## Special Thanks ##
 
-(to everyone for viewing, contributing, and helping along the way, more ideas that may help)
+(to everyone for viewing, contributing, and helping along the way)
+
+#### More ideas that may help: ####
 
 https://youtu.be/UZzcOMaM5M8
 https://thankyoutoken.abacusai.app/about
