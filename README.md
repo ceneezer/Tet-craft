@@ -265,7 +265,7 @@ END PROCEDURE
 
 ## Special Thanks ##
 
-(to everyone for viewing, contributing, and helping along the way)
+(to everyone for viewing, sharing, contributing, and helping along the way)
 
 #### More ideas that may help: ####
 
