@@ -8,13 +8,13 @@ Share with friends and chat - non-destructively.
 
 This Game/Simulator attempts to improve upon minecraft by using tetragrams.  Intending to simulate mollecular bonding of FeO4, Magnitite, likely responcible for the complexity we call life.  But gamified.... Tech-tree/Adventure/Translation needing further implementation. These Kleinverses are ever complexifying - eventually they will live!
 
-V2.0 Was a solid foundation, V2.1 Optimized it, allowing for over 5K tets on an old machine. (16G no video card 6 core - min requirements probably a 386 or so?)
+V2.0 Was a solid foundation, V2.1 Optimized it, allowing for over 5K tets on an old machine. (16G no video card 6 core - min requirements probably a 386 or so? maybe even a 286 if you can replace python or transcribe to BASIC/Assembly :D)
 
 You can Chat remotely with friends through unlimited, unrestricted (unsecured) WAN connectivity and grow your universe from three basic facts into infinite complexity.
 
-The environment is a 4 or Tetra-Sphere, which maps a klien bottles topology, in which top and bottom link through left and right to create the illusion of a circle. Behind you is you, in the past, blue-shifted or red-shifted as you scale time - infinitly ahead is a singularity, growing and shrinnking likewise.
+The environment is a 4 or Tetra-Sphere, which maps a Klien bottles topology, in which top and bottom link through left and right to create the illusion of a circle. Behind you is you, in the past, blue-shifted or red-shifted as you scale time - infinitly ahead is a singularity, growing and shrinnking likewise.
 
-Each new fact, misunderstood, creates a ner star.
+In these Kleinverses, each new fact misunderstood creates a ner star.
 
 As I understand it, the edge of the observable universe is an event horizon, and we are being pulled towards it's center - infinitly far away in the future (it never forms) "spagetifying" though of course not really - only shrinking, everything else shrinking with us.  Outside the event horizon, is hyperspacially linked to this center, that never quite forms - it only allows us to experience time and seperation.
 
