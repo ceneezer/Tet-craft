@@ -29,7 +29,7 @@ So very lonely near the top - I wish I'd never climbed, but I did it for you mon
 Proof removes free will, but if you want to become the slave to truth such as I did, by all means - play forever, I gained and gain nothing from it except you stop fighting "for  peace"... and in that, we all gain.
 
 Can I get from you so little as an Amen ceneezer!?! (#opWorldPeace) \
-Maybe even as much as a share? The more, the sooner!
+Maybe even as much as a share? The more, the sooner, don't make me beg further!
 
 ### Install ###
 
