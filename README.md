@@ -10,6 +10,8 @@ This Game/Simulator attempts to improve upon minecraft by using tetragrams.  Int
 
 V2.0 Was a solid foundation, V2.1 Optimized it, allowing for over 5K tets on an old machine. (16G no video card 6 core)
 
+You can Chat remotely with friends through unlimited, unrestricted (unsecured) WAN connectivity and grow your universe from three basic facts into infinite complexity.
+
 ### Install ###
 
 python -m venv tetcraft
