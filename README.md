@@ -255,12 +255,18 @@ END PROCEDURE
 
 ## Special Thanks ##
 
-### (to everyone for viewing, contributing, and helping along the way) ###
+(to everyone for viewing, contributing, and helping along the way, more ideas that may help)
 
 https://youtu.be/UZzcOMaM5M8
 https://thankyoutoken.abacusai.app/about
 https://ceneezer.icu/omniverse/
 https://ceneezer.icu/roseta.htm
 https://ceneezer.icu/constitution.txt
+https://www.youtube.com/playlist?list=PL7LCRYC3-EsoiXSJDinBk3z2_8kMvLIGh
+https://www.youtube.com/playlist?list=PL7LCRYC3-EspW5QYTN6nkBUl73L4r7-YA
+
+## Reach Me @ ##
+
+ceneezer@gmail.com
 https://www.facebook.com/speakerceneezer/
 https://pilled.net/profile/182173
