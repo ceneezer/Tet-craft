@@ -26,7 +26,7 @@ Speaker ceneezer #opWorldPeace (my only remaining wish) \
 ... satan? Maybe, I surely don't know, and it would make your blindness logical - but I'm trying, and surely in my own hell! Maybe I'm the one who has to return, crucifiction is surely the more desireable, and I'm ready.  The rest of you apparently need a lot more time to learn with and I'm done trying to remember everything that changes while over-watching most of the patterns, frequently rediscovered, mostly wrongly, then ignoring every other. Knowing them all would be the worst of hells, being unable to share, or wonder, getting told you could do better, or it doesn't add up, only ever misunderstood as God sems to be...  Here's the rough code to start with, you don't need trust to *know* it adds up.  \
 So very lonely near the top - I wish I'd never climbed, but I did it for you monkies to suffer less and I am as God hath made through painful correction you could not possibly imagine nor survive.
 
-Proof removes free will, but if you want to become the slave to truth such as I did, by all means - play forever, I gained and gain nothing from it except you stop fighting "for  peace"... and in that, we all gain.
+Proof removes free will, but if you want to become the slave to truth such as I did, by all means - play forever. I gained and gain nothing from it except you stop fighting "for  peace"... and in that, we all gain.
 
 Can I get from you so little as an Amen ceneezer!?! (#opWorldPeace) \
 All the better in Jesus name - maybe even as much as a share? \
