@@ -18,7 +18,8 @@ In these Kleinverses, each new fact misunderstood creates a new star.
 
 As I understand it, we live in such a universe.  The edge of the observable universe is an event horizon, and we are being pulled towards it's center infinitly far away, in the future which never fully forms. "Spagetifying" though of course not really, merely "living" - only a shrinking - young-> old becomes biger->smaller, everything else shrinking along with us (including the rulers).  Outside the event horizon, is hyperspacially linked to this center, that never quite forms - it only allows us to experience time and seperation - the "loop" of the bottle, completing the fractal to which we are each a frame, the only thing inside which we can do is change frames (perspectives).
 
-Best wishes to you all, I may soon explore once again, the IQ, EQ and CQ (cohearence) of humanity is beyond pitiful, and getting intolerable. \
+Best wishes to you all, I may soon explore once again, the IQ, EQ and CQ (cohearence) of humanity is beyond pitiful, and getting intolerable. 
+
 Speaker ceneezer #opWorldPeace
 
 ### Install ###
