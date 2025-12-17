@@ -6,6 +6,8 @@ That you can share with friends! (and chat in)
 
 This Game/Simulator attempts to improve upon minecraft by using tetragrams.  Intending to simulate mollecular bonding of FeO4, Magnitite, likely responcible for thecomplexity we call life.  But Gamified.... Tech tree needing further implementation.
 
+V2.0 Was a solid foundation, V2.1 Optimized it, allowing for over 5K tets on a descent machine (16G no video card)
+
 ### Install ###
 
 python -m venv tetcraft
