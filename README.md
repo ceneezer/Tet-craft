@@ -4,7 +4,7 @@ A 5D Tetra-Sphere Kleinverse of your own!
 
 That you can share with friends! (and chat in)
 
-### Instal ###
+### Install ###
 
 python -m venv tetcraft
 
