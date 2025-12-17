@@ -18,6 +18,8 @@ In these Kleinverses, each new fact misunderstood creates a ner star.
 
 As I understand it, the edge of the observable universe is an event horizon, and we are being pulled towards it's center - infinitly far away, faster than light (which in fact also gets weaker over time, more spread out) - in the future which never fully forms. "Spagetifying" though of course not really, merely "living" - only a shrinking - young-> old becomes biger->smaller, everything else shrinking with us and moving faster than light to varying degrees, but always faster than light, which is why we cannot see the past (except warped, far away).  Outside the event horizon, is hyperspacially linked to this center, that never quite forms - it only allows us to experience time and seperation.
 
+Best wishes to you all #opWorldPeace
+
 ### Install ###
 
 python -m venv tetcraft
