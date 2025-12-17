@@ -252,3 +252,15 @@ PROCEDURE main():
     Stop any running network threads.
     Quit Pygame.
 END PROCEDURE
+
+## Special Thanks ##
+
+### (to everyone for viewing, contributing, and helping along the way) ###
+
+https://youtu.be/UZzcOMaM5M8
+https://thankyoutoken.abacusai.app/about
+https://ceneezer.icu/omniverse/
+https://ceneezer.icu/roseta.htm
+https://ceneezer.icu/constitution.txt
+https://www.facebook.com/speakerceneezer/
+https://pilled.net/profile/182173
