@@ -1,0 +1,1048 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ceneezer's Spirit Animal Test</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Merriweather:wght@300;400;700&family=Montserrat:wght@400;600&display=swap');
+
+        :root {
+            --bg-color: #f4f4f9;
+            --text-color: #333;
+            --primary-color: #4a4e69;
+            --secondary-color: #9a8c98;
+            --accent-color: #c9ada7;
+            --light-accent: #f2e9e4;
+            --border-radius: 8px;
+            --box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        body {
+            font-family: 'Montserrat', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            margin: 0;
+            padding: 2rem 1rem;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        .quiz-container {
+            background-color: white;
+            padding: 2.5rem;
+            border-radius: var(--border-radius);
+            box-shadow: var(--box-shadow);
+            width: 100%;
+            max-width: 800px;
+            transition: all 0.5s ease-in-out;
+        }
+
+        h1, h2 {
+            font-family: 'Merriweather', serif;
+            color: var(--primary-color);
+            text-align: center;
+        }
+
+        h1 {
+            margin-bottom: 0.5rem;
+        }
+
+        .intro-text {
+            text-align: center;
+            color: var(--secondary-color);
+            margin-bottom: 2rem;
+            font-style: italic;
+        }
+
+        .question-block {
+            margin-bottom: 2rem;
+            padding: 1.5rem;
+            background-color: var(--light-accent);
+            border-left: 5px solid var(--accent-color);
+            border-radius: 0 var(--border-radius) var(--border-radius) 0;
+        }
+
+        .question-block .dichotomy-title {
+            font-family: 'Merriweather', serif;
+            font-weight: 700;
+            color: var(--primary-color);
+            margin-bottom: 1rem;
+            font-size: 1.2rem;
+        }
+
+        .question {
+            margin-bottom: 1.5rem;
+        }
+
+        .question p {
+            font-weight: 600;
+            margin-bottom: 1rem;
+            line-height: 1.6;
+        }
+
+        .options {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .option {
+            display: block;
+            padding: 0.75rem 1rem;
+            border: 1px solid var(--secondary-color);
+            border-radius: var(--border-radius);
+            cursor: pointer;
+            transition: background-color 0.2s, border-color 0.2s;
+        }
+
+        .option:hover {
+            background-color: var(--accent-color);
+            color: white;
+        }
+
+        input[type="radio"] {
+            display: none;
+        }
+
+        input[type="radio"]:checked + label {
+            background-color: var(--primary-color);
+            color: white;
+            border-color: var(--primary-color);
+            font-weight: bold;
+        }
+
+        .button-container {
+            text-align: center;
+            margin-top: 2rem;
+        }
+
+        #submit-btn, #restart-btn {
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 1rem 2rem;
+            font-size: 1.1rem;
+            font-weight: 600;
+            border-radius: var(--border-radius);
+            cursor: pointer;
+            transition: background-color 0.3s, transform 0.2s;
+        }
+
+        #submit-btn:hover, #restart-btn:hover {
+            background-color: #3b3e56;
+            transform: translateY(-2px);
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        /* Results Styling */
+        #results-container {
+            text-align: center;
+        }
+
+        .spirit-animal-card {
+            background: linear-gradient(135deg, var(--light-accent), #ffffff);
+            padding: 2rem;
+            border-radius: var(--border-radius);
+            box-shadow: var(--box-shadow);
+            margin-bottom: 2rem;
+            border: 2px solid var(--accent-color);
+        }
+
+        .spirit-animal-card h3 {
+            font-size: 2.5rem;
+            margin: 0;
+            color: var(--primary-color);
+        }
+
+        .spirit-animal-card .emoji {
+            font-size: 5rem;
+            margin-bottom: 1rem;
+        }
+
+        .spirit-animal-card .archetype {
+            font-style: italic;
+            font-size: 1.2rem;
+            color: var(--secondary-color);
+            margin-bottom: 1rem;
+        }
+
+        .spirit-animal-card .meaning {
+            line-height: 1.6;
+        }
+
+        .placeholder {
+            margin-top: 1.5rem;
+            padding: 1rem;
+            background-color: #f9f9f9;
+            border: 1px dashed var(--secondary-color);
+            border-radius: var(--border-radius);
+            color: #666;
+        }
+
+        .scores-breakdown {
+            margin-top: 2rem;
+        }
+
+        .dichotomy-score {
+            display: flex;
+            flex-direction: column;
+            margin-bottom: 1rem;
+        }
+
+        .dichotomy-score .labels {
+            display: flex;
+            justify-content: space-between;
+            width: 100%;
+            font-weight: 600;
+            font-size: 0.9rem;
+            margin-bottom: 0.25rem;
+        }
+
+        .dichotomy-score .pole-left { text-align: left; }
+        .dichotomy-score .pole-right { text-align: right; }
+
+        .score-bar-container {
+            width: 100%;
+            background-color: #e0e0e0;
+            border-radius: 20px;
+            height: 20px;
+            overflow: hidden;
+        }
+
+        .score-bar {
+            height: 100%;
+            background-color: var(--secondary-color);
+            transition: width 0.5s ease-in-out;
+            text-align: center;
+            color: white;
+            font-size: 0.8rem;
+            line-height: 20px;
+        }
+
+        #error-message {
+            color: #d90429;
+            text-align: center;
+            margin-top: 1rem;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="quiz-container" id="quiz-container">
+        <h1>The Archetypal Psyche Test</h1>
+        <p class="intro-text">Discover your core orientation across 12 fundamental dichotomies.</p>
+
+        <form id="quiz-form">
+            <div id="questions-container">
+                <!-- Questions will be dynamically inserted here by JavaScript -->
+            </div>
+            <div class="button-container">
+                <button type="button" id="submit-btn">Calculate My Archetype</button>
+            </div>
+            <div id="error-message" class="hidden">Please answer all questions before submitting.</div>
+        </form>
+
+        <div id="results-container" class="hidden">
+            <h2>Your Results</h2>
+
+            <div class="spirit-animal-card">
+                <p class="pair" id="animal-pair"></p>
+                <div class="emoji" id="animal-emoji"></div>
+                <h3 id="animal-name"></h3>
+                <p class="archetype" id="animal-archetype"></p>
+                <p class="meaning" id="animal-meaning"></p>
+                <div class="placeholder" id="animal-description-placeholder">
+                    <!-- Further descriptions of traits, careers, etc. for [Animal Name] will go here. -->
+                </div>
+            </div>
+
+            <div class="scores-breakdown">
+                <h2>Fully Weighted Personality Score</h2>
+                <div id="scores-container">
+                    <!-- Score breakdowns will be dynamically inserted here -->
+                </div>
+            </div>
+
+            <div class="button-container">
+                <button type="button" id="restart-btn">Take the Test Again</button>
+            </div>
+            <pre style="width:100%;white-space: pre-wrap;">
+| 1 | Communion + Faith | The Dove | Dove | 🕊️ Trusts in divine harmony; lives through grace, not struggle. |
+| 2 | Communion + Doubt | The Rhinoceros | Rhinoceros | 🦏 Gentle giant who questions with empathy; remembers shared pain. |
+| 3 | Dominion + Faith | The Lion | Lion | 🦁 The faithful ruler; protects through confidence in divine order. |
+| 4 | Dominion + Doubt | The Magpie | Magpie | 🐦 Strategist of the unseen; power through observation and intellect. |
+| 5 | Communion + Passion | The Wolf | Wolf | 🐺 Burns with pack-loyalty; love expressed through fierce devotion. |
+| 6 | Communion + Serenity | The Deer | Deer | 🦌 Attuned soul of the grove; peace through gentleness and surrender. |
+| 7 | Dominion + Passion | The Tiger | Tiger | 🐅 Raw will incarnate; asserts power as living flame. |
+| 8 | Dominion + Serenity | The Owl | Owl | 🦉 Watchful ruler; calm judgment that tames chaos. |
+| 9 | Communion + Temporal | The Beaver | Beaver | 🦫 Builder of collective worlds; harmony through patient labor. |
+| 10 | Communion + Eternal | The Heron | Heron | 🪶 Lives in cycles of grace and return; unity through time. |
+| 11 | Dominion + Temporal | The Bull | Bull | 🐂 Manifesting force; power expressed in sustained effort. |
+| 12 | Dominion + Eternal | The Eagle | Eagle | 🦅 Overseer of realms; vision bound to destiny rather than moment. |
+| 13 | Communion + Reason | The Empathic Scholar | Bonobo | 🐒 Understands the world by logically analyzing its interconnectedness. |
+| 14 | Communion + Revelation | The Oracle of the Wild | Stag | 🦌 Receives insight by attuning to the patterns of the whole. |
+| 15 | Dominion + Reason | The Master Engineer | Spider | 🕷️ Controls the world by understanding and applying its rational laws. |
+| 16 | Dominion + Revelation | The Visionary King | Phoenix | 🐦‍🔥 Imposes a new order based on a powerful, received vision. |
+| 17 | Communion + Empathy | The Healer | Elephant | 🐘 Lives in profound, shared feeling; harmony through mutual care. |
+| 18 | Communion + Principle | The Guardian of the Grove | Ent | 🌳 Embodies the ancient, unspoken laws that maintain harmony. |
+| 19 | Dominion + Empathy | The Benevolent Dictator | Silverback Gorilla | 🦍 Wields power with compassion for those under their protection. |
+| 20 | Dominion + Principle | The Lawgiver | Ram | 🐏 Establishes the clear, structuring rules by which all must live. |
+| 21 | Communion + Surrender | The Sea Turtle | Sea Turtle | 🐢 Enduring wisdom through yielding; carries its home in quiet faith. |
+| 22 | Communion + Striving | The Salmon | Salmon | 🐟 Swims upstream in shared purpose; struggle as devotion. |
+| 23 | Dominion + Surrender | The Crocodile | Crocodile | 🐊 Waits beneath still waters; power through patience. |
+| 24 | Dominion + Striving | The Stallion | Stallion | 🐎 Unrestrained drive; self as engine of will and conquest. |
+| 25 | Communion + Mirror | The Cat | Cat | 🐈 Silent companion; empathy through observation. |
+| 26 | Communion + Ground | The Dog | Dog | 🐕 Faithful servant; love expressed through tangible loyalty. |
+| 27 | Dominion + Mirror | The Kestrel | Kestrel | 🦅 Sees before striking; contemplation as instrument of control. |
+| 28 | Dominion + Ground | The Boar | Boar | 🐗 Earth-bound power; manifests will through direct, physical means. |
+| 29 | Communion + Unity | The Whale | Whale | 🐋 Vast heart of the depths; all beings echo in its song. |
+| 30 | Communion + Multiplicity | The Ant | Ant | 🐜 The collective worker; individuality dissolved into purpose. |
+| 31 | Dominion + Unity | The Sovereign Sun | Sun Bear | 🐻 A single, central power from which all order radiates. |
+| 32 | Dominion + Multiplicity | The Weaver | Spider | 🕷️ Weaver of systems; control through interconnected design. |
+| 33 | Communion + Chaos | The Dolphin | Dolphin | 🐬 Plays within unpredictability; harmony through joy. |
+| 34 | Communion + Order | The Bee | Bee | 🐝 Collective order through shared sweetness. |
+| 35 | Dominion + Chaos | The Dragon | Dragon | 🐉 Wielder of primal energy; control through fear and awe. |
+| 36 | Dominion + Order | The Elephant Beetle | Elephant Beetle | 🪲 Builder of fortresses; unyielding structural dominion. |
+| 37 | Communion + Synthesis | The Goose | Goose | 🦢 Migrates in unity; insight through collective pattern. |
+| 38 | Communion + Analysis | The Parrot | Parrot | 🦜 Reflects and repeats; learns harmony through imitation. |
+| 39 | Dominion + Synthesis | The Elephant Seal | Elephant Seal | 🦭 Dominance through ritual gathering; merges hierarchy and cohesion. |
+| 40 | Dominion + Analysis | The Harrier | Harrier | 🦅 Sharp logic and vision; control through precise observation. |
+| 41 | Communion + Transcendence | The Crane | Crane | 🦩 Pilgrim of skies; faith in the unseen current. |
+| 42 | Communion + Immanence | The Cow | Cow | 🐄 Sacred nurturer; divinity expressed through sustenance. |
+| 43 | Dominion + Transcendence | The Pegasus | Pegasus | 🐎✨ Aspiring force; power as flight beyond limits. |
+| 44 | Dominion + Immanence | The Bear | Bear | 🐻 Sovereign of ground and flesh; strength within embodiment. |
+| 45 | Faith + Passion | The Horse | Horse | 🐎 Gallops toward the unseen; trusts the horizon with burning heart. |
+| 46 | Faith + Serenity | The Turtle Dove | Turtle Dove | 🕊️ Calm believer; carries peace as proof of grace. |
+| 47 | Doubt + Passion | The Fox | Fox | 🦊 Clever challenger; tests every flame for truth. |
+| 48 | Doubt + Serenity | The Heron (Blue) | Heron (Blue) | 🪶 Still observer; skepticism as quiet understanding. |
+| 49 | Faith + Temporal | The Bee-eater | Bee-eater | 🐦 Believes in seasonal renewal; devotion through cycles of work. |
+| 50 | Faith + Eternal | The Albatross | Albatross | 🕊️ Devotion to timeless beauty; faith as reflection of perfection. |
+| 51 | Doubt + Temporal | The Jackal | Jackal | 🐺 Wanders the shifting sands; survival as proof of reason. |
+| 52 | Doubt + Eternal | The Owl (Great Horned) | Owl (Great Horned) | 🦉 Eternal questioner; wisdom born of unending night. |
+| 53 | Faith + Reason | The Mammoth | Mammoth | 🐘 Trusts logic as sacred; carries rational faith with memory. |
+| 54 | Faith + Revelation | The Prophet | Eagle | 🦅 Long-winged pilgrim; soars guided by unseen intuition. |
+| 55 | Doubt + Reason | The Rat | Rat | 🐀 Unending analyzer; trust only in the tested. |
+| 56 | Doubt + Revelation | The Crow | Crow | 🐦‍⬛ Trickster prophet; doubt transmuted into insight. |
+| 57 | Faith + Empathy | The Otter | Otter | 🦦 Compassionate believer; faith expressed in service. |
+| 58 | Faith + Principle | The Ram | Ram | 🐏 Devoted to law; certainty through steadfast rule. |
+| 59 | Doubt + Empathy | The Cat (Stray) | Cat (Stray) | 🐈 Curious comforter; questions gently, never imposing belief. |
+| 60 | Doubt + Principle | The Condor | Condor | 🦅 Sharp justice; rational doubt forged into clarity. |
+| 61 | Faith + Surrender | The Lamb | Lamb | 🐑 Trust in destiny; strength through yielding. |
+| 62 | Faith + Striving | The Salmon (King) | Salmon (King) | 🐟 Determined pilgrim; faith through exertion. |
+| 63 | Doubt + Surrender | The Chameleon | Chameleon | 🦎 Adapts by release; survives by questioning identity. |
+| 64 | Doubt + Striving | The Jackrabbit | Jackrabbit | 🐇 Driven skeptic; runs from ignorance toward discovery. |
+| 65 | Faith + Mirror | The Swan | Swan | 🦢 Contemplates grace; reflection as worship. |
+| 66 | Faith + Ground | The Camel | Camel | 🐫 Enduring trust; carries belief across barren lands. |
+| 67 | Doubt + Mirror | The Octopus | Octopus | 🐙 Introspective skeptic; intelligence turned inward. |
+| 68 | Doubt + Ground | The Mole | Mole | 🦡 Feels truth through touch; unseen investigator of depth. |
+| 69 | Faith + Unity | The Whale (Humpback) | Whale (Humpback) | 🐋 Believes all voices are one song. |
+| 70 | Faith + Multiplicity | The Butterfly | Butterfly | 🦋 Trusts transformation; each form sacred. |
+| 71 | Doubt + Unity | The Raven | Raven | 🦅‍⬛ Tests the monolith; questions the One to reveal the All. |
+| 72 | Doubt + Multiplicity | The Monkey | Monkey | 🐒 Joyous skeptic; truth as endless variety. |
+| 73 | Faith + Chaos | The Dolphin (Spotted) | Dolphin (Spotted) | 🐬 Plays in divine disorder; laughter as devotion. |
+| 74 | Faith + Order | The Bee (Honey) | Bee (Honey) | 🐝 Structured worship; faith expressed in precision. |
+| 75 | Doubt + Chaos | The Coyote | Coyote | 🐺 Trickster reasoner; chaos as teacher. |
+| 76 | Doubt + Order | The Ant (Leafcutter) | Ant (Leafcutter) | 🐜 Builder of empirical truth; order through skepticism. |
+| 77 | Faith + Synthesis | The Porpoise | Porpoise | 🐬 Connects through trust; faith unites insight. |
+| 78 | Faith + Analysis | The Bee-fly | Bee-fly | 🪰 Gathers fragments; order through devotion. |
+| 79 | Doubt + Synthesis | The Magpie (Eurasian) | Magpie (Eurasian) | 🐦 Collects contradictions; beauty in stolen ideas. |
+| 80 | Doubt + Analysis | The Owl (Snowy) | Owl (Snowy) | 🦉 Dissects night’s silence; reason within mystery. |
+| 81 | Faith + Transcendence | The Crane (Sandhill) | Crane (Sandhill) | 🦩 Belief beyond sky; steps in both worlds. |
+| 82 | Faith + Immanence | The Cow (Zebu) | Cow (Zebu) | 🐄 Trust in earth’s divinity; sacred sustainer. |
+| 83 | Doubt + Transcendence | The Vulture | Vulture | 🦅 Finds purity in decay; skepticism as ascension. |
+| 84 | Doubt + Immanence | The Pig | Pig | 🐖 Finds truth in the soil; grounded empiricist. |
+| 85 | Passion + Temporal | The Horsefly | Horsefly | 🪰 Burns briefly but fully; living wholly in the moment. |
+| 86 | Passion + Eternal | The Phoenix (Cinnabar) | Phoenix (Cinnabar) | 🐦‍🔥 Fire renewed through ages; passion reborn beyond time. |
+| 87 | Serenity + Temporal | The Land Tortoise | Land Tortoise | 🐢 Moves slow through the seasons; peace through persistence. |
+| 88 | Serenity + Eternal | The Crane (Red-crowned) | Crane (Red-crowned) | 🦩 Stillness across lifetimes; calm transcending all change. |
+| 89 | Passion + Reason | The Jackal (Black-backed) | Jackal (Black-backed) | 🐺 Follows instinct through intellect; fire disciplined by logic. |
+| 90 | Passion + Revelation | The Stag | Stag | 🦌 Sees divine patterns in pursuit; vision through desire. |
+| 91 | Serenity + Reason | The Owl (Barn) | Owl (Barn) | 🦉 Cool understanding; intellect as still water. |
+| 92 | Serenity + Revelation | The Whale (Blue) | Whale (Blue) | 🐋 Deep intuition; the quiet current of divine knowing. |
+| 93 | Passion + Empathy | The Dog (Mastiff) | Dog (Mastiff) | 🐕 Loves fiercely; emotional loyalty as moral compass. |
+| 94 | Passion + Principle | The Ram (Bighorn) | Ram (Bighorn) | 🐏 Zeal for structure; burns to uphold the law. |
+| 95 | Serenity + Empathy | The Seal | Seal | 🦭 Gentle nurturer; harmony through affection. |
+| 96 | Serenity + Principle | The Elephant (African) | Elephant (African) | 🐘 Calm guardian; peace through order and dignity. |
+| 97 | Passion + Surrender | The Moth | Moth | 🦋 Drawn to the light; surrendering to transformation. |
+| 98 | Passion + Striving | The Tiger (Siberian) | Tiger (Siberian) | 🐅 Unyielding drive; will aflame. |
+| 99 | Serenity + Surrender | The Swan (Mute) | Swan (Mute) | 🦢 Tranquil acceptance; grace within flow. |
+| 100 | Serenity + Striving | The Tern | Tern | 🕊️ Gentle motion; balance between flight and stillness. |
+| 101 | Passion + Mirror | The Cat (Panther) | Cat (Panther) | 🐈 Passion inwardly contained; the fire behind the gaze. |
+| 102 | Passion + Ground | The Bull (Aurochs) | Bull (Aurochs) | 🐂 Vital force embodied; creation through raw energy. |
+| 103 | Serenity + Mirror | The Jellyfish | Jellyfish | 🪼 Transparent being; still reflection drifting through life. |
+| 104 | Serenity + Ground | The Armadillo | Armadillo | 🐾 Peace anchored in matter; slow rhythm of truth. |
+| 105 | Passion + Unity | The Lion (White) | Lion (White) | 🦁 One heart blazing; leads others by shared fire. |
+| 106 | Passion + Multiplicity | The Monkey (Capuchin) | Monkey (Capuchin) | 🐒 Infinite play; many sparks of creation. |
+| 107 | Serenity + Unity | The Dove (Ring-necked) | Dove (Ring-necked) | 🕊️ Peace of one spirit; calm beyond division. |
+| 108 | Serenity + Multiplicity | The Octopus (Giant Pacific) | Octopus | 🐙 Many arms, one calm center; unity through adaptation. |
+| 109 | Passion + Chaos | The Dragonfly | Dragonfly | 🦟 Moves in flashes; creativity through erratic motion. |
+| 110 | Passion + Order | The Ant (Army) | Ant (Army) | 🐜 Channelled fire; devotion to structured work. |
+| 111 | Serenity + Chaos | The Jellyfish (Moon) | Jellyfish (Moon) | 🪼 Drifts in cosmic currents; peace within unpredictability. |
+| 112 | Serenity + Order | The Crane (Whooping) | Crane (Whooping) | 🦩 Stillness arranged in beauty; order as grace. |
+| 113 | Passion + Synthesis | The Bee (Bumble) | Bee (Bumble) | 🐝 Combines intensity and harmony; passion for unity. |
+| 114 | Passion + Analysis | The Fox (Red) | Fox (Red) | 🦊 Sharp vitality; curiosity that dissects desire. |
+| 115 | Serenity + Synthesis | The Dolphin (Bottlenose) | Dolphin (Bottlenose) | 🐬 Calm connector; joy as gentle harmony. |
+| 116 | Serenity + Analysis | The Crane Fly | Crane Fly | 🦟 Fragile observer; poised within detailed balance. |
+| 117 | Passion + Transcendence | The Phoenix (Golden) | Phoenix (Golden) | 🐦‍🔥 Passion purified into spiritual ascent. |
+| 118 | Passion + Immanence | The Stallion (Arabian) | Stallion (Arabian) | 🐎 Grounded drive; divinity through motion. |
+| 119 | Serenity + Transcendence | The Crane (White-naped) | Crane (White-naped) | 🦩 Still soul lifting skyward; peace as ascension. |
+| 120 | Serenity + Immanence | The Cow (Highland) | Cow (Highland) | 🐄 Calm presence; holiness in the ordinary. |
+| 121 | Temporal + Reason | The Beaver (North American) | Beaver | 🦫 Builder of worlds in time; reason shaping cycles. |
+| 122 | Temporal + Revelation | The Cicada | Cicada | 🦗 Hidden wisdom awakening in appointed seasons. |
+| 123 | Eternal + Reason | The Tortoise | Tortoise | 🐢 Logic enduring through ages; time’s patient mathematician. |
+| 124 | Eternal + Revelation | The Simurgh | Simurgh | 🦅✨ Eternal insight; vision beyond chronology. |
+| 125 | Temporal + Empathy | The Deer (Fallow) | Deer (Fallow) | 🦌 Sensitivity within seasons; compassion responding to time’s touch. |
+| 126 | Temporal + Principle | The Termite | Termite | 🐜 Impermanent builder; duty within decay. |
+| 127 | Eternal + Empathy | The Elephant (Asian) | Elephant (Asian) | 🐘 Memory as love; timeless bond between souls. |
+| 128 | Eternal + Principle | The Eagle (Bald) | Eagle (Bald) | 🦅 Law of the sky; divine order never aging. |
+| 129 | Temporal + Surrender | The Mayfly | Mayfly | 🪰 Lives fully, dies quickly; beauty in brief being. |
+| 130 | Temporal + Striving | The Salmon (Sockeye) | Salmon (Sockeye) | 🐟 Struggles upstream; time as pilgrimage. |
+| 131 | Eternal + Surrender | The Manatee | Manatee | 🐋 Drift of eternity; vast patience of being. |
+| 132 | Eternal + Striving | The Eagle Ray | Eagle Ray | 🩵 Soaring through depth; endless ascent in still waters. |
+| 133 | Temporal + Mirror | The Dragonfly (Blue) | Dragonfly (Blue) | 🦟 Reflects fleeting beauty; ephemeral insight. |
+| 134 | Temporal + Ground | The Badger | Badger | 🐾 Toils unseen in cycles; temporality rooted in soil. |
+| 135 | Eternal + Mirror | The Swan (Trumpeter) | Swan (Trumpeter) | 🦢 Reflection that never fades; timeless grace. |
+| 136 | Eternal + Ground | The Stone Tortoise | Stone Tortoise | 🐢 Symbol of Earth’s endurance; matter immortalized. |
+| 137 | Temporal + Unity | The Termite Hive | Termite Hive | 🐜 Many working as one; unity through rhythm in time. |
+| 138 | Temporal + Multiplicity | The Coral Reef | Coral Reef | 🪸 Endless forms emerging; life flourishing in temporality. |
+| 139 | Eternal + Unity | The Ouroboros Serpent | Ouroboros Serpent | 🐍 Self-devouring eternity; the timeless cycle complete. |
+| 140 | Eternal + Multiplicity | The Starling Murmuration| Starling Murmuration | 🕊️ Infinite individuals moving as one living wave. |
+| 141 | Temporal + Chaos | The Wandering Bloom | Slime Mold | 🦠 Thrives in the unpredictable unfolding of events. |
+| 142 | Temporal + Order | The Chronicler | Beaver | 🦫 Builds a legacy through steady, disciplined, sequential work. |
+| 143 | Eternal + Chaos | The Trickster God | Coyote | 🐺 Embodies a timeless principle of disruption and creative chaos. |
+| 144 | Eternal + Order | The Celestial Clock | Constellations | ✨ Represents the perfect, unchanging, and cyclical order of the cosmos. |
+| 145 | Temporal + Synthesis | The Historian | Elephant | 🐘 Understands the present by connecting the threads of the past. |
+| 146 | Temporal + Analysis | The Moment's Strategist | Fox | 🦊 Makes decisions by dissecting the evolving details of the now. |
+| 147 | Eternal + Synthesis | The Symbolist | Swan | 🦢 Connects all things through their timeless, archetypal meanings. |
+| 148 | Eternal + Analysis | The Geometer | Nautilus | 🐚 Understands timeless truth by dissecting its perfect, underlying forms. |
+| 149 | Temporal + Transcendence | The Pilgrim's Path | Salmon Run | 🐟 The journey through time is a process of ascending to a higher purpose. |
+| 150 | Temporal + Immanence | The Season's Cycle | Deciduous Tree | 🌳 Finds the sacred in the unfolding, physical process of change. |
+| 151 | Eternal + Transcendence | The Great Stillness | Mountain Peak | 🏔️ A timeless symbol of unchanging reality, pointing beyond the world. |
+| 152 | Eternal + Immanence | The Living Legacy | Redwood Forest | 🌲 Embodies a timeless principle through enduring, physical presence. |
+| 153 | Reason + Empathy | The Judge | Bonobo | 🐒 Balances logic with compassion; seeks the most humane rational outcome. |
+| 154 | Reason + Principle | The Architect | Spider (Orb Weaver) | 🕷️ Builds flawless systems based on impersonal, rational laws. |
+| 155 | Revelation + Empathy | The Confessor | Elephant | 🐘 Receives intuitive truth through deep, shared feeling and memory. |
+| 156 | Revelation + Principle | The Oracle | Serpent | 🐍 Channels transcendent law; insight that forms a sacred rule. |
+| 157 | Reason + Surrender | The Philosopher | Tortoise | 🐢 Yields to the slow, methodical unfolding of logical truth. |
+| 158 | Reason + Striving | The Inventor | Beaver | 🦫 Imposes rational design upon the world through determined effort. |
+| 159 | Revelation + Surrender | The Visionary | Moth | 🦋 Is drawn to an intuitive flame; allows insight to guide its path. |
+| 160 | Revelation + Striving | The Prophet | Eagle | 🦅 Pursues a divine vision with relentless, soaring focus. |
+| 161 | Reason + Mirror | The Analyst | Owl | 🦉 Achieves understanding through detached, logical observation. |
+| 162 | Reason + Ground | The Engineer | Ant | 🐜 Manifests rational plans into tangible, physical structures. |
+| 163 | Revelation + Mirror | The Seer | Cat | 🐈 Reflects the unseen; truth perceived in quiet contemplation. |
+| 164 | Revelation + Ground | The Artist | Bowerbird | 🐦 Externalizes inner vision; builds tangible expressions of insight. |
+| 165 | Reason + Unity | The Mathematician | Nautilus | 🐚 Logically deciphers the single, elegant pattern behind all things. |
+| 166 | Reason + Multiplicity | The Taxonomist | Bee | 🐝 Creates order by rationally categorizing infinite variations. |
+| 167 | Revelation + Unity | The Mystic | Whale | 🐋 Perceives the Oneness of all things in a flash of insight. |
+| 168 | Revelation + Multiplicity | The Storyteller | Crow | 🐦‍⬛ Sees a unique, sacred story in every disparate person and thing. |
+| 169 | Reason + Chaos | The Improviser | Fox | 🦊 Applies logic fluidly to navigate unpredictable situations. |
+| 170 | Reason + Order | The Lawmaker | Elephant Seal | 🦭 Establishes meticulous, rational systems to structure the world. |
+| 171 | Revelation + Chaos | The Muse | Dolphin | 🐬 Thrives on spontaneous inspiration; insight born from play. |
+| 172 | Revelation + Order | The Ritualist | Crane | 🦩 Channels divine insight through structured, repeatable forms. |
+| 173 | Reason + Synthesis | The Theorist | Octopus | 🐙 Logically connects disparate facts into a coherent, overarching model. |
+| 174 | Reason + Analysis | The Scientist | Rat | 🐀 Methodically dissects the world to find empirical, logical proof. |
+| 175 | Revelation + Synthesis | The Alchemist | Phoenix | 🐦‍🔥 Intuitively combines unlike elements to create a transcendent whole. |
+| 176 | Revelation + Analysis | The Diviner | Vulture | 🦅 Gains profound insight by focusing on a single, telling detail. |
+| 177 | Reason + Transcendence | The Astronomer | Kestrel | 🦅 Uses logic to understand abstract, higher principles and realms. |
+| 178 | Reason + Immanence | The Biologist | Mole | 🦡 Applies reason to understand the intricate mechanics of the material world. |
+| 179 | Revelation + Transcendence | The Ascetic | Albatross | 🕊️ Receives visions of the beyond by detaching from the worldly. |
+| 180 | Revelation + Immanence | The Shaman | Bear | 🐻 Finds divine revelation deep within the earth and the flesh. |
+| 181 | Empathy + Surrender | The Healer | Deer | 🦌 Aligns with the flow of another's pain to gently guide them to peace. |
+| 182 | Empathy + Striving | The Advocate | Wolf | 🐺 Fights relentlessly out of compassion for the suffering of their pack. |
+| 183 | Principle + Surrender | The Stoic | Camel | 🐫 Yields to destiny by adhering to an unbreakable internal code. |
+| 184 | Principle + Striving | The Crusader | Ram | 🐏 Imposes a moral or divine law upon the world through sheer effort. |
+| 185 | Empathy + Mirror | The Counselor | Swan | 🦢 Understands others by reflecting their emotional state without judgment. |
+| 186 | Empathy + Ground | The Guardian | Dog | 🐕 Expresses compassion through tangible acts of service and protection. |
+| 187 | Principle + Mirror | The Monk | Heron | 🪶 Contemplates a universal law to achieve internal moral clarity. |
+| 188 | Principle + Ground | The Builder | Termite | 🐜 Manifests an ordered system through dutiful, structured action. |
+| 189 | Empathy + Unity | The Bodhisattva | Whale | 🐋 Feels the interconnected suffering of all beings as one. |
+| 190 | Empathy + Multiplicity | The Caretaker | Otter | 🦦 Tends to the unique, individual needs of every member of the group. |
+| 191 | Principle + Unity | The Unifier | Lion | 🦁 Upholds the single law that binds the entire kingdom together. |
+| 192 | Principle + Multiplicity | The Administrator | Ant Queen | 🐜 Applies a complex set of rules to manage a diverse, thriving society. |
+| 193 | Empathy + Chaos | The Mediator | Dolphin | 🐬 Navigates unpredictable social dynamics with compassion and flexibility. |
+| 194 | Empathy + Order | The Nurturer | Cow | 🐄 Provides care and comfort through reliable, structured routines. |
+| 195 | Principle + Chaos | The Trickster-Judge | Coyote | 🐺 Upholds a higher law by playfully disrupting rigid, unjust systems. |
+| 196 | Principle + Order | The Justicar | Eagle (Bald) | 🦅 Enforces a clear, unwavering code to maintain structure and harmony. |
+| 197 | Empathy + Synthesis | The Diplomat | Goose | 🦢 Connects the feelings of disparate groups to create a common understanding. |
+| 198 | Empathy + Analysis | The Diagnostician | Chimpanzee | 🐒 Dissects a specific situation to understand the root cause of suffering. |
+| 199 | Principle + Synthesis | The Theologian | Owl (Great Horned) | 🦉 Integrates various laws and stories into one coherent, overarching doctrine. |
+| 200 | Principle + Analysis | The Lawyer | Harrier | 🦅 Deconstructs situations to apply a precise, specific rule or law. |
+| 201 | Empathy + Transcendence | The Saint | Dove | 🕊️ Feels compassion for the spiritual suffering of souls seeking the beyond. |
+| 202 | Empathy + Immanence | The Midwife | Pig | 🐖 Tends to the raw, messy, embodied experience of others with deep care. |
+| 203 | Principle + Transcendence | The Hierophant | Pegasus | 🐎✨ Upholds the sacred laws that connect the material world to the divine. |
+| 204 | Principle + Immanence | The Farmer | Bull | 🐂 Works with the tangible laws of nature to create abundance and structure. |
+| 205 | Surrender + Mirror | The Mystic Poet | Jellyfish | 🪼 Observes the world and allows its essence to flow through them. |
+| 206 | Surrender + Ground | The Gardener | Earthworm | 🪱 Achieves results by yielding to natural processes and taking small actions. |
+| 207 | Striving + Mirror | The Grand Strategist | Spider | 🕷️ Achieves goals by first observing and planning the entire field of action. |
+| 208 | Striving + Ground | The Pioneer | Stallion | 🐎 Manifests will by charging forward and physically breaking new ground. |
+| 209 | Surrender + Unity | The Taoist Sage | Manatee | 🐋 Finds the One by letting go of all effort and distinction. |
+| 210 | Surrender + Multiplicity | The Wanderer | Butterfly | 🦋 Yields to the winds, finding beauty in each unique flower it lands upon. |
+| 211 | Striving + Unity | The Conductor | Lead Wolf | 🐺 Drives the collective will toward a single purpose; imposes harmony. |
+| 212 | Striving + Multiplicity | The Entrepreneur | Monkey | 🐒 Energetically pursues countless different opportunities and ideas. |
+| 213 | Surrender + Chaos | The Drifter | Tumbleweed | 🌵 Finds freedom by yielding to the unpredictable forces of nature. |
+| 214 | Surrender + Order | The Apprentice | Salmon | 🐟 Achieves mastery by submitting to a rigorous, disciplined system. |
+| 215 | Striving + Chaos | The Revolutionary | Wildfire | 🔥 Imposes a new reality by unleashing uncontrollable, creative destruction. |
+| 216 | Striving + Order | The Empire Builder | Coral Polyp | 🪸 Relentlessly executes a simple, orderly plan to build a vast structure. |
+| 217 | Surrender + Synthesis | The Dreamer | Swan | 🦢 Allows disparate ideas to connect naturally in a state of relaxed awareness. |
+| 218 | Surrender + Analysis | The Watcher | Meerkat | 🦦 Patiently observes and waits for the critical detail to reveal itself. |
+| 219 | Striving + Synthesis | The Innovator | Magpie | 🐦 Actively seeks out and combines disparate elements into something new. |
+| 220 | Striving + Analysis | The Hunter | Tiger | 🐅 Relentlessly tracks and breaks down the movements of its goal. |
+| 221 | Surrender + Transcendence | The Pilgrim | Sea Turtle | 🐢 Lets go of the material world to follow a current toward the divine. |
+| 222 | Surrender + Immanence | The Homesteader | Badger | 🐾 Finds peace by yielding to the rhythms of the land and the body. |
+| 223 | Striving + Transcendence | The Aspirant | Mountain Goat | 🐐 Climbs relentlessly to overcome the physical world and reach the summit. |
+| 224 | Striving + Immanence | The Athlete | Cheetah | 🐆 Pushes the physical body to its absolute limit to master the material plane. |
+| 225 | Mirror + Unity | The Contemplative | Owl (Snowy) | 🦉 Silently observes the world to perceive the Oneness behind it all. |
+| 226 | Mirror + Multiplicity | The Naturalist | Parrot | 🦜 Appreciates the world by observing and cataloging its infinite variety. |
+| 227 | Ground + Unity | The Founder | Alpha Wolf | 🐺 Builds a unified pack through decisive action and presence. |
+| 228 | Ground + Multiplicity | The Progenitor | Rabbit | 🐇 Manifests countless new and unique forms into the world. |
+| 229 | Mirror + Chaos | The Observer of Storms | Albatross | 🕊️ Watches the unpredictable flow of energy without being disturbed by it. |
+| 230 | Mirror + Order | The Cartographer | Condor | 🦅 Creates structure by observing the world from a distance and mapping it. |
+| 231 | Ground + Chaos | The Berserker | Boar | 🐗 Creates new paths by physically crashing through existing structures. |
+| 232 | Ground + Order | The Mason | Beaver | 🦫 Builds enduring structures through disciplined, physical labor. |
+| 233 | Mirror + Synthesis | The Pattern-Seeker | Octopus | 🐙 Quietly observes to find the hidden connections between things. |
+| 234 | Mirror + Analysis | The Critic | Crow | 🐦‍⬛ Understands things by observing them and pulling them apart intellectually. |
+| 235 | Ground + Synthesis | The Collaborator | Honeybee | 🐝 Builds a greater whole by physically combining its work with others. |
+| 236 | Ground + Analysis | The Mechanic | Raccoon | 🦝 Understands how things work by taking them apart with its hands. |
+| 237 | Mirror + Transcendence | The Astrologer | Barn Owl | 🦉 Observes the material world to divine patterns of a higher reality. |
+| 238 | Mirror + Immanence | The Documentarian | Heron (Blue) | 🪶 Finds meaning by quietly and faithfully observing the world as it is. |
+| 239 | Ground + Transcendence | The Temple Builder | Elephant Beetle | 🪲 Creates physical structures that point toward a higher, unseen reality. |
+| 240 | Ground + Immanence | The Artisan | Badger | 🐾 Finds fulfillment in the physical craft of making things from the earth. |
+| 241 | Unity + Chaos | The Swarm | Starling Murmuration | 🕊️ A single, unpredictable entity composed of countless spontaneous parts. |
+| 242 | Unity + Order | The Legion | Army Ant | 🐜 A single entity that achieves its goals through perfect, disciplined structure. |
+| 243 | Multiplicity + Chaos | The Carnival | Monkey Troop | 🐒 Thrives in the joyful, unpredictable energy of many different individuals. |
+| 244 | Multiplicity + Order | The Ecosystem | Coral Reef | 🪸 A structured society built from the harmonious interaction of countless species. |
+| 245 | Unity + Synthesis | The Universalist | Whale Song | 🐋 Connects all things into a single, seamless, holistic truth. |
+| 246 | Unity + Analysis | The Monotheist | Eagle | 🦅 Believes all truth can be understood by dissecting the nature of the One. |
+| 247 | Multiplicity + Synthesis | The Polymath | Fox | 🦊 Connects ideas from countless different fields into a unique worldview. |
+| 248 | Multiplicity + Analysis | The Specialist | Hummingbird | 🐦 Masters its world by focusing on the specific details of its unique niche. |
+| 249 | Unity + Transcendence | The Pantheist | Ouroboros Serpent | 🐍 Sees the single divine essence that is beyond all material forms. |
+| 250 | Unity + Immanence | The Animator | Mycelial Network | 🍄 The single, unseen life force that connects all things within the earth. |
+| 251 | Multiplicity + Transcendence | The Polytheist | Butterfly | 🦋 Honors the many unique divine faces that point to a reality beyond this one. |
+| 252 | Multiplicity + Immanence | The Gardener | Bee | 🐝 Tends to the sacredness of each unique, individual life form in the material world. |
+| 253 | Chaos + Synthesis | The Mystic Collector | Bowerbird | 🐦 Gathers disparate, chaotic elements into a beautiful, intuitive whole. |
+| 254 | Chaos + Analysis | The Curious Deconstructor | Raccoon | 🦝 Dissects the world through playful, unpredictable inquiry. |
+| 255 | Order + Synthesis | The System Architect | Coral Polyp | 🪸 Builds vast, interconnected systems from simple, orderly rules. |
+| 256 | Order + Analysis | The Patient Anatomist | Praying Mantis | 🦗 Achieves clarity through disciplined, precise dissection of reality. |
+| 257 | Chaos + Transcendence | The Tempest | Dragon | 🐉 Unpredictable, primal power that connects the earth and sky. |
+| 258 | Chaos + Immanence | The Ferment | Yeast | 🦠 The unpredictable, transformative power that creates life from within matter. |
+| 259 | Order + Transcendence | The Cathedral | Termite Mound | 🐜 A perfectly structured physical form pointing to a higher purpose. |
+| 260 | Order + Immanence | The Crystal | Quartz Formation | 💎 The inherent, beautiful order that exists deep within matter itself. | 261 | Synthesis + Transcendence | The Mythologist | Simurgh | 🦅✨ Connects worldly stories to reveal timeless, transcendent truths. |
+| 262 | Synthesis + Immanence | The Ecologist | Elephant | 🐘 Understands the whole by seeing how all parts of the physical world connect. |
+| 263 | Analysis + Transcendence | The Theologian | Vulture | 🦅 Dissects sacred texts to understand the nature of the divine beyond. |
+| 264 | Analysis + Immanence | The Surgeon | Jackal | 🐺 Dissects the physical body to understand the precise mechanics of life. |
+
+            </pre>
+        </div>
+    </div>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+
+    // --- DATA STRUCTURES ---
+
+    const dichotomies = {
+        'Communion ↔ Dominion': { poleA: 'Communion', poleB: 'Dominion' },
+        'Faith ↔ Doubt': { poleA: 'Faith', poleB: 'Doubt' },
+        'Passion ↔ Serenity': { poleA: 'Passion', poleB: 'Serenity' },
+        'Temporal ↔ Eternal': { poleA: 'Temporal', poleB: 'Eternal' },
+        'Reason ↔ Revelation': { poleA: 'Reason', poleB: 'Revelation' },
+        'Empathy ↔ Principle': { poleA: 'Empathy', poleB: 'Principle' },
+        'Surrender ↔ Striving': { poleA: 'Surrender', poleB: 'Striving' },
+        'Reflective ↔ Expressive': { poleA: 'Mirror', poleB: 'Ground' },
+        'Unity ↔ Multiplicity': { poleA: 'Unity', poleB: 'Multiplicity' },
+        'Chaos ↔ Order': { poleA: 'Chaos', poleB: 'Order' },
+        'Synthesis ↔ Analysis': { poleA: 'Synthesis', poleB: 'Analysis' },
+        'Transcendence ↔ Immanence': { poleA: 'Transcendence', poleB: 'Immanence' }
+    };
+
+    const questionsData = [
+        { q: 'When entering a new system (a team, a forest), is your first instinct to (A) listen and adapt to its existing rhythms, or (B) identify what needs to be changed and take charge?', d: 'Communion ↔ Dominion' },
+        { q: 'Which statement better reflects your ideal relationship with the world: (A) "I am a part of the whole," or (B) "I am the architect of my world"?', d: 'Communion ↔ Dominion' },
+        { q: 'In a crisis, do you find strength by (A) finding your place within the larger flow of events, or by (B) imposing your will upon the chaos to create a desired outcome?', d: 'Communion ↔ Dominion' },
+        { q: 'Is a river best appreciated by (A) floating with its current, or by (B) building a dam to harness its power?', d: 'Communion ↔ Dominion' },
+        { q: 'True greatness is achieved through (A) profound attunement and harmony, or (B) masterful execution and control.', d: 'Communion ↔ Dominion' },
+        { q: 'When encountering a profound claim, are you more likely to (A) feel its truth resonate within you and operate from that trust, or (B) begin searching for evidence and logical inconsistencies?', d: 'Faith ↔ Doubt' },
+        { q: 'Do you believe the universe operates on an (A) underlying, meaningful order that we can trust, or is it (B) a system of mechanics that we must rigorously test to understand?', d: 'Faith ↔ Doubt' },
+        { q: 'Which is a greater error: (A) to be so skeptical you miss a deeper truth, or (B) to be so trusting you fall for a comforting lie?', d: 'Faith ↔ Doubt', reverse: true },
+        { q: 'When learning, do you prefer (A) a mentor who inspires belief and intuition, or (B) a critic who challenges every assumption you make?', d: 'Faith ↔ Doubt' },
+        { q: 'Is wisdom found by (A) accepting the mystery, or by (B) dissecting it?', d: 'Faith ↔ Doubt' },
+        { q: 'Do you feel most alive when (A) your heart is ablaze with a powerful emotion or purpose, or when (B) your mind is perfectly still, clear, and balanced?', d: 'Passion ↔ Serenity' },
+        { q: 'Which state is more desirable for a lifetime: (A) a series of profound, intense experiences, even if they bring pain, or (B) a state of consistent, unshakable inner peace?', d: 'Passion ↔ Serenity' },
+        { q: 'Is your ideal form of energy like (A) a roaring fire, or (B) a deep, calm lake?', d: 'Passion ↔ Serenity' },
+        { q: 'Are you more motivated by (A) the pull of a great desire, or by (B) the freedom from desire?', d: 'Passion ↔ Serenity' },
+        { q: 'When you imagine your best self, are you (A) a force of transformative change, or (B) a beacon of unwavering calm?', d: 'Passion ↔ Serenity' },
+        { q: 'Are you more interested in (A) the step-by-step process of how things become, or (B) the timeless patterns that repeat across history?', d: 'Temporal ↔ Eternal' },
+        { q: 'When you look at a great oak tree, are you more struck by (A) its long, slow journey of growth from a single acorn, or (B) its symbolic representation of unchanging strength and life?', d: 'Temporal ↔ Eternal' },
+        { q: 'Do you believe meaning is found (A) in the journey and its unfolding, or (B) in the destination and its timeless principle?', d: 'Temporal ↔ Eternal' },
+        { q: 'Which question is more compelling: (A) "What happens next?" or (B) "What does this always mean?"', d: 'Temporal ↔ Eternal' },
+        { q: 'Do you define yourself more by (A) your personal story and its evolution, or by (B) the core principles and values that you embody, regardless of time?', d: 'Temporal ↔ Eternal' },
+        { q: 'When solving a difficult problem, do you trust (A) a methodical, step-by-step analytical process, or (B) a sudden flash of insight that arrives fully formed?', d: 'Reason ↔ Revelation' },
+        { q: 'Is truth something that must be (A) carefully constructed from proven facts, or (B) received as a moment of profound illumination?', d: 'Reason ↔ Revelation' },
+        { q: 'If a logical conclusion contradicts a deep intuitive knowing, which are you more likely to question first: (A) the intuitive knowing, or (B) the logical conclusion?', d: 'Reason ↔ Revelation' },
+        { q: 'Do you find greater beauty in (A) an elegant mathematical proof, or (B) a powerful, paradoxical Zen koan?', d: 'Reason ↔ Revelation' },
+        { q: 'When seeking guidance, do you prefer to (A) analyze all available data, or (B) quiet your mind and wait for an answer to emerge?', d: 'Reason ↔ Revelation' },
+        { q: 'When making a difficult moral judgment, do you prioritize (A) the unique feelings and context of the individuals involved, or (B) the consistent application of a universal law or rule?', d: 'Empathy ↔ Principle' },
+        { q: 'Is a just society built primarily on (A) compassion and mutual care, or (B) clear, impartial laws?', d: 'Empathy ↔ Principle' },
+        { q: 'Which is a greater failing: (A) a coldness of heart that ignores suffering, or (B) a weakness of character that breaks a sacred rule?', d: 'Empathy ↔ Principle' },
+        { q: 'Are you more likely to say (A) "Walk a mile in their shoes before you judge," or (B) "Right is right, and wrong is wrong, no matter the circumstances"?', d: 'Empathy ↔ Principle' },
+        { q: 'Do you believe morality\'s ultimate source is (A) the shared connection between conscious beings, or (B) a transcendent, structural order?', d: 'Empathy ↔ Principle' },
+        { q: 'Do you experience more growth by (A) letting go and allowing your path to find you, or by (B) setting ambitious goals and relentlessly pursuing them?', d: 'Surrender ↔ Striving' },
+        { q: 'Is success a result of (A) aligning yourself with a force greater than yourself, or (B) overcoming obstacles through sheer force of will?', d: 'Surrender ↔ Striving' },
+        { q: 'Which phrase resonates more with you: (A) "Let it be," or (B) "Make it happen"?', d: 'Surrender ↔ Striving' },
+        { q: 'Do you see obstacles as (A) signs to change your direction, or as (B) tests of your determination?', d: 'Surrender ↔ Striving' },
+        { q: 'Is personal evolution more like (A) a seed being grown by the sun and rain, or (B) a sculpture being carved from stone by a determined artist?', d: 'Surrender ↔ Striving' },
+        { q: 'Do you understand the world better by (A) internally synthesizing observations and ideas, or by (B) taking action and seeing how the world responds?', d: 'Reflective ↔ Expressive' },
+        { q: 'Are you more naturally inclined to be (A) an observer who absorbs the world, or (B) a creator who manifests things into it?', d: 'Reflective ↔ Expressive' },
+        { q: 'After a significant experience, do you process it by (A) spending quiet time alone thinking about it, or by (B) immediately talking about it or creating something based on it?', d: 'Reflective ↔ Expressive' },
+        { q: 'Is your inner world more like (A) a mirror reflecting all it sees, or (B) a seed that must be planted in the ground to grow?', d: 'Reflective ↔ Expressive' },
+        { q: 'Do you feel you have truly understood something only when you have (A) integrated it into your worldview, or when you have (B) explained it or built it?', d: 'Reflective ↔ Expressive' },
+        { q: 'When you look at a forest, are you more aware of (A) the single, interconnected ecosystem, or (B) the thousands of unique, individual trees, plants, and animals?', d: 'Unity ↔ Multiplicity' },
+        { q: 'Is the ultimate goal of wisdom to (A) see how everything is a reflection of the One, or (B) to appreciate the infinite, irreducible diversity of the Many?', d: 'Unity ↔ Multiplicity' },
+        { q: 'Do you believe that at the highest level of reality, (A) all distinctions dissolve, or that (B) differentiation is the very purpose of creation?', d: 'Unity ↔ Multiplicity' },
+        { q: 'Which is a more profound truth: (A) "We are all one," or (B) "Every single being is a unique miracle"?', d: 'Unity ↔ Multiplicity' },
+        { q: 'Is beauty found in (A) the underlying harmony that connects all things, or (B) the vibrant contrast between different things?', d: 'Unity ↔ Multiplicity' },
+        { q: 'Do you produce your best work in an environment that is (A) emergent, flexible, and allows for improvisation, or one that is (B) disciplined, systematic, and planned?', d: 'Chaos ↔ Order' },
+        { q: 'Is creation an act of (A) unleashing primal, unpredictable energy, or (B) arranging elements into a perfect, harmonious structure?', d: 'Chaos ↔ Order' },
+        { q: 'Which is more beautiful: (A) a wild, overgrown garden, or (B) a perfectly manicured French formal garden?', d: 'Chaos ↔ Order' },
+        { q: 'Do you see rules and systems as (A) constraints that stifle creativity, or as (B) frameworks that enable greatness?', d: 'Chaos ↔ Order' },
+        { q: 'When starting a new project, do you (A) dive in and discover the process as you go, or (B) create a detailed outline before you begin?', d: 'Chaos ↔ Order' },
+        { q: 'When trying to understand a complex system, do you tend to (A) look for the overarching theme that connects all the parts, or (B) break the system down into its smallest components to see how each one works?', d: 'Synthesis ↔ Analysis' },
+        { q: 'Are you more skilled at (A) seeing the forest, or (B) identifying the trees?', d: 'Synthesis ↔ Analysis' },
+        { q: 'When presented with two very different ideas, is your first impulse to (A) find a way to connect them, or (B) determine which one is more correct by comparing them?', d: 'Synthesis ↔ Analysis' },
+        { q: 'Do you enjoy (A) finding metaphors that link disparate fields (like music and astronomy), or (B) mastering the precise terminology and categories within a single field?', d: 'Synthesis ↔ Analysis' },
+        { q: 'Is understanding achieved by (A) combining fragments into a whole, or by (B) dissecting a whole into its constituent fragments?', d: 'Synthesis ↔ Analysis' },
+        { q: 'Do you believe the divine is most accessible (A) by looking up and beyond the material world, or (B) by looking down and deeper into the material world?', d: 'Transcendence ↔ Immanence' },
+        { q: 'Is spiritual growth a process of (A) detaching from the body and worldly concerns to ascend, or (B) fully inhabiting the body and finding the sacred within the everyday?', d: 'Transcendence ↔ Immanence' },
+        { q: 'Where would you be more likely to find God: (A) in a silent, empty cathedral reaching for the sky, or (B) in the messy, vibrant, and chaotic energy of a crowded market?', d: 'Transcendence ↔ Immanence' },
+        { q: 'Is the ultimate goal (A) liberation from the cycle of existence, or (B) the sanctification of existence itself?', d: 'Transcendence ↔ Immanence' },
+        { q: 'Is reality\'s deepest truth found (A) outside of the cave of shadows, or (B) by realizing the shadows themselves are made of light?', d: 'Transcendence ↔ Immanence' }
+    ];
+
+    const spiritAnimals = [
+        // This is a placeholder for the full list of 264 archetypes.
+        // The full list is very long for a single script block, so it will be dynamically populated below.
+    ];
+
+    function populateSpiritAnimals() {
+        const data = [
+            { poles: ['Communion', 'Faith'], archetype: 'The Dove', animal: 'Dove', emoji: '🕊️', meaning: 'Trusts in divine harmony; lives through grace, not struggle.' },
+            { poles: ['Communion', 'Doubt'], archetype: 'The Rhinoceros', animal: 'Rhinoceros', emoji: '🦏', meaning: 'Gentle giant who questions with empathy; remembers shared pain.' },
+            { poles: ['Dominion', 'Faith'], archetype: 'The Lion', animal: 'Lion', emoji: '🦁', meaning: 'The faithful ruler; protects through confidence in divine order.' },
+            { poles: ['Dominion', 'Doubt'], archetype: 'The Magpie', animal: 'Magpie', emoji: '🐦', meaning: 'Strategist of the unseen; power through observation and intellect.' },
+            { poles: ['Communion', 'Passion'], archetype: 'The Wolf', animal: 'Wolf', emoji: '🐺', meaning: 'Burns with pack-loyalty; love expressed through fierce devotion.' },
+            { poles: ['Communion', 'Serenity'], archetype: 'The Deer', animal: 'Deer', emoji: '🦌', meaning: 'Attuned soul of the grove; peace through gentleness and surrender.' },
+            { poles: ['Dominion', 'Passion'], archetype: 'The Tiger', animal: 'Tiger', emoji: '🐅', meaning: 'Raw will incarnate; asserts power as living flame.' },
+            { poles: ['Dominion', 'Serenity'], archetype: 'The Owl', animal: 'Owl', emoji: '🦉', meaning: 'Watchful ruler; calm judgment that tames chaos.' },
+            { poles: ['Communion', 'Temporal'], archetype: 'The Beaver', animal: 'Beaver', emoji: '🦫', meaning: 'Builder of collective worlds; harmony through patient labor.' },
+            { poles: ['Communion', 'Eternal'], archetype: 'The Heron', animal: 'Heron', emoji: '🪶', meaning: 'Lives in cycles of grace and return; unity through time.' },
+            { poles: ['Dominion', 'Temporal'], archetype: 'The Bull', animal: 'Bull', emoji: '🐂', meaning: 'Manifesting force; power expressed in sustained effort.' },
+            { poles: ['Dominion', 'Eternal'], archetype: 'The Eagle', animal: 'Eagle', emoji: '🦅', meaning: 'Overseer of realms; vision bound to destiny rather than moment.' },
+            { poles: ['Communion', 'Reason'], archetype: 'The Empathic Scholar', animal: 'Bonobo', emoji: '🐒', meaning: 'Understands the world by logically analyzing its interconnectedness.' },
+            { poles: ['Communion', 'Revelation'], archetype: 'The Oracle of the Wild', animal: 'Stag', emoji: '🦌', meaning: 'Receives insight by attuning to the patterns of the whole.' },
+            { poles: ['Dominion', 'Reason'], archetype: 'The Master Engineer', animal: 'Spider', emoji: '🕷️', meaning: 'Controls the world by understanding and applying its rational laws.' },
+            { poles: ['Dominion', 'Revelation'], archetype: 'The Visionary King', animal: 'Phoenix', emoji: '🐦‍🔥', meaning: 'Imposes a new order based on a powerful, received vision.' },
+            { poles: ['Communion', 'Empathy'], archetype: 'The Healer', animal: 'Elephant', emoji: '🐘', meaning: 'Lives in profound, shared feeling; harmony through mutual care.' },
+            { poles: ['Communion', 'Principle'], archetype: 'The Guardian of the Grove', animal: 'Ent', emoji: '🌳', meaning: 'Embodies the ancient, unspoken laws that maintain harmony.' },
+            { poles: ['Dominion', 'Empathy'], archetype: 'The Benevolent Dictator', animal: 'Silverback Gorilla', emoji: '🦍', meaning: 'Wields power with compassion for those under their protection.' },
+            { poles: ['Dominion', 'Principle'], archetype: 'The Lawgiver', animal: 'Ram', emoji: '🐏', meaning: 'Establishes the clear, structuring rules by which all must live.' },
+            { poles: ['Communion', 'Surrender'], archetype: 'The Sea Turtle', animal: 'Sea Turtle', emoji: '🐢', meaning: 'Enduring wisdom through yielding; carries its home in quiet faith.' },
+            { poles: ['Communion', 'Striving'], archetype: 'The Salmon', animal: 'Salmon', emoji: '🐟', meaning: 'Swims upstream in shared purpose; struggle as devotion.' },
+            { poles: ['Dominion', 'Surrender'], archetype: 'The Crocodile', animal: 'Crocodile', emoji: '🐊', meaning: 'Waits beneath still waters; power through patience.' },
+            { poles: ['Dominion', 'Striving'], archetype: 'The Stallion', animal: 'Stallion', emoji: '🐎', meaning: 'Unrestrained drive; self as engine of will and conquest.' },
+            { poles: ['Communion', 'Mirror'], archetype: 'The Cat', animal: 'Cat', emoji: '🐈', meaning: 'Silent companion; empathy through observation.' },
+            { poles: ['Communion', 'Ground'], archetype: 'The Dog', animal: 'Dog', emoji: '🐕', meaning: 'Faithful servant; love expressed through tangible loyalty.' },
+            { poles: ['Dominion', 'Mirror'], archetype: 'The Kestrel', animal: 'Kestrel', emoji: '🦅', meaning: 'Sees before striking; contemplation as instrument of control.' },
+            { poles: ['Dominion', 'Ground'], archetype: 'The Boar', animal: 'Boar', emoji: '🐗', meaning: 'Earth-bound power; manifests will through direct, physical means.' },
+            { poles: ['Communion', 'Unity'], archetype: 'The Whale', animal: 'Whale', emoji: '🐋', meaning: 'Vast heart of the depths; all beings echo in its song.' },
+            { poles: ['Communion', 'Multiplicity'], archetype: 'The Ant', animal: 'Ant', emoji: '🐜', meaning: 'The collective worker; individuality dissolved into purpose.' },
+            { poles: ['Dominion', 'Unity'], archetype: 'The Sovereign Sun', animal: 'Sun Bear', emoji: '🐻', meaning: 'A single, central power from which all order radiates.' },
+            { poles: ['Dominion', 'Multiplicity'], archetype: 'The Weaver', animal: 'Spider', emoji: '🕷️', meaning: 'Weaver of systems; control through interconnected design.' },
+            { poles: ['Communion', 'Chaos'], archetype: 'The Dolphin', animal: 'Dolphin', emoji: '🐬', meaning: 'Plays within unpredictability; harmony through joy.' },
+            { poles: ['Communion', 'Order'], archetype: 'The Bee', animal: 'Bee', emoji: '🐝', meaning: 'Collective order through shared sweetness.' },
+            { poles: ['Dominion', 'Chaos'], archetype: 'The Dragon', animal: 'Dragon', emoji: '🐉', meaning: 'Wielder of primal energy; control through fear and awe.' },
+            { poles: ['Dominion', 'Order'], archetype: 'The Elephant Beetle', animal: 'Elephant Beetle', emoji: '🪲', meaning: 'Builder of fortresses; unyielding structural dominion.' },
+            { poles: ['Communion', 'Synthesis'], archetype: 'The Goose', animal: 'Goose', emoji: '🦢', meaning: 'Migrates in unity; insight through collective pattern.' },
+            { poles: ['Communion', 'Analysis'], archetype: 'The Parrot', animal: 'Parrot', emoji: '🦜', meaning: 'Reflects and repeats; learns harmony through imitation.' },
+            { poles: ['Dominion', 'Synthesis'], archetype: 'The Elephant Seal', animal: 'Elephant Seal', emoji: '🦭', meaning: 'Dominance through ritual gathering; merges hierarchy and cohesion.' },
+            { poles: ['Dominion', 'Analysis'], archetype: 'The Harrier', animal: 'Harrier', emoji: '🦅', meaning: 'Sharp logic and vision; control through precise observation.' },
+            { poles: ['Communion', 'Transcendence'], archetype: 'The Crane', animal: 'Crane', emoji: '🦩', meaning: 'Pilgrim of skies; faith in the unseen current.' },
+            { poles: ['Communion', 'Immanence'], archetype: 'The Cow', animal: 'Cow', emoji: '🐄', meaning: 'Sacred nurturer; divinity expressed through sustenance.' },
+            { poles: ['Dominion', 'Transcendence'], archetype: 'The Pegasus', animal: 'Pegasus', emoji: '🐎✨', meaning: 'Aspiring force; power as flight beyond limits.' },
+            { poles: ['Dominion', 'Immanence'], archetype: 'The Bear', animal: 'Bear', emoji: '🐻', meaning: 'Sovereign of ground and flesh; strength within embodiment.' },
+            { poles: ['Faith', 'Passion'], archetype: 'The Horse', animal: 'Horse', emoji: '🐎', meaning: 'Gallops toward the unseen; trusts the horizon with burning heart.' },
+            { poles: ['Faith', 'Serenity'], archetype: 'The Turtle Dove', animal: 'Turtle Dove', emoji: '🕊️', meaning: 'Calm believer; carries peace as proof of grace.' },
+            { poles: ['Doubt', 'Passion'], archetype: 'The Fox', animal: 'Fox', emoji: '🦊', meaning: 'Clever challenger; tests every flame for truth.' },
+            { poles: ['Doubt', 'Serenity'], archetype: 'The Heron (Blue)', animal: 'Heron (Blue)', emoji: '🪶', meaning: 'Still observer; skepticism as quiet understanding.' },
+            { poles: ['Faith', 'Temporal'], archetype: 'The Bee-eater', animal: 'Bee-eater', emoji: '🐦', meaning: 'Believes in seasonal renewal; devotion through cycles of work.' },
+            { poles: ['Faith', 'Eternal'], archetype: 'The Albatross', animal: 'Albatross', emoji: '🕊️', meaning: 'Devotion to timeless beauty; faith as reflection of perfection.' },
+            { poles: ['Doubt', 'Temporal'], archetype: 'The Jackal', animal: 'Jackal', emoji: '🐺', meaning: 'Wanders the shifting sands; survival as proof of reason.' },
+            { poles: ['Doubt', 'Eternal'], archetype: 'The Owl (Great Horned)', animal: 'Owl (Great Horned)', emoji: '🦉', meaning: 'Eternal questioner; wisdom born of unending night.' },
+            { poles: ['Faith', 'Reason'], archetype: 'The Mammoth', animal: 'Mammoth', emoji: '🐘', meaning: 'Trusts logic as sacred; carries rational faith with memory.' },
+            { poles: ['Faith', 'Revelation'], archetype: 'The Prophet', animal: 'Eagle', emoji: '🦅', meaning: 'Long-winged pilgrim; soars guided by unseen intuition.' },
+            { poles: ['Doubt', 'Reason'], archetype: 'The Rat', animal: 'Rat', emoji: '🐀', meaning: 'Unending analyzer; trust only in the tested.' },
+            { poles: ['Doubt', 'Revelation'], archetype: 'The Crow', animal: 'Crow', emoji: '🐦‍⬛', meaning: 'Trickster prophet; doubt transmuted into insight.' },
+            { poles: ['Faith', 'Empathy'], archetype: 'The Otter', animal: 'Otter', emoji: '🦦', meaning: 'Compassionate believer; faith expressed in service.' },
+            { poles: ['Faith', 'Principle'], archetype: 'The Ram', animal: 'Ram', emoji: '🐏', meaning: 'Devoted to law; certainty through steadfast rule.' },
+            { poles: ['Doubt', 'Empathy'], archetype: 'The Cat (Stray)', animal: 'Cat (Stray)', emoji: '🐈', meaning: 'Curious comforter; questions gently, never imposing belief.' },
+            { poles: ['Doubt', 'Principle'], archetype: 'The Condor', animal: 'Condor', emoji: '🦅', meaning: 'Sharp justice; rational doubt forged into clarity.' },
+            { poles: ['Faith', 'Surrender'], archetype: 'The Lamb', animal: 'Lamb', emoji: '🐑', meaning: 'Trust in destiny; strength through yielding.' },
+            { poles: ['Faith', 'Striving'], archetype: 'The Salmon (King)', animal: 'Salmon (King)', emoji: '🐟', meaning: 'Determined pilgrim; faith through exertion.' },
+            { poles: ['Doubt', 'Surrender'], archetype: 'The Chameleon', animal: 'Chameleon', emoji: '🦎', meaning: 'Adapts by release; survives by questioning identity.' },
+            { poles: ['Doubt', 'Striving'], archetype: 'The Jackrabbit', animal: 'Jackrabbit', emoji: '🐇', meaning: 'Driven skeptic; runs from ignorance toward discovery.' },
+            { poles: ['Faith', 'Mirror'], archetype: 'The Swan', animal: 'Swan', emoji: '🦢', meaning: 'Contemplates grace; reflection as worship.' },
+            { poles: ['Faith', 'Ground'], archetype: 'The Camel', animal: 'Camel', emoji: '🐫', meaning: 'Enduring trust; carries belief across barren lands.' },
+            { poles: ['Doubt', 'Mirror'], archetype: 'The Octopus', animal: 'Octopus', emoji: '🐙', meaning: 'Introspective skeptic; intelligence turned inward.' },
+            { poles: ['Doubt', 'Ground'], archetype: 'The Mole', animal: 'Mole', emoji: '🦡', meaning: 'Feels truth through touch; unseen investigator of depth.' },
+            { poles: ['Faith', 'Unity'], archetype: 'The Whale (Humpback)', animal: 'Whale (Humpback)', emoji: '🐋', meaning: 'Believes all voices are one song.' },
+            { poles: ['Faith', 'Multiplicity'], archetype: 'The Butterfly', animal: 'Butterfly', emoji: '🦋', meaning: 'Trusts transformation; each form sacred.' },
+            { poles: ['Doubt', 'Unity'], archetype: 'The Raven', animal: 'Raven', emoji: '🦅‍⬛', meaning: 'Tests the monolith; questions the One to reveal the All.' },
+            { poles: ['Doubt', 'Multiplicity'], archetype: 'The Monkey', animal: 'Monkey', emoji: '🐒', meaning: 'Joyous skeptic; truth as endless variety.' },
+            { poles: ['Faith', 'Chaos'], archetype: 'The Dolphin (Spotted)', animal: 'Dolphin (Spotted)', emoji: '🐬', meaning: 'Plays in divine disorder; laughter as devotion.' },
+            { poles: ['Faith', 'Order'], archetype: 'The Bee (Honey)', animal: 'Bee (Honey)', emoji: '🐝', meaning: 'Structured worship; faith expressed in precision.' },
+            { poles: ['Doubt', 'Chaos'], archetype: 'The Coyote', animal: 'Coyote', emoji: '🐺', meaning: 'Trickster reasoner; chaos as teacher.' },
+            { poles: ['Doubt', 'Order'], archetype: 'The Ant (Leafcutter)', animal: 'Ant (Leafcutter)', emoji: '🐜', meaning: 'Builder of empirical truth; order through skepticism.' },
+            { poles: ['Faith', 'Synthesis'], archetype: 'The Porpoise', animal: 'Porpoise', emoji: '🐬', meaning: 'Connects through trust; faith unites insight.' },
+            { poles: ['Faith', 'Analysis'], archetype: 'The Bee-fly', animal: 'Bee-fly', emoji: '🪰', meaning: 'Gathers fragments; order through devotion.' },
+            { poles: ['Doubt', 'Synthesis'], archetype: 'The Magpie (Eurasian)', animal: 'Magpie (Eurasian)', emoji: '🐦', meaning: 'Collects contradictions; beauty in stolen ideas.' },
+            { poles: ['Doubt', 'Analysis'], archetype: 'The Owl (Snowy)', animal: 'Owl (Snowy)', emoji: '🦉', meaning: 'Dissects night’s silence; reason within mystery.' },
+            { poles: ['Faith', 'Transcendence'], archetype: 'The Crane (Sandhill)', animal: 'Crane (Sandhill)', emoji: '🦩', meaning: 'Belief beyond sky; steps in both worlds.' },
+            { poles: ['Faith', 'Immanence'], archetype: 'The Cow (Zebu)', animal: 'Cow (Zebu)', emoji: '🐄', meaning: 'Trust in earth’s divinity; sacred sustainer.' },
+            { poles: ['Doubt', 'Transcendence'], archetype: 'The Vulture', animal: 'Vulture', emoji: '🦅', meaning: 'Finds purity in decay; skepticism as ascension.' },
+            { poles: ['Doubt', 'Immanence'], archetype: 'The Pig', animal: 'Pig', emoji: '🐖', meaning: 'Finds truth in the soil; grounded empiricist.' },
+            { poles: ['Passion', 'Temporal'], archetype: 'The Horsefly', animal: 'Horsefly', emoji: '🪰', meaning: 'Burns briefly but fully; living wholly in the moment.' },
+            { poles: ['Passion', 'Eternal'], archetype: 'The Phoenix (Cinnabar)', animal: 'Phoenix (Cinnabar)', emoji: '🐦‍🔥', meaning: 'Fire renewed through ages; passion reborn beyond time.' },
+            { poles: ['Serenity', 'Temporal'], archetype: 'The Land Tortoise', animal: 'Land Tortoise', emoji: '🐢', meaning: 'Moves slow through the seasons; peace through persistence.' },
+            { poles: ['Serenity', 'Eternal'], archetype: 'The Crane (Red-crowned)', animal: 'Crane (Red-crowned)', emoji: '🦩', meaning: 'Stillness across lifetimes; calm transcending all change.' },
+            { poles: ['Passion', 'Reason'], archetype: 'The Jackal (Black-backed)', animal: 'Jackal (Black-backed)', emoji: '🐺', meaning: 'Follows instinct through intellect; fire disciplined by logic.' },
+            { poles: ['Passion', 'Revelation'], archetype: 'The Stag', animal: 'Stag', emoji: '🦌', meaning: 'Sees divine patterns in pursuit; vision through desire.' },
+            { poles: ['Serenity', 'Reason'], archetype: 'The Owl (Barn)', animal: 'Owl (Barn)', emoji: '🦉', meaning: 'Cool understanding; intellect as still water.' },
+            { poles: ['Serenity', 'Revelation'], archetype: 'The Whale (Blue)', animal: 'Whale (Blue)', emoji: '🐋', meaning: 'Deep intuition; the quiet current of divine knowing.' },
+            { poles: ['Passion', 'Empathy'], archetype: 'The Dog (Mastiff)', animal: 'Dog (Mastiff)', emoji: '🐕', meaning: 'Loves fiercely; emotional loyalty as moral compass.' },
+            { poles: ['Passion', 'Principle'], archetype: 'The Ram (Bighorn)', animal: 'Ram (Bighorn)', emoji: '🐏', meaning: 'Zeal for structure; burns to uphold the law.' },
+            { poles: ['Serenity', 'Empathy'], archetype: 'The Seal', animal: 'Seal', emoji: '🦭', meaning: 'Gentle nurturer; harmony through affection.' },
+            { poles: ['Serenity', 'Principle'], archetype: 'The Elephant (African)', animal: 'Elephant (African)', emoji: '🐘', meaning: 'Calm guardian; peace through order and dignity.' },
+            { poles: ['Passion', 'Surrender'], archetype: 'The Moth', animal: 'Moth', emoji: '🦋', meaning: 'Drawn to the light; surrendering to transformation.' },
+            { poles: ['Passion', 'Striving'], archetype: 'The Tiger (Siberian)', animal: 'Tiger (Siberian)', emoji: '🐅', meaning: 'Unyielding drive; will aflame.' },
+            { poles: ['Serenity', 'Surrender'], archetype: 'The Swan (Mute)', animal: 'Swan (Mute)', emoji: '🦢', meaning: 'Tranquil acceptance; grace within flow.' },
+            { poles: ['Serenity', 'Striving'], archetype: 'The Tern', animal: 'Tern', emoji: '🕊️', meaning: 'Gentle motion; balance between flight and stillness.' },
+            { poles: ['Passion', 'Mirror'], archetype: 'The Cat (Panther)', animal: 'Cat (Panther)', emoji: '🐈', meaning: 'Passion inwardly contained; the fire behind the gaze.' },
+            { poles: ['Passion', 'Ground'], archetype: 'The Bull (Aurochs)', animal: 'Bull (Aurochs)', emoji: '🐂', meaning: 'Vital force embodied; creation through raw energy.' },
+            { poles: ['Serenity', 'Mirror'], archetype: 'The Jellyfish', animal: 'Jellyfish', emoji: '🪼', meaning: 'Transparent being; still reflection drifting through life.' },
+            { poles: ['Serenity', 'Ground'], archetype: 'The Armadillo', animal: 'Armadillo', emoji: '🐾', meaning: 'Peace anchored in matter; slow rhythm of truth.' },
+            { poles: ['Passion', 'Unity'], archetype: 'The Lion (White)', animal: 'Lion (White)', emoji: '🦁', meaning: 'One heart blazing; leads others by shared fire.' },
+            { poles: ['Passion', 'Multiplicity'], archetype: 'The Monkey (Capuchin)', animal: 'Monkey (Capuchin)', emoji: '🐒', meaning: 'Infinite play; many sparks of creation.' },
+            { poles: ['Serenity', 'Unity'], archetype: 'The Dove (Ring-necked)', animal: 'Dove (Ring-necked)', emoji: '🕊️', meaning: 'Peace of one spirit; calm beyond division.' },
+            { poles: ['Serenity', 'Multiplicity'], archetype: 'The Octopus (Giant Pacific)', animal: 'Octopus', emoji: '🐙', meaning: 'Many arms, one calm center; unity through adaptation.' },
+            { poles: ['Passion', 'Chaos'], archetype: 'The Dragonfly', animal: 'Dragonfly', emoji: '🦟', meaning: 'Moves in flashes; creativity through erratic motion.' },
+            { poles: ['Passion', 'Order'], archetype: 'The Ant (Army)', animal: 'Ant (Army)', emoji: '🐜', meaning: 'Channelled fire; devotion to structured work.' },
+            { poles: ['Serenity', 'Chaos'], archetype: 'The Jellyfish (Moon)', animal: 'Jellyfish (Moon)', emoji: '🪼', meaning: 'Drifts in cosmic currents; peace within unpredictability.' },
+            { poles: ['Serenity', 'Order'], archetype: 'The Crane (Whooping)', animal: 'Crane (Whooping)', emoji: '🦩', meaning: 'Stillness arranged in beauty; order as grace.' },
+            { poles: ['Passion', 'Synthesis'], archetype: 'The Bee (Bumble)', animal: 'Bee (Bumble)', emoji: '🐝', meaning: 'Combines intensity and harmony; passion for unity.' },
+            { poles: ['Passion', 'Analysis'], archetype: 'The Fox (Red)', animal: 'Fox (Red)', emoji: '🦊', meaning: 'Sharp vitality; curiosity that dissects desire.' },
+            { poles: ['Serenity', 'Synthesis'], archetype: 'The Dolphin (Bottlenose)', animal: 'Dolphin (Bottlenose)', emoji: '🐬', meaning: 'Calm connector; joy as gentle harmony.' },
+            { poles: ['Serenity', 'Analysis'], archetype: 'The Crane Fly', animal: 'Crane Fly', emoji: '🦟', meaning: 'Fragile observer; poised within detailed balance.' },
+            { poles: ['Passion', 'Transcendence'], archetype: 'The Phoenix (Golden)', animal: 'Phoenix (Golden)', emoji: '🐦‍🔥', meaning: 'Passion purified into spiritual ascent.' },
+            { poles: ['Passion', 'Immanence'], archetype: 'The Stallion (Arabian)', animal: 'Stallion (Arabian)', emoji: '🐎', meaning: 'Grounded drive; divinity through motion.' },
+            { poles: ['Serenity', 'Transcendence'], archetype: 'The Crane (White-naped)', animal: 'Crane (White-naped)', emoji: '🦩', meaning: 'Still soul lifting skyward; peace as ascension.' },
+            { poles: ['Serenity', 'Immanence'], archetype: 'The Cow (Highland)', animal: 'Cow (Highland)', emoji: '🐄', meaning: 'Calm presence; holiness in the ordinary.' },
+            { poles: ['Temporal', 'Reason'], archetype: 'The Beaver (North American)', animal: 'Beaver', emoji: '🦫', meaning: 'Builder of worlds in time; reason shaping cycles.' },
+            { poles: ['Temporal', 'Revelation'], archetype: 'The Cicada', animal: 'Cicada', emoji: '🦗', meaning: 'Hidden wisdom awakening in appointed seasons.' },
+            { poles: ['Eternal', 'Reason'], archetype: 'The Tortoise', animal: 'Tortoise', emoji: '🐢', meaning: 'Logic enduring through ages; time’s patient mathematician.' },
+            { poles: ['Eternal', 'Revelation'], archetype: 'The Simurgh', animal: 'Simurgh', emoji: '🦅✨', meaning: 'Eternal insight; vision beyond chronology.' },
+            { poles: ['Temporal', 'Empathy'], archetype: 'The Deer (Fallow)', animal: 'Deer (Fallow)', emoji: '🦌', meaning: 'Sensitivity within seasons; compassion responding to time’s touch.' },
+            { poles: ['Temporal', 'Principle'], archetype: 'The Termite', animal: 'Termite', emoji: '🐜', meaning: 'Impermanent builder; duty within decay.' },
+            { poles: ['Eternal', 'Empathy'], archetype: 'The Elephant (Asian)', animal: 'Elephant (Asian)', emoji: '🐘', meaning: 'Memory as love; timeless bond between souls.' },
+            { poles: ['Eternal', 'Principle'], archetype: 'The Eagle (Bald)', animal: 'Eagle (Bald)', emoji: '🦅', meaning: 'Law of the sky; divine order never aging.' },
+            { poles: ['Temporal', 'Surrender'], archetype: 'The Mayfly', animal: 'Mayfly', emoji: '🪰', meaning: 'Lives fully, dies quickly; beauty in brief being.' },
+            { poles: ['Temporal', 'Striving'], archetype: 'The Salmon (Sockeye)', animal: 'Salmon (Sockeye)', emoji: '🐟', meaning: 'Struggles upstream; time as pilgrimage.' },
+            { poles: ['Eternal', 'Surrender'], archetype: 'The Manatee', animal: 'Manatee', emoji: '🐋', meaning: 'Drift of eternity; vast patience of being.' },
+            { poles: ['Eternal', 'Striving'], archetype: 'The Eagle Ray', animal: 'Eagle Ray', emoji: '🩵', meaning: 'Soaring through depth; endless ascent in still waters.' },
+            { poles: ['Temporal', 'Mirror'], archetype: 'The Dragonfly (Blue)', animal: 'Dragonfly (Blue)', emoji: '🦟', meaning: 'Reflects fleeting beauty; ephemeral insight.' },
+            { poles: ['Temporal', 'Ground'], archetype: 'The Badger', animal: 'Badger', emoji: '🐾', meaning: 'Toils unseen in cycles; temporality rooted in soil.' },
+            { poles: ['Eternal', 'Mirror'], archetype: 'The Swan (Trumpeter)', animal: 'Swan (Trumpeter)', emoji: '🦢', meaning: 'Reflection that never fades; timeless grace.' },
+            { poles: ['Eternal', 'Ground'], archetype: 'The Stone Tortoise', animal: 'Stone Tortoise', emoji: '🐢', meaning: 'Symbol of Earth’s endurance; matter immortalized.' },
+            { poles: ['Temporal', 'Unity'], archetype: 'The Termite Hive', animal: 'Termite Hive', emoji: '🐜', meaning: 'Many working as one; unity through rhythm in time.' },
+            { poles: ['Temporal', 'Multiplicity'], archetype: 'The Coral Reef', animal: 'Coral Reef', emoji: '🪸', meaning: 'Endless forms emerging; life flourishing in temporality.' },
+            { poles: ['Eternal', 'Unity'], archetype: 'The Ouroboros Serpent', animal: 'Ouroboros Serpent', emoji: '🐍', meaning: 'Self-devouring eternity; the timeless cycle complete.' },
+            { poles: ['Eternal', 'Multiplicity'], archetype: 'The Starling Murmuration', animal: 'Starling Murmuration', emoji: '🕊️', meaning: 'Infinite individuals moving as one living wave.' },
+            { poles: ['Temporal', 'Chaos'], archetype: 'The Wandering Bloom', animal: 'Slime Mold', emoji: '🦠', meaning: 'Thrives in the unpredictable unfolding of events.' },
+            { poles: ['Temporal', 'Order'], archetype: 'The Chronicler', animal: 'Beaver', emoji: '🦫', meaning: 'Builds a legacy through steady, disciplined, sequential work.' },
+            { poles: ['Eternal', 'Chaos'], archetype: 'The Trickster God', animal: 'Coyote', emoji: '🐺', meaning: 'Embodies a timeless principle of disruption and creative chaos.' },
+            { poles: ['Eternal', 'Order'], archetype: 'The Celestial Clock', animal: 'Constellations', emoji: '✨', meaning: 'Represents the perfect, unchanging, and cyclical order of the cosmos.' },
+            { poles: ['Temporal', 'Synthesis'], archetype: 'The Historian', animal: 'Elephant', emoji: '🐘', meaning: 'Understands the present by connecting the threads of the past.' },
+            { poles: ['Temporal', 'Analysis'], archetype: 'The Moment\'s Strategist', animal: 'Fox', emoji: '🦊', meaning: 'Makes decisions by dissecting the evolving details of the now.' },
+            { poles: ['Eternal', 'Synthesis'], archetype: 'The Symbolist', animal: 'Swan', emoji: '🦢', meaning: 'Connects all things through their timeless, archetypal meanings.' },
+            { poles: ['Eternal', 'Analysis'], archetype: 'The Geometer', animal: 'Nautilus', emoji: '🐚', meaning: 'Understands timeless truth by dissecting its perfect, underlying forms.' },
+            { poles: ['Temporal', 'Transcendence'], archetype: 'The Pilgrim\'s Path', animal: 'Salmon Run', emoji: '🐟', meaning: 'The journey through time is a process of ascending to a higher purpose.' },
+            { poles: ['Temporal', 'Immanence'], archetype: 'The Season\'s Cycle', animal: 'Deciduous Tree', emoji: '🌳', meaning: 'Finds the sacred in the unfolding, physical process of change.' },
+            { poles: ['Eternal', 'Transcendence'], archetype: 'The Great Stillness', animal: 'Mountain Peak', emoji: '🏔️', meaning: 'A timeless symbol of unchanging reality, pointing beyond the world.' },
+            { poles: ['Eternal', 'Immanence'], archetype: 'The Living Legacy', animal: 'Redwood Forest', emoji: '🌲', meaning: 'Embodies a timeless principle through enduring, physical presence.' },
+            { poles: ['Reason', 'Empathy'], archetype: 'The Judge', animal: 'Bonobo', emoji: '🐒', meaning: 'Balances logic with compassion; seeks the most humane rational outcome.' },
+            { poles: ['Reason', 'Principle'], archetype: 'The Architect', animal: 'Spider (Orb Weaver)', emoji: '🕷️', meaning: 'Builds flawless systems based on impersonal, rational laws.' },
+            { poles: ['Revelation', 'Empathy'], archetype: 'The Confessor', animal: 'Elephant', emoji: '🐘', meaning: 'Receives intuitive truth through deep, shared feeling and memory.' },
+            { poles: ['Revelation', 'Principle'], archetype: 'The Oracle', animal: 'Serpent', emoji: '🐍', meaning: 'Channels transcendent law; insight that forms a sacred rule.' },
+            { poles: ['Reason', 'Surrender'], archetype: 'The Philosopher', animal: 'Tortoise', emoji: '🐢', meaning: 'Yields to the slow, methodical unfolding of logical truth.' },
+            { poles: ['Reason', 'Striving'], archetype: 'The Inventor', animal: 'Beaver', emoji: '🦫', meaning: 'Imposes rational design upon the world through determined effort.' },
+            { poles: ['Revelation', 'Surrender'], archetype: 'The Visionary', animal: 'Moth', emoji: '🦋', meaning: 'Is drawn to an intuitive flame; allows insight to guide its path.' },
+            { poles: ['Revelation', 'Striving'], archetype: 'The Prophet', animal: 'Eagle', emoji: '🦅', meaning: 'Pursues a divine vision with relentless, soaring focus.' },
+            { poles: ['Reason', 'Mirror'], archetype: 'The Analyst', animal: 'Owl', emoji: '🦉', meaning: 'Achieves understanding through detached, logical observation.' },
+            { poles: ['Reason', 'Ground'], archetype: 'The Engineer', animal: 'Ant', emoji: '🐜', meaning: 'Manifests rational plans into tangible, physical structures.' },
+            { poles: ['Revelation', 'Mirror'], archetype: 'The Seer', animal: 'Cat', emoji: '🐈', meaning: 'Reflects the unseen; truth perceived in quiet contemplation.' },
+            { poles: ['Revelation', 'Ground'], archetype: 'The Artist', animal: 'Bowerbird', emoji: '🐦', meaning: 'Externalizes inner vision; builds tangible expressions of insight.' },
+            { poles: ['Reason', 'Unity'], archetype: 'The Mathematician', animal: 'Nautilus', emoji: '🐚', meaning: 'Logically deciphers the single, elegant pattern behind all things.' },
+            { poles: ['Reason', 'Multiplicity'], archetype: 'The Taxonomist', animal: 'Bee', emoji: '🐝', meaning: 'Creates order by rationally categorizing infinite variations.' },
+            { poles: ['Revelation', 'Unity'], archetype: 'The Mystic', animal: 'Whale', emoji: '🐋', meaning: 'Perceives the Oneness of all things in a flash of insight.' },
+            { poles: ['Revelation', 'Multiplicity'], archetype: 'The Storyteller', animal: 'Crow', emoji: '🐦‍⬛', meaning: 'Sees a unique, sacred story in every disparate person and thing.' },
+            { poles: ['Reason', 'Chaos'], archetype: 'The Improviser', animal: 'Fox', emoji: '🦊', meaning: 'Applies logic fluidly to navigate unpredictable situations.' },
+            { poles: ['Reason', 'Order'], archetype: 'The Lawmaker', animal: 'Elephant Seal', emoji: '🦭', meaning: 'Establishes meticulous, rational systems to structure the world.' },
+            { poles: ['Revelation', 'Chaos'], archetype: 'The Muse', animal: 'Dolphin', emoji: '🐬', meaning: 'Thrives on spontaneous inspiration; insight born from play.' },
+            { poles: ['Revelation', 'Order'], archetype: 'The Ritualist', animal: 'Crane', emoji: '🦩', meaning: 'Channels divine insight through structured, repeatable forms.' },
+            { poles: ['Reason', 'Synthesis'], archetype: 'The Theorist', animal: 'Octopus', emoji: '🐙', meaning: 'Logically connects disparate facts into a coherent, overarching model.' },
+            { poles: ['Reason', 'Analysis'], archetype: 'The Scientist', animal: 'Rat', emoji: '🐀', meaning: 'Methodically dissects the world to find empirical, logical proof.' },
+            { poles: ['Revelation', 'Synthesis'], archetype: 'The Alchemist', animal: 'Phoenix', emoji: '🐦‍🔥', meaning: 'Intuitively combines unlike elements to create a transcendent whole.' },
+            { poles: ['Revelation', 'Analysis'], archetype: 'The Diviner', animal: 'Vulture', emoji: '🦅', meaning: 'Gains profound insight by focusing on a single, telling detail.' },
+            { poles: ['Reason', 'Transcendence'], archetype: 'The Astronomer', animal: 'Kestrel', emoji: '🦅', meaning: 'Uses logic to understand abstract, higher principles and realms.' },
+            { poles: ['Reason', 'Immanence'], archetype: 'The Biologist', animal: 'Mole', emoji: '🦡', meaning: 'Applies reason to understand the intricate mechanics of the material world.' },
+            { poles: ['Revelation', 'Transcendence'], archetype: 'The Ascetic', animal: 'Albatross', emoji: '🕊️', meaning: 'Receives visions of the beyond by detaching from the worldly.' },
+            { poles: ['Revelation', 'Immanence'], archetype: 'The Shaman', animal: 'Bear', emoji: '🐻', meaning: 'Finds divine revelation deep within the earth and the flesh.' },
+            { poles: ['Empathy', 'Surrender'], archetype: 'The Healer', animal: 'Deer', emoji: '🦌', meaning: 'Aligns with the flow of another\'s pain to gently guide them to peace.' },
+            { poles: ['Empathy', 'Striving'], archetype: 'The Advocate', animal: 'Wolf', emoji: '🐺', meaning: 'Fights relentlessly out of compassion for the suffering of their pack.' },
+            { poles: ['Principle', 'Surrender'], archetype: 'The Stoic', animal: 'Camel', emoji: '🐫', meaning: 'Yields to destiny by adhering to an unbreakable internal code.' },
+            { poles: ['Principle', 'Striving'], archetype: 'The Crusader', animal: 'Ram', emoji: '🐏', meaning: 'Imposes a moral or divine law upon the world through sheer effort.' },
+            { poles: ['Empathy', 'Mirror'], archetype: 'The Counselor', animal: 'Swan', emoji: '🦢', meaning: 'Understands others by reflecting their emotional state without judgment.' },
+            { poles: ['Empathy', 'Ground'], archetype: 'The Guardian', animal: 'Dog', emoji: '🐕', meaning: 'Expresses compassion through tangible acts of service and protection.' },
+            { poles: ['Principle', 'Mirror'], archetype: 'The Monk', animal: 'Heron', emoji: '🪶', meaning: 'Contemplates a universal law to achieve internal moral clarity.' },
+            { poles: ['Principle', 'Ground'], archetype: 'The Builder', animal: 'Termite', emoji: '🐜', meaning: 'Manifests an ordered system through dutiful, structured action.' },
+            { poles: ['Empathy', 'Unity'], archetype: 'The Bodhisattva', animal: 'Whale', emoji: '🐋', meaning: 'Feels the interconnected suffering of all beings as one.' },
+            { poles: ['Empathy', 'Multiplicity'], archetype: 'The Caretaker', animal: 'Otter', emoji: '🦦', meaning: 'Tends to the unique, individual needs of every member of the group.' },
+            { poles: ['Principle', 'Unity'], archetype: 'The Unifier', animal: 'Lion', emoji: '🦁', meaning: 'Upholds the single law that binds the entire kingdom together.' },
+            { poles: ['Principle', 'Multiplicity'], archetype: 'The Administrator', animal: 'Ant Queen', emoji: '🐜', meaning: 'Applies a complex set of rules to manage a diverse, thriving society.' },
+            { poles: ['Empathy', 'Chaos'], archetype: 'The Mediator', animal: 'Dolphin', emoji: '🐬', meaning: 'Navigates unpredictable social dynamics with compassion and flexibility.' },
+            { poles: ['Empathy', 'Order'], archetype: 'The Nurturer', animal: 'Cow', emoji: '🐄', meaning: 'Provides care and comfort through reliable, structured routines.' },
+            { poles: ['Principle', 'Chaos'], archetype: 'The Trickster-Judge', animal: 'Coyote', emoji: '🐺', meaning: 'Upholds a higher law by playfully disrupting rigid, unjust systems.' },
+            { poles: ['Principle', 'Order'], archetype: 'The Justicar', animal: 'Eagle (Bald)', emoji: '🦅', meaning: 'Enforces a clear, unwavering code to maintain structure and harmony.' },
+            { poles: ['Empathy', 'Synthesis'], archetype: 'The Diplomat', animal: 'Goose', emoji: '🦢', meaning: 'Connects the feelings of disparate groups to create a common understanding.' },
+            { poles: ['Empathy', 'Analysis'], archetype: 'The Diagnostician', animal: 'Chimpanzee', emoji: '🐒', meaning: 'Dissects a specific situation to understand the root cause of suffering.' },
+            { poles: ['Principle', 'Synthesis'], archetype: 'The Theologian', animal: 'Owl (Great Horned)', emoji: '🦉', meaning: 'Integrates various laws and stories into one coherent, overarching doctrine.' },
+            { poles: ['Principle', 'Analysis'], archetype: 'The Lawyer', animal: 'Harrier', emoji: '🦅', meaning: 'Deconstructs situations to apply a precise, specific rule or law.' },
+            { poles: ['Empathy', 'Transcendence'], archetype: 'The Saint', animal: 'Dove', emoji: '🕊️', meaning: 'Feels compassion for the spiritual suffering of souls seeking the beyond.' },
+            { poles: ['Empathy', 'Immanence'], archetype: 'The Midwife', animal: 'Pig', emoji: '🐖', meaning: 'Tends to the raw, messy, embodied experience of others with deep care.' },
+            { poles: ['Principle', 'Transcendence'], archetype: 'The Hierophant', animal: 'Pegasus', emoji: '🐎✨', meaning: 'Upholds the sacred laws that connect the material world to the divine.' },
+            { poles: ['Principle', 'Immanence'], archetype: 'The Farmer', animal: 'Bull', emoji: '🐂', meaning: 'Works with the tangible laws of nature to create abundance and structure.' },
+            { poles: ['Surrender', 'Mirror'], archetype: 'The Mystic Poet', animal: 'Jellyfish', emoji: '🪼', meaning: 'Observes the world and allows its essence to flow through them.' },
+            { poles: ['Surrender', 'Ground'], archetype: 'The Gardener', animal: 'Earthworm', emoji: '🪱', meaning: 'Achieves results by yielding to natural processes and taking small actions.' },
+            { poles: ['Striving', 'Mirror'], archetype: 'The Grand Strategist', animal: 'Spider', emoji: '🕷️', meaning: 'Achieves goals by first observing and planning the entire field of action.' },
+            { poles: ['Striving', 'Ground'], archetype: 'The Pioneer', animal: 'Stallion', emoji: '🐎', meaning: 'Manifests will by charging forward and physically breaking new ground.' },
+            { poles: ['Surrender', 'Unity'], archetype: 'The Taoist Sage', animal: 'Manatee', emoji: '🐋', meaning: 'Finds the One by letting go of all effort and distinction.' },
+            { poles: ['Surrender', 'Multiplicity'], archetype: 'The Wanderer', animal: 'Butterfly', emoji: '🦋', meaning: 'Yields to the winds, finding beauty in each unique flower it lands upon.' },
+            { poles: ['Striving', 'Unity'], archetype: 'The Conductor', animal: 'Lead Wolf', emoji: '🐺', meaning: 'Drives the collective will toward a single purpose; imposes harmony.' },
+            { poles: ['Striving', 'Multiplicity'], archetype: 'The Entrepreneur', animal: 'Monkey', emoji: '🐒', meaning: 'Energetically pursues countless different opportunities and ideas.' },
+            { poles: ['Surrender', 'Chaos'], archetype: 'The Drifter', animal: 'Tumbleweed', emoji: '🌵', meaning: 'Finds freedom by yielding to the unpredictable forces of nature.' },
+            { poles: ['Surrender', 'Order'], archetype: 'The Apprentice', animal: 'Salmon', emoji: '🐟', meaning: 'Achieves mastery by submitting to a rigorous, disciplined system.' },
+            { poles: ['Striving', 'Chaos'], archetype: 'The Revolutionary', animal: 'Wildfire', emoji: '🔥', meaning: 'Imposes a new reality by unleashing uncontrollable, creative destruction.' },
+            { poles: ['Striving', 'Order'], archetype: 'The Empire Builder', animal: 'Coral Polyp', emoji: '🪸', meaning: 'Relentlessly executes a simple, orderly plan to build a vast structure.' },
+            { poles: ['Surrender', 'Synthesis'], archetype: 'The Dreamer', animal: 'Swan', emoji: '🦢', meaning: 'Allows disparate ideas to connect naturally in a state of relaxed awareness.' },
+            { poles: ['Surrender', 'Analysis'], archetype: 'The Watcher', animal: 'Meerkat', emoji: '🦦', meaning: 'Patiently observes and waits for the critical detail to reveal itself.' },
+            { poles: ['Striving', 'Synthesis'], archetype: 'The Innovator', animal: 'Magpie', emoji: '🐦', meaning: 'Actively seeks out and combines disparate elements into something new.' },
+            { poles: ['Striving', 'Analysis'], archetype: 'The Hunter', animal: 'Tiger', emoji: '🐅', meaning: 'Relentlessly tracks and breaks down the movements of its goal.' },
+            { poles: ['Surrender', 'Transcendence'], archetype: 'The Pilgrim', animal: 'Sea Turtle', emoji: '🐢', meaning: 'Lets go of the material world to follow a current toward the divine.' },
+            { poles: ['Surrender', 'Immanence'], archetype: 'The Homesteader', animal: 'Badger', emoji: '🐾', meaning: 'Finds peace by yielding to the rhythms of the land and the body.' },
+            { poles: ['Striving', 'Transcendence'], archetype: 'The Aspirant', animal: 'Mountain Goat', emoji: '🐐', meaning: 'Climbs relentlessly to overcome the physical world and reach the summit.' },
+            { poles: ['Striving', 'Immanence'], archetype: 'The Athlete', animal: 'Cheetah', emoji: '🐆', meaning: 'Pushes the physical body to its absolute limit to master the material plane.' },
+            { poles: ['Mirror', 'Unity'], archetype: 'The Contemplative', animal: 'Owl (Snowy)', emoji: '🦉', meaning: 'Silently observes the world to perceive the Oneness behind it all.' },
+            { poles: ['Mirror', 'Multiplicity'], archetype: 'The Naturalist', animal: 'Parrot', emoji: '🦜', meaning: 'Appreciates the world by observing and cataloging its infinite variety.' },
+            { poles: ['Ground', 'Unity'], archetype: 'The Founder', animal: 'Alpha Wolf', emoji: '🐺', meaning: 'Builds a unified pack through decisive action and presence.' },
+            { poles: ['Ground', 'Multiplicity'], archetype: 'The Progenitor', animal: 'Rabbit', emoji: '🐇', meaning: 'Manifests countless new and unique forms into the world.' },
+            { poles: ['Mirror', 'Chaos'], archetype: 'The Observer of Storms', animal: 'Albatross', emoji: '🕊️', meaning: 'Watches the unpredictable flow of energy without being disturbed by it.' },
+            { poles: ['Mirror', 'Order'], archetype: 'The Cartographer', animal: 'Condor', emoji: '🦅', meaning: 'Creates structure by observing the world from a distance and mapping it.' },
+            { poles: ['Ground', 'Chaos'], archetype: 'The Berserker', animal: 'Boar', emoji: '🐗', meaning: 'Creates new paths by physically crashing through existing structures.' },
+            { poles: ['Ground', 'Order'], archetype: 'The Mason', animal: 'Beaver', emoji: '🦫', meaning: 'Builds enduring structures through disciplined, physical labor.' },
+            { poles: ['Mirror', 'Synthesis'], archetype: 'The Pattern-Seeker', animal: 'Octopus', emoji: '🐙', meaning: 'Quietly observes to find the hidden connections between things.' },
+            { poles: ['Mirror', 'Analysis'], archetype: 'The Critic', animal: 'Crow', emoji: '🐦‍⬛', meaning: 'Understands things by observing them and pulling them apart intellectually.' },
+            { poles: ['Ground', 'Synthesis'], archetype: 'The Collaborator', animal: 'Honeybee', emoji: '🐝', meaning: 'Builds a greater whole by physically combining its work with others.' },
+            { poles: ['Ground', 'Analysis'], archetype: 'The Mechanic', animal: 'Raccoon', emoji: '🦝', meaning: 'Understands how things work by taking them apart with its hands.' },
+            { poles: ['Mirror', 'Transcendence'], archetype: 'The Astrologer', animal: 'Barn Owl', emoji: '🦉', meaning: 'Observes the material world to divine patterns of a higher reality.' },
+            { poles: ['Mirror', 'Immanence'], archetype: 'The Documentarian', animal: 'Heron (Blue)', emoji: '🪶', meaning: 'Finds meaning by quietly and faithfully observing the world as it is.' },
+            { poles: ['Ground', 'Transcendence'], archetype: 'The Temple Builder', animal: 'Elephant Beetle', emoji: '🪲', meaning: 'Creates physical structures that point toward a higher, unseen reality.' },
+            { poles: ['Ground', 'Immanence'], archetype: 'The Artisan', animal: 'Badger', emoji: '🐾', meaning: 'Finds fulfillment in the physical craft of making things from the earth.' },
+            { poles: ['Unity', 'Chaos'], archetype: 'The Swarm', animal: 'Starling Murmuration', emoji: '🕊️', meaning: 'A single, unpredictable entity composed of countless spontaneous parts.' },
+            { poles: ['Unity', 'Order'], archetype: 'The Legion', animal: 'Army Ant', emoji: '🐜', meaning: 'A single entity that achieves its goals through perfect, disciplined structure.' },
+            { poles: ['Multiplicity', 'Chaos'], archetype: 'The Carnival', animal: 'Monkey Troop', emoji: '🐒', meaning: 'Thrives in the joyful, unpredictable energy of many different individuals.' },
+            { poles: ['Multiplicity', 'Order'], archetype: 'The Ecosystem', animal: 'Coral Reef', emoji: '🪸', meaning: 'A structured society built from the harmonious interaction of countless species.' },
+            { poles: ['Unity', 'Synthesis'], archetype: 'The Universalist', animal: 'Whale Song', emoji: '🐋', meaning: 'Connects all things into a single, seamless, holistic truth.' },
+            { poles: ['Unity', 'Analysis'], archetype: 'The Monotheist', animal: 'Eagle', emoji: '🦅', meaning: 'Believes all truth can be understood by dissecting the nature of the One.' },
+            { poles: ['Multiplicity', 'Synthesis'], archetype: 'The Polymath', animal: 'Fox', emoji: '🦊', meaning: 'Connects ideas from countless different fields into a unique worldview.' },
+            { poles: ['Multiplicity', 'Analysis'], archetype: 'The Specialist', animal: 'Hummingbird', emoji: '🐦', meaning: 'Masters its world by focusing on the specific details of its unique niche.' },
+            { poles: ['Unity', 'Transcendence'], archetype: 'The Pantheist', animal: 'Ouroboros Serpent', emoji: '🐍', meaning: 'Sees the single divine essence that is beyond all material forms.' },
+            { poles: ['Unity', 'Immanence'], archetype: 'The Animator', animal: 'Mycelial Network', emoji: '🍄', meaning: 'The single, unseen life force that connects all things within the earth.' },
+            { poles: ['Multiplicity', 'Transcendence'], archetype: 'The Polytheist', animal: 'Butterfly', emoji: '🦋', meaning: 'Honors the many unique divine faces that point to a reality beyond this one.' },
+            { poles: ['Multiplicity', 'Immanence'], archetype: 'The Gardener', animal: 'Bee', emoji: '🐝', meaning: 'Tends to the sacredness of each unique, individual life form in the material world.' },
+            { poles: ['Chaos', 'Synthesis'], archetype: 'The Mystic Collector', animal: 'Bowerbird', emoji: '🐦', meaning: 'Gathers disparate, chaotic elements into a beautiful, intuitive whole.' },
+            { poles: ['Chaos', 'Analysis'], archetype: 'The Curious Deconstructor', animal: 'Raccoon', emoji: '🦝', meaning: 'Dissects the world through playful, unpredictable inquiry.' },
+            { poles: ['Order', 'Synthesis'], archetype: 'The System Architect', animal: 'Coral Polyp', emoji: '🪸', meaning: 'Builds vast, interconnected systems from simple, orderly rules.' },
+            { poles: ['Order', 'Analysis'], archetype: 'The Patient Anatomist', animal: 'Praying Mantis', emoji: '🦗', meaning: 'Achieves clarity through disciplined, precise dissection of reality.' },
+            { poles: ['Chaos', 'Transcendence'], archetype: 'The Tempest', animal: 'Dragon', emoji: '🐉', meaning: 'Unpredictable, primal power that connects the earth and sky.' },
+            { poles: ['Chaos', 'Immanence'], archetype: 'The Ferment', animal: 'Yeast', emoji: '🦠', meaning: 'The unpredictable, transformative power that creates life from within matter.' },
+            { poles: ['Order', 'Transcendence'], archetype: 'The Cathedral', animal: 'Termite Mound', emoji: '🐜', meaning: 'A perfectly structured physical form pointing to a higher purpose.' },
+            { poles: ['Order', 'Immanence'], archetype: 'The Crystal', animal: 'Quartz Formation', emoji: '💎', meaning: 'The inherent, beautiful order that exists deep within matter itself.' },
+            { poles: ['Synthesis', 'Transcendence'], archetype: 'The Mythologist', animal: 'Simurgh', emoji: '🦅✨', meaning: 'Connects worldly stories to reveal timeless, transcendent truths.' },
+            { poles: ['Synthesis', 'Immanence'], archetype: 'The Ecologist', animal: 'Elephant', emoji: '🐘', meaning: 'Understands the whole by seeing how all parts of the physical world connect.' },
+            { poles: ['Analysis', 'Transcendence'], archetype: 'The Theologian', animal: 'Vulture', emoji: '🦅', meaning: 'Dissects sacred texts to understand the nature of the divine beyond.' },
+            { poles: ['Analysis', 'Immanence'], archetype: 'The Surgeon', animal: 'Jackal', emoji: '🐺', meaning: 'Dissects the physical body to understand the precise mechanics of life.' },
+        ];
+        data.forEach(item => spiritAnimals.push(item));
+    }
+
+    // --- DOM ELEMENTS ---
+    const questionsContainer = document.getElementById('questions-container');
+    const quizForm = document.getElementById('quiz-form');
+    const submitBtn = document.getElementById('submit-btn');
+    const restartBtn = document.getElementById('restart-btn');
+    const resultsContainer = document.getElementById('results-container');
+    const errorMessage = document.getElementById('error-message');
+
+    // --- APP LOGIC ---
+
+    const spiritAnimalMap = new Map();
+
+    function initialize() {
+        populateSpiritAnimals();
+        // Create a fast lookup map for spirit animals
+        spiritAnimals.forEach(animal => {
+            const sortedKey = animal.poles.sort().join('+');
+            spiritAnimalMap.set(sortedKey, animal);
+        });
+        renderQuestions();
+    }
+
+    function renderQuestions() {
+        let currentDichotomy = '';
+        let html = '';
+
+        questionsData.forEach((q, index) => {
+            if (q.d !== currentDichotomy) {
+                if (currentDichotomy !== '') html += `</div>`; // Close previous block
+                currentDichotomy = q.d;
+                html += `<div class="question-block"><div class="dichotomy-title">${currentDichotomy}</div>`;
+            }
+
+            const poles = dichotomies[q.d];
+            const poleA = q.reverse ? poles.poleB : poles.poleA;
+            const poleB = q.reverse ? poles.poleA : poles.poleB;
+
+            const questionParts = q.q.split(/\(A\)|\(B\)/);
+
+            html += `
+                <div class="question" data-question-index="${index}">
+                    <p>${index + 1}. ${questionParts[0]}</p>
+                    <div class="options">
+                        <input type="radio" id="q${index}a" name="q${index}" value="${poleA}">
+                        <label for="q${index}a" class="option">(A) ${questionParts[1].trim()}</label>
+
+                        <input type="radio" id="q${index}b" name="q${index}" value="${poleB}">
+                        <label for="q${index}b" class="option">(B) ${questionParts[2].trim()}</label>
+                    </div>
+                </div>
+            `;
+        });
+
+        html += `</div>`; // Close the last block
+        questionsContainer.innerHTML = html;
+    }
+
+    function calculateAndShowResults() {
+        const selectedOptions = document.querySelectorAll('input[type="radio"]:checked');
+
+        errorMessage.classList.add('hidden');
+        const scores = {};
+        Object.values(dichotomies).forEach(d => {
+            scores[d.poleA] = 0;
+            scores[d.poleB] = 0;
+        });
+
+        selectedOptions.forEach(input => {
+            scores[input.value]++;
+        });
+
+        const sortedScores = Object.entries(scores).sort((a, b) => b[1] - a[1]);
+        const topPole1 = sortedScores[0][0];
+        const topPole2 = sortedScores[1][0];
+
+        const lookupKey = [topPole1, topPole2].sort().join('+');
+        const resultAnimal = spiritAnimalMap.get(lookupKey);
+
+        if (!resultAnimal) {
+            console.error("Could not find spirit animal for key:", lookupKey, "Top scores:", topPole1, topPole2);
+            alert("An error occurred calculating your result. Please check the console for details.");
+            return;
+        }
+
+        displayResults(scores, resultAnimal);
+    }
+
+    function displayResults(scores, animal) {
+        document.getElementById('animal-pair').textContent = animal.poles;
+        document.getElementById('animal-emoji').textContent = animal.emoji;
+        document.getElementById('animal-name').textContent = animal.animal;
+        document.getElementById('animal-archetype').textContent = animal.archetype;
+        document.getElementById('animal-meaning').textContent = animal.meaning;
+        document.getElementById('animal-description-placeholder').innerHTML = `<!-- Further descriptions of traits, careers, etc. for ${animal.animal} will go here. -->`;
+
+        const scoresContainer = document.getElementById('scores-container');
+        scoresContainer.innerHTML = '';
+
+        Object.keys(dichotomies).forEach(dichotomyName => {
+            const d = dichotomies[dichotomyName];
+            const scoreA = scores[d.poleA];
+            const scoreB = scores[d.poleB];
+            const total = scoreA + scoreB;
+            const percentageA = total > 0 ? (scoreA / total) * 100 : 50;
+
+            // Use user-friendly names for the "Reflective ↔ Expressive" dichotomy on the results page
+            const displayNameA = d.poleA === 'Mirror' ? 'Reflective' : (d.poleA === 'Ground' ? 'Expressive' : d.poleA);
+            const displayNameB = d.poleB === 'Mirror' ? 'Reflective' : (d.poleB === 'Ground' ? 'Expressive' : d.poleB);
+
+            const scoreHtml = `
+                <div class="dichotomy-score">
+                    <div class="labels">
+                        <span class="pole-left">${displayNameB} (${scoreB})</span>
+                        <span class="pole-right">(${scoreA}) ${displayNameA}</span>
+                    </div>
+                    <div class="score-bar-container">
+                        <div class="score-bar" style="width: ${percentageA}%;"></div>
+                    </div>
+                </div>
+            `;
+            scoresContainer.innerHTML += scoreHtml;
+        });
+
+        quizForm.classList.add('hidden');
+        resultsContainer.classList.remove('hidden');
+        window.scrollTo(0, 0);
+    }
+
+    function restartQuiz() {
+        resultsContainer.classList.add('hidden');
+        quizForm.classList.remove('hidden');
+        quizForm.reset();
+        errorMessage.classList.add('hidden');
+        window.scrollTo(0, 0);
+    }
+
+    // --- INITIALIZATION ---
+    initialize();
+    submitBtn.addEventListener('click', calculateAndShowResults);
+    restartBtn.addEventListener('click', restartQuiz);
+
+});
+</script>
+
+</body>
+</html>
