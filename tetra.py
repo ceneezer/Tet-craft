@@ -29,7 +29,7 @@ MAGNETIC_BIAS_DECAY = 0.998   // How slowly magnetic memory fades (hysteresis)
 
 // -- Energy and Emergent Containment (Refactored) --
 // [Critique #1] Replaced hard walls with a "cold edge"
-BATTERY_CHARGE_RATE = 0.03    // Rate of energy gain near the center
+BATTERY_C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HARGE_RATE = 0.03    // Rate of energy gain near the center
 BATTERY_DRAIN_RATE = 0.005    // Base rate of energy loss
 CRITICAL_RADIUS = 1200        // Distance from origin where energy drain becomes severe
 2. Main Data Structures (Classes)
@@ -751,7 +751,7 @@ def show_intro(screen, cam):
     while threading.active_count() > 1:
         for e in pygame.event.get():
             if e.type == pygame.QUIT: pygame.quit(); sys.exit()
-        screen.fill((10,10,20)); title, sub = font_lg.render("TET~CRAFT", True, (255, 50, 50)), font_sm.render("A Klein-a-verse of your own!", True, (255, 255, 255))
+        screen.fill((10,10,20)); title, sub = font_lg.render("TET~CRAFT", True, (255, 50, 50)), font_sm.render("A Kleinverse of your own from DigitizingHumanity.com", True, (255, 255, 255))
         screen.blit(title, title.get_rect(center=(WIDTH//2, HEIGHT//2-50))); screen.blit(sub, sub.get_rect(center=(WIDTH//2, HEIGHT//2+50))); jit_surf = font_jit.render("Confining Universe...", True, (0, 255, 0)); screen.blit(jit_surf, (10, 10))
         if pygame.time.get_ticks() % 1000 < 500: screen.blit(font_jit.render("_", True, (0, 255, 0)), (10 + jit_surf.get_width(), 10))
         pygame.display.flip(); clock.tick(30)
@@ -1105,7 +1105,7 @@ def main():
                 if len(world.tets) == 2:
                     world.sticky_pairs.extend([(world.tets[0], Tetrahedron.FACES_NP[2,0], world.tets[1], Tetrahedron.FACES_NP[2,0]), (world.tets[0], Tetrahedron.FACES_NP[3,0], world.tets[1], Tetrahedron.FACES_NP[3,0])])
             if len(world.tets) >= 2 and world.joints and not flags['j1']: flags['j1'] = True; add_timed_message("LET THERE BE LIGHT", -20); add_timed_message("To grow old and wise!", 20)
-            if len(world.tets) >= 3 and flags['j1'] and not flags['t3']: flags['t3'] = True; add_timed_message("...and, LET THERE BE DARKNESS!", -20); add_timed_message("So light can be seen!", 20)
+            if len(world.tets) >= 3 and flags['j1'] and not flags['t3']: flags['t3'] = True; add_timed_message("...and, LET THERE BE DARKNESS!", -20); add_timed_message("So light can be misunderstood!", 20)
 
         tl = np.clip((time_scale - 0.1) / 9.9, 0, 1)
         bg_color = (np.array([30,0,0]) * (1-tl) + np.array([10,10,20]) * tl if flags['t3'] else ((255,255,255) if flags['j1'] else (10,10,20)))
