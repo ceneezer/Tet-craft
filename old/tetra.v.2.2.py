@@ -1,4 +1,112 @@
-﻿import pygame
+﻿PSEUDOCODE="""
+DEFINE all game constants (physics forces, colors, screen size, network ports).
+INITIALIZE Pygame window, sound, and fonts.
+CREATE the main Camera and World objects.
+SHOW a title screen while pre-compiling performance-critical functions in the background.
+
+STRUCTURE Camera:
+  STORES: yaw, pitch, zoom_distance, 3D_pan_position.
+  FUNCTION project(3D_point): returns 2D_screen_coordinate.
+  FUNCTION unproject(2D_point): returns 3D_world_coordinate.
+
+STRUCTURE Tetrahedron:
+  STORES: current_position, previous_position (for physics), vertex_positions, label, battery_level, magnetism_status.
+
+STRUCTURE World:
+  STORES: a list of all Tetrahedrons, a list of all Joints.
+  FUNCTION update():
+    RUN all physics calculations for one frame.
+    CHECK for collisions.
+    CHECK for magnetic interactions.
+    CHECK for vertices that are close enough to form new joints.
+  FUNCTION spawn(): creates a new tetrahedron.
+  FUNCTION save_state()/load_state(): saves or loads the world to/from a file.
+
+STRUCTURE Host (Server):
+  FUNCTION start():
+    LOAD a list of banned IPs from "blacklist.cfg".
+    LISTEN for new players on the network.
+  FUNCTION on_player_connect(player_IP):
+    IF player_IP is in the blacklist, REJECT connection.
+    ELSE, ACCEPT connection and start a new thread for them.
+  FUNCTION broadcast_loop():
+    PERIODICALLY send the entire World state to all connected players.
+  FUNCTION receive_loop(player):
+    LISTEN for updates from a player (camera position, chat messages) and apply them.
+
+STRUCTURE Guest (Client):
+  FUNCTION connect(host_IP):
+    CONNECT to the Host.
+    START a thread to listen for messages.
+  FUNCTION listen_loop():
+    WHEN a World state is received, REPLACE local world with it.
+    WHEN a chat message is received, DISPLAY it.
+  FUNCTION send_updates():
+    PERIODICALLY send own camera position and other actions to the Host.
+
+START main function:
+  PARSE command-line arguments (-connect, -listen, -file).
+
+  BASED on arguments:
+    - Start as a Host.
+    - Connect as a Guest.
+    - Load a world from a save file.
+    - IF nothing specified, show a start screen and wait for user input.
+
+  // ===================
+  // == Main Game Loop ==
+  // ===================
+  LOOP until user quits:
+
+    // 1. TIMING
+    CALCULATE time passed since the last frame.
+
+    // 2. INPUT HANDLING
+    FOR each keyboard or mouse event:
+      HANDLE window quitting or resizing.
+      HANDLE key presses for actions like:
+        - Save, Reset, Explode.
+        - Spawn new tet.
+        - Host a new game, Join a game.
+      HANDLE mouse clicks:
+        - IF click on another player's avatar, PROMPT for a chat message and send.
+        - IF left-click on a vertex, START dragging it.
+        - IF right-click and drag, ROTATE the camera.
+        - IF left-click on a joint, DELETE it.
+      HANDLE mouse wheel to ZOOM camera.
+
+    // 3. GAME STATE UPDATE
+    UPDATE camera position and rotation from keyboard/mouse input.
+
+    IF an object is being dragged:
+      CALCULATE the 3D position of the mouse cursor.
+      APPLY force to the object to pull it towards the cursor, scaled by zoom level.
+      HIGHLIGHT potential connection points on other nearby tets.
+
+    IF game is in single-player or host mode:
+      CALL World.update() to run one step of the physics simulation.
+      IF hosting, BROADCAST the updated World state to all clients.
+
+    ELSE IF game is in client mode:
+      APPLY the latest World state received from the host.
+      SEND local camera position to the host.
+
+    // 4. DRAWING
+    CLEAR the screen.
+    DRAW the background effects (starfield, swirling "past" tets).
+    DRAW all world objects (tets, joints, connection lines), sorted by depth.
+    DRAW player avatars at their respective camera locations.
+    DRAW all on-screen text (FPS, game info, temporary messages, chat).
+    UPDATE the display.
+
+  END LOOP
+  // ===================
+  // == End Game Loop ==
+  // ===================
+
+  CLEAN UP network connections and quit.
+"""
+import pygame
 import numpy as np
 import math
 import random
@@ -329,22 +437,6 @@ def generate_boing_sound():
     if channels == 2: sound_array = np.column_stack((sound_array, sound_array))
     return pygame.sndarray.make_sound(sound_array)
 
-def generate_ping_sound():
-    mixer_settings = pygame.mixer.get_init()
-    if mixer_settings is None: return None
-    sample_rate, _, channels = mixer_settings
-    duration = 0.15
-    num_samples = int(duration * sample_rate)
-    frequency = 987.77 # B5 note
-    t = np.linspace(0, duration, num_samples, False)
-    # Quick attack, slightly longer decay
-    envelope = np.exp(-t * 25.0)
-    wave = np.sin(2 * np.pi * frequency * t) * envelope
-    sound_array = (wave * 32767).astype(np.int16)
-    if channels == 2:
-        sound_array = np.column_stack((sound_array, sound_array))
-    return pygame.sndarray.make_sound(sound_array)
-
 class VertexJoint:
     def __init__(self, A, ia, B, ib): self.A, self.ia, self.B, self.ib = A, ia, B, ib
 
@@ -601,61 +693,24 @@ def prime_jit_functions(cam):
     _ = conserve_momentum_jit(dummy_pos, dummy_pos_prev); _ = resolve_collisions_jit(dummy_pos, np.array([[0, 1], [2, 3]])); _ = resolve_joints_jit(dummy_locals, dummy_joints)
 
 def show_intro(screen, cam):
-    # CORRECTED: Moved global declaration to the top of the function
-    global WIDTH, HEIGHT
-    font_lg = pygame.font.SysFont('Arial Black', min(WIDTH, HEIGHT)//8)
-    font_sm = pygame.font.SysFont('Arial', min(WIDTH, HEIGHT)//25)
-    font_jit = pygame.font.SysFont('Monospace', 18)
+    font_lg, font_sm, font_jit = pygame.font.SysFont('Arial Black', min(WIDTH, HEIGHT)//8), pygame.font.SysFont('Arial', min(WIDTH, HEIGHT)//25), pygame.font.SysFont('Monospace', 18)
     threading.Thread(target=prime_jit_functions, args=(cam,), daemon=True).start()
-
     while threading.active_count() > 1:
         for e in pygame.event.get():
             if e.type == pygame.QUIT: pygame.quit(); sys.exit()
-            if e.type == pygame.VIDEORESIZE:
-                WIDTH, HEIGHT = e.w, e.h
-                screen = pygame.display.set_mode((WIDTH, HEIGHT), pygame.RESIZABLE)
-                font_lg = pygame.font.SysFont('Arial Black', min(WIDTH, HEIGHT)//8)
-                font_sm = pygame.font.SysFont('Arial', min(WIDTH, HEIGHT)//25)
-
-        screen.fill((10,10,20))
-        title = font_lg.render("TET~CRAFT", True, (255, 50, 50))
-        sub = font_sm.render("A Kleinverse of your own from DigitizingHumanity.com", True, (255, 255, 255))
-        screen.blit(title, title.get_rect(center=(WIDTH//2, HEIGHT//2-50)))
-        screen.blit(sub, sub.get_rect(center=(WIDTH//2, HEIGHT//2+50)))
-
-        jit_surf = font_jit.render("Confining Universe...", True, (0, 255, 0))
-        screen.blit(jit_surf, (10, 10))
-        if pygame.time.get_ticks() % 1000 < 500:
-            screen.blit(font_jit.render("_", True, (0, 255, 0)), (10 + jit_surf.get_width(), 10))
-
-        pygame.display.flip()
-        clock.tick(30)
+        screen.fill((10,10,20)); title, sub = font_lg.render("TET~CRAFT", True, (255, 50, 50)), font_sm.render("A Kleinverse of your own from DigitizingHumanity.com", True, (255, 255, 255))
+        screen.blit(title, title.get_rect(center=(WIDTH//2, HEIGHT//2-50))); screen.blit(sub, sub.get_rect(center=(WIDTH//2, HEIGHT//2+50))); jit_surf = font_jit.render("Confining Universe...", True, (0, 255, 0)); screen.blit(jit_surf, (10, 10))
+        if pygame.time.get_ticks() % 1000 < 500: screen.blit(font_jit.render("_", True, (0, 255, 0)), (10 + jit_surf.get_width(), 10))
+        pygame.display.flip(); clock.tick(30)
 
 def show_void_screen(screen, world):
-    # CORRECTED: Moved global declaration to the top of the function
-    global WIDTH, HEIGHT
-    font_lg = pygame.font.SysFont('Georgia', min(WIDTH, HEIGHT)//15)
-    font_sm = pygame.font.SysFont('Arial', min(WIDTH, HEIGHT)//25)
+    font_lg, font_sm = pygame.font.SysFont('Georgia', 40), pygame.font.SysFont('Arial', 24); line1, line2 = font_lg.render("Welcome to the void of (mis)understanding...", True, (200,200,200)), font_sm.render("(Press SPACE to begin)", True, (150,150,150))
     waiting = True
     while waiting:
         for e in pygame.event.get():
             if e.type == pygame.QUIT: pygame.quit(); sys.exit()
-            if e.type == pygame.KEYDOWN and e.key == pygame.K_SPACE:
-                world.spawn()
-                waiting = False
-            if e.type == pygame.VIDEORESIZE:
-                WIDTH, HEIGHT = e.w, e.h
-                screen = pygame.display.set_mode((WIDTH, HEIGHT), pygame.RESIZABLE)
-                font_lg = pygame.font.SysFont('Georgia', min(WIDTH, HEIGHT)//15)
-                font_sm = pygame.font.SysFont('Arial', min(WIDTH, HEIGHT)//25)
-
-        screen.fill((10,10,20))
-        line1 = font_lg.render("Welcome to the void of (mis)understanding...", True, (200,200,200))
-        line2 = font_sm.render("(Press SPACE to begin)", True, (150,150,150))
-        screen.blit(line1, line1.get_rect(center=(WIDTH//2, HEIGHT//2-30)))
-        screen.blit(line2, line2.get_rect(center=(WIDTH//2, HEIGHT//2+30)))
-        pygame.display.flip()
-        clock.tick(15)
+            if e.type == pygame.KEYDOWN and e.key == pygame.K_SPACE: world.spawn(); waiting = False
+        screen.fill((10,10,20)); screen.blit(line1, line1.get_rect(center=(WIDTH//2, HEIGHT//2-30))); screen.blit(line2, line2.get_rect(center=(WIDTH//2, HEIGHT//2+30))); pygame.display.flip(); clock.tick(15)
 
 def draw_player_avatar(screen, cam, pos, color, label):
     base_verts = Tetrahedron.REST_NP * 2.0
@@ -713,9 +768,8 @@ def recv_msg(sock):
     except (ConnectionResetError, json.JSONDecodeError, ValueError, OSError): return None
 
 class Host:
-    def __init__(self, world, add_msg_fn, sound, port=None):
+    def __init__(self, world, add_msg_fn, port=None):
         self.world, self.add_msg, self.clients, self.lock, self.server, self.port, self.running = world, add_msg_fn, {}, threading.Lock(), socket.socket(socket.AF_INET, socket.SOCK_STREAM), 0, True
-        self.sound = sound
 
         self.blacklist = set()
         try:
@@ -757,7 +811,6 @@ class Host:
         while self.running:
             msg = recv_msg(sock)
             if msg is None: break
-            if self.sound: self.sound.play()
             if msg['type'] == 'cam_update':
                 with self.lock:
                     if client_id in net_avatars: net_avatars[client_id]['pos'] = np.array(msg['data']['pan'])
@@ -778,9 +831,8 @@ class Host:
         self.server.close()
 
 class Guest:
-    def __init__(self, host_ip, port, world, cam, add_msg_fn, sound):
+    def __init__(self, host_ip, port, world, cam, add_msg_fn):
         self.world, self.cam, self.add_msg, self.sock, self.host_id, self.running, self.latest_world_state = world, cam, add_msg_fn, socket.socket(socket.AF_INET, socket.SOCK_STREAM), f"host_{host_ip}:{port}", True, None
-        self.sound = sound
         self.sock.connect((host_ip, port)); threading.Thread(target=self.listen, daemon=True).start()
     def listen(self):
         global net_avatars
@@ -790,7 +842,6 @@ class Guest:
                 self.add_msg("Disconnected from host.")
                 self.running = False
                 break
-            if self.sound: self.sound.play()
             if msg['type'] == 'world_state':
                 self.latest_world_state = msg['data']['world']
                 net_avatars = {self.host_id: {'pos': self.latest_world_state.get('center_of_mass', [0,0,0]), 'color': (50, 50, 255)}}
@@ -833,10 +884,7 @@ def main():
     os.environ['PYGAME_HIDE_SUPPORT_PROMPT'] = "1"; pygame.init(); pygame.mixer.init(44100, -16, 2, 512)
     screen = pygame.display.set_mode((WIDTH, HEIGHT), pygame.RESIZABLE); pygame.display.set_caption("TET~CRAFT")
     clock = pygame.time.Clock(); font_l = pygame.font.SysFont('Georgia', 32); font_s = pygame.font.SysFont(None, 24)
-    world = World(generate_boing_sound()); cam = Camera()
-
-    show_intro(screen, cam)
-    ping_sound = generate_ping_sound()
+    world = World(generate_boing_sound()); cam = Camera(); show_intro(screen, cam)
 
     flags = {'t0': False, 't1': False, 't2': False, 'j1': False, 't3': False}; msgs = []
     dragging, rotating, last_mouse = None, False, (0,0); time_scale = 1.0; reset_timer = None
@@ -845,20 +893,17 @@ def main():
     animation_state = 'IDLE'; animation_start_time, animation_duration = 0, 0
     start_zoom, start_time_scale = 0, 1.0
 
-    star_field_points = []
-
     def add_timed_message(text, y_offset=0, duration=4):
         msgs.append([text, y_offset, pygame.time.get_ticks() + duration * 1000])
     def add_network_message(text):
         net_messages.append([text, time.time() + 8])
 
     def reset_simulation(show_message=True):
-        nonlocal flags, time_scale, world, cam, dragging, rotating, locked_sticky_target, sticky_unlock_timer, animation_state, star_field_points
+        nonlocal flags, time_scale, world, cam, dragging, rotating, locked_sticky_target, sticky_unlock_timer, animation_state
         global game_mode, host_instance, guest_instance, net_avatars, net_messages
         if host_instance: host_instance.stop(); host_instance = None
         if guest_instance: guest_instance.stop(); guest_instance = None
         world.tets.clear(); world.joints.clear(); world.sticky_pairs.clear()
-        star_field_points.clear()
         net_avatars.clear(); net_messages.clear()
         flags = {'t0': False, 't1': False, 't2': False, 'j1': False, 't3': False}
         cam.__init__(); time_scale = 1.0; game_mode = 'single_player'
@@ -881,7 +926,7 @@ def main():
     def connect_as_guest(host_ip, port):
         global guest_instance, game_mode
         try:
-            save_world_to_file(); guest_instance, game_mode = Guest(host_ip, int(port), world, cam, add_network_message, ping_sound), 'guest'
+            save_world_to_file(); guest_instance, game_mode = Guest(host_ip, int(port), world, cam, add_network_message), 'guest'
             add_timed_message(f"Connected to {host_ip}:{port}", duration=3)
             world.tets.clear(); world.joints.clear(); world.sticky_pairs.clear(); return True
         except Exception as e:
@@ -908,7 +953,7 @@ def main():
     def initiate_host_mode(port=None):
         global host_instance, game_mode
         if game_mode == 'single_player':
-            host_instance, game_mode = Host(world, add_network_message, ping_sound, port), 'host'
+            host_instance, game_mode = Host(world, add_network_message, port), 'host'
             add_timed_message("Hosting Mode Activated", duration=3)
 
     loaded_from_save = False
@@ -926,9 +971,11 @@ def main():
                 world.set_state(data)
                 add_timed_message(f"Loaded {cli_load_file}"); loaded_from_save = True
             except json.JSONDecodeError as e:
+                # This catches JSON syntax errors (e.g., missing comma, bracket)
                 print(f"Error: Could not parse JSON in '{cli_load_file}' at line {e.lineno}, column {e.colno}: {e.msg}")
                 print("Starting a new, empty universe.")
             except Exception as e:
+                # This catches other errors during loading, which might originate from set_state
                 print(f"An unexpected error occurred while processing data from '{cli_load_file}': {e}")
                 print("Starting a new, empty universe.")
         else:
@@ -1088,24 +1135,6 @@ def main():
         tl = np.clip((time_scale - 0.1) / 9.9, 0, 1)
         bg_color = (np.array([30,0,0]) * (1-tl) + np.array([10,10,20]) * tl if flags['t3'] else ((255,255,255) if flags['j1'] else (10,10,20)))
         screen.fill(bg_color)
-
-        if len(world.tets) >= 3 and frame_count % 5 == 0:
-            num_stars_to_add = 4
-            current_radius = 80.0 + len(star_field_points) * 0.05
-            for _ in range(num_stars_to_add):
-                theta = random.uniform(0, 2 * math.pi)
-                phi = math.acos(2 * random.uniform(0, 1) - 1.0)
-                x = current_radius * math.sin(phi) * math.cos(theta)
-                y = current_radius * math.sin(phi) * math.sin(theta)
-                z = current_radius * math.cos(phi)
-                star_pos = np.array([x, y, z]) + world.center_of_mass
-                star_field_points.append(star_pos)
-
-        if star_field_points:
-            projected_stars = cam.project_many(np.array(star_field_points))
-            for p_star in projected_stars:
-                if -1000 < p_star[0] < WIDTH and 0 <= p_star[1] < HEIGHT:
-                    screen.set_at(p_star.astype(int), (200, 200, 200))
 
         if flags['t3']:
             past_clump.update(len(world.tets), time_scale, world.center_of_mass)
