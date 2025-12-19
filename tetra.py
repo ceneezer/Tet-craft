@@ -1,4 +1,113 @@
-﻿import pygame
+﻿PSEUDOCODE="""
+DEFINE all game constants (physics forces, colors, screen size, network ports).
+INITIALIZE Pygame window, sound, and fonts.
+CREATE the main Camera and World objects.
+SHOW a title screen while pre-compiling performance-critical functions in the background.
+
+STRUCTURE Camera:
+  STORES: yaw, pitch, zoom_distance, 3D_pan_position.
+  FUNCTION project(3D_point): returns 2D_screen_coordinate.
+  FUNCTION unproject(2D_point): returns 3D_world_coordinate.
+
+STRUCTURE Tetrahedron:
+  STORES: current_position, previous_position (for physics), vertex_positions, label, battery_level, magnetism_status.
+
+STRUCTURE World:
+  STORES: a list of all Tetrahedrons, a list of all Joints.
+  FUNCTION update():
+    RUN all physics calculations for one frame.
+    CHECK for collisions.
+    CHECK for magnetic interactions.
+    CHECK for vertices that are close enough to form new joints.
+  FUNCTION spawn(): creates a new tetrahedron.
+  FUNCTION save_state()/load_state(): saves or loads the world to/from a file.
+
+STRUCTURE Host (Server):
+  FUNCTION start():
+    LOAD a list of banned IPs from "blacklist.cfg".
+    LISTEN for new players on the network.
+  FUNCTION on_player_connect(player_IP):
+    IF player_IP is in the blacklist, REJECT connection.
+    ELSE, ACCEPT connection and start a new thread for them.
+  FUNCTION broadcast_loop():
+    PERIODICALLY send the entire World state to all connected players.
+  FUNCTION receive_loop(player):
+    LISTEN for updates from a player (camera position, chat messages) and apply them.
+
+STRUCTURE Guest (Client):
+  FUNCTION connect(host_IP):
+    CONNECT to the Host.
+    START a thread to listen for messages.
+  FUNCTION listen_loop():
+    WHEN a World state is received, REPLACE local world with it.
+    WHEN a chat message is received, DISPLAY it.
+  FUNCTION send_updates():
+    PERIODICALLY send own camera position and other actions to the Host.
+
+START main function:
+  PARSE command-line arguments (-connect, -listen, -file).
+
+  BASED on arguments:
+    - Start as a Host.
+    - Connect as a Guest.
+    - Load a world from a save file.
+    - IF nothing specified, show a start screen and wait for user input.
+
+  // ===================
+  // == Main Game Loop ==
+  // ===================
+  LOOP until user quits:
+
+    // 1. TIMING
+    CALCULATE time passed since the last frame.
+
+    // 2. INPUT HANDLING
+    FOR each keyboard or mouse event:
+      HANDLE window quitting or resizing.
+      HANDLE key presses for actions like:
+        - Save, Reset, Explode.
+        - Spawn new tet.
+        - Host a new game, Join a game.
+      HANDLE mouse clicks:
+        - IF click on another player's avatar, PROMPT for a chat message and send.
+        - IF left-click on a vertex, START dragging it.
+        - IF right-click and drag, ROTATE the camera.
+        - IF left-click on a joint, DELETE it.
+      HANDLE mouse wheel to ZOOM camera.
+
+    // 3. GAME STATE UPDATE
+    UPDATE camera position and rotation from keyboard/mouse input.
+
+    IF an object is being dragged:
+      CALCULATE the 3D position of the mouse cursor.
+      APPLY force to the object to pull it towards the cursor, scaled by zoom level.
+      HIGHLIGHT potential connection points on other nearby tets.
+
+    IF game is in single-player or host mode:
+      CALL World.update() to run one step of the physics simulation.
+      IF hosting, BROADCAST the updated World state to all clients.
+
+    ELSE IF game is in client mode:
+      APPLY the latest World state received from the host.
+      SEND local camera position to the host.
+
+    // 4. DRAWING
+    CLEAR the screen.
+    DRAW the background effects (starfield, swirling "past" tets).
+    DRAW all world objects (tets, joints, connection lines), sorted by depth.
+    DRAW player avatars at their respective camera locations.
+    DRAW all on-screen text (FPS, game info, temporary messages, chat).
+    UPDATE the display.
+
+  END LOOP
+  // ===================
+  // == End Game Loop ==
+  // ===================
+
+  CLEAN UP network connections and quit.
+"""
+
+import pygame
 import numpy as np
 import math
 import random
@@ -603,11 +712,23 @@ def recv_msg(sock):
 class Host:
     def __init__(self, world, add_msg_fn, port=None):
         self.world, self.add_msg, self.clients, self.lock, self.server, self.port, self.running = world, add_msg_fn, {}, threading.Lock(), socket.socket(socket.AF_INET, socket.SOCK_STREAM), 0, True
+
+        # <<< CHANGE: Load blacklist on initialization >>>
+        self.blacklist = set()
+        try:
+            with open("blacklist.cfg", "r") as f:
+                self.blacklist = {line.strip() for line in f if line.strip()}
+            if self.blacklist:
+                print(f"### Blacklist loaded with {len(self.blacklist)} entries.")
+        except FileNotFoundError:
+            print("### blacklist.cfg not found, no IPs will be blocked.")
+
         for p in ([port] if port else PORT_RANGE):
             try: self.server.bind(('', p)); self.port = p; break
             except OSError: continue
         if self.port == 0: self.server.bind(('', 0)); self.port = self.server.getsockname()[1]
         threading.Thread(target=self.discovery_thread, daemon=True).start(); threading.Thread(target=self.start, daemon=True).start()
+
     def discovery_thread(self):
         udp_sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM); udp_sock.bind(('', DISCOVERY_PORT))
         while self.running:
@@ -619,7 +740,15 @@ class Host:
         self.server.listen(); print(f"### HOSTING on {socket.gethostbyname(socket.gethostname())}:{self.port} ###")
         while self.running:
             try:
-                client_sock, addr = self.server.accept(); client_id = f"guest_{addr[0]}:{addr[1]}"
+                client_sock, addr = self.server.accept()
+
+                # <<< CHANGE: Check connecting IP against the blacklist >>>
+                if addr[0] in self.blacklist:
+                    print(f"### Rejected connection from blacklisted IP: {addr[0]}")
+                    client_sock.close()
+                    continue
+
+                client_id = f"guest_{addr[0]}:{addr[1]}"
                 with self.lock: self.clients[client_sock], net_avatars[client_id] = {'id': client_id, 'addr': addr}, {'pos': [0,0,0], 'color': [random.randint(50,200) for _ in range(3)]}
                 threading.Thread(target=self.handle_client, args=(client_sock, client_id), daemon=True).start()
             except OSError: break
@@ -680,6 +809,8 @@ def main():
     print("  -connect <ip>:<port>   (Connect directly to a server)")
     print("  -listen <port>         (Launch directly as a host on a port)")
     print("  -file <filename>       (Load a specific save file on start)")
+    # <<< CHANGE: Added CLI info for blacklist.cfg >>>
+    print("  blacklist.cfg          (File with one IP per line to block)")
     print("TET~CRAFT Initializing...")
 
     cli_connect_addr, cli_listen_port, cli_load_file = None, None, None
@@ -706,7 +837,7 @@ def main():
     locked_sticky_target, sticky_unlock_timer = None, None; frame_count = 0
     rmb_down_timer, rmb_start_pos = None, None; past_clump = PastClump(); particles = []
     animation_state = 'IDLE'; animation_start_time, animation_duration = 0, 0
-    start_zoom, start_time_scale = 0, 1.0; t2_triggered_animation = False
+    start_zoom, start_time_scale = 0, 1.0
 
     def add_timed_message(text, y_offset=0, duration=4):
         msgs.append([text, y_offset, pygame.time.get_ticks() + duration * 1000])
@@ -714,7 +845,7 @@ def main():
         net_messages.append([text, time.time() + 8])
 
     def reset_simulation(show_message=True):
-        nonlocal flags, time_scale, world, cam, dragging, rotating, locked_sticky_target, sticky_unlock_timer, animation_state, t2_triggered_animation
+        nonlocal flags, time_scale, world, cam, dragging, rotating, locked_sticky_target, sticky_unlock_timer, animation_state
         global game_mode, host_instance, guest_instance, net_avatars, net_messages
         if host_instance: host_instance.stop(); host_instance = None
         if guest_instance: guest_instance.stop(); guest_instance = None
@@ -723,7 +854,7 @@ def main():
         flags = {'t0': False, 't1': False, 't2': False, 'j1': False, 't3': False}
         cam.__init__(); time_scale = 1.0; game_mode = 'single_player'
         dragging, rotating = None, False; locked_sticky_target, sticky_unlock_timer = None, None
-        animation_state = 'IDLE'; t2_triggered_animation = False
+        animation_state = 'IDLE'
         if show_message: add_timed_message("Simulation Reset", duration=2)
 
     def save_world_to_file():
@@ -883,8 +1014,17 @@ def main():
             mx, my = pygame.mouse.get_pos(); cam.yaw += (mx - last_mouse[0]) * 0.005; cam.pitch = np.clip(cam.pitch - (my - last_mouse[1]) * 0.005, -1.57, 1.57); last_mouse = (mx, my)
 
         if is_interactive and dragging:
-            t_drag, i_drag, dd = dragging; m3d = cam.unproject(pygame.mouse.get_pos(), dd); delta = m3d - t_drag.verts()[i_drag]
-            t_drag.local[i_drag] += delta * MOUSE_PULL_STRENGTH; t_drag.pos += delta * BODY_PULL_STRENGTH
+            t_drag, i_drag, dd = dragging
+            m3d = cam.unproject(pygame.mouse.get_pos(), dd)
+            delta = m3d - t_drag.verts()[i_drag]
+
+            zoom_compensation = DEFAULT_CAM_DIST / cam.dist
+            effective_mouse_pull = MOUSE_PULL_STRENGTH * zoom_compensation
+            effective_body_pull = BODY_PULL_STRENGTH * zoom_compensation
+
+            t_drag.local[i_drag] += delta * effective_mouse_pull
+            t_drag.pos += delta * effective_body_pull
+
             mp2, best_dist = np.array(pygame.mouse.get_pos(), float), 50
             avs = cam.project_many(np.array([t.local + t.pos for t in world.tets]).reshape(-1, 3))
             current_hover_target = None
@@ -914,7 +1054,8 @@ def main():
         if is_interactive:
             if len(world.tets) == 1 and not flags['t0']: flags['t0'] = True; add_timed_message("LET THERE BE TIME!", -20); add_timed_message("... and let it have a beginning.", 20)
             if len(world.tets) >= 2 and not flags['t2']:
-                flags['t2'] = True; animation_state, animation_start_time, animation_duration, start_zoom = 'ZOOMING_OUT', pygame.time.get_ticks(), 10000, cam.dist
+                flags['t2'] = True
+                # <<< CHANGE: Removed animation trigger >>>
                 add_timed_message("LET THERE BE SEPARATION!", -20); add_timed_message("And let it chase time ever into the future.", 20)
                 if len(world.tets) == 2:
                     world.sticky_pairs.extend([(world.tets[0], Tetrahedron.FACES_NP[2,0], world.tets[1], Tetrahedron.FACES_NP[2,0]), (world.tets[0], Tetrahedron.FACES_NP[3,0], world.tets[1], Tetrahedron.FACES_NP[3,0])])
