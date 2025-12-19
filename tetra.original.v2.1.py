@@ -1,4 +1,235 @@
-﻿import pygame
+﻿PSEUDOCODE="""
+
+TetCraft Program Explained in Pseudo-Code
+1. Configuration & Constants
+
+This section defines the global parameters that govern the simulation's behavior.
+
+code
+Code
+download
+content_copy
+expand_less
+// -- Core Simulation --
+EDGE_LEN = 2.0                // The fixed length of a tetrahedron edge
+COLLISION_RADIUS = 1.5        // The size of a tetrahedron for collision
+DAMPING = 0.995               // Energy loss factor for Verlet integration
+
+// -- Metaphysical / Behavioral Laws (Refactored) --
+K_ORIGIN_PULL = 0.00005       // Gentle pull towards the universe's center of mass
+
+// [Critique #3] Cohesion based on Harmony
+K_STICKY_PULL = 0.001         // Base strength of the "desire" connection
+STICKY_PULL_HARMONY_SENSITIVITY = 0.1 // How sensitive the pull is to energy differences
+
+// [Critique #2] Magnetism as a Memory-Based Influence
+K_MAGNETIC_TORQUE = 0.05      // Strength of the rotational "nudge" from magnetism
+K_MAGNETIC_BIAS_BUILDUP = 0.1 // How quickly magnetic memory forms
+MAGNETIC_BIAS_DECAY = 0.998   // How slowly magnetic memory fades (hysteresis)
+
+// -- Energy and Emergent Containment (Refactored) --
+// [Critique #1] Replaced hard walls with a "cold edge"
+BATTERY_C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HARGE_RATE = 0.03    // Rate of energy gain near the center
+BATTERY_DRAIN_RATE = 0.005    // Base rate of energy loss
+CRITICAL_RADIUS = 1200        // Distance from origin where energy drain becomes severe
+2. Main Data Structures (Classes)
+
+These are the primary objects that make up the simulation world.
+
+code
+Code
+download
+content_copy
+expand_less
+CLASS Camera:
+    PROPERTIES:
+        yaw, pitch, distance, pan_vector(x,y,z)
+    METHODS:
+        project(world_vec): Converts a 3D world coordinate to a 2D screen coordinate.
+        unproject(screen_pos, depth): Converts a 2D screen coordinate back to 3D.
+        zoom(factor): Adjusts the camera distance.
+
+CLASS Tetrahedron:
+    PROPERTIES:
+        id
+        position(x,y,z), previous_position(x,y,z)       // For Verlet physics
+        local_vertices[4], previous_local_vertices[4]   // Stores shape/rotation
+        battery (0.0 to 1.0)                            // Represents energy or "heat"
+        is_magnetized (boolean)
+        magnetism (polarity: +1 or -1)
+        orientation_bias(x,y,z)                         // [Critique #2] Vector storing magnetic memory
+
+CLASS World:
+    PROPERTIES:
+        list_of_tetrahedrons
+        list_of_joints
+        list_of_sticky_pairs (desires)
+        center_of_mass_vector
+    METHODS:
+        spawn(): Creates a new tetrahedron.
+        update(dt): Runs one full physics and logic tick for the entire simulation.
+        get_state(): Serializes the entire world state into a dictionary for saving/networking.
+        set_state(state_dict): Reconstructs the world from a saved state.
+3. Core Physics Engine (JIT-Optimized Functions)
+
+These are the high-performance Numba functions that handle all the heavy calculations. They operate on large NumPy arrays for maximum speed.
+
+code
+Code
+download
+content_copy
+expand_less
+FUNCTION world_update_physics_jit(all_positions, all_batteries, ...):
+    // This is the heart of the "Law of Universal Balance"
+
+    1. // -- Gravity & Cohesion --
+       Initialize an `acceleration` array for all tets to zeros.
+       Apply a gentle `K_ORIGIN_PULL` towards the center of mass for all tets.
+
+    2. // [Critique #3] Apply Desire Forces (Cohesion Law)
+       FOR each sticky_pair (desire):
+           Calculate the energy difference between the two connected tets.
+           Calculate a `harmony_factor` = 1 / (energy_difference + sensitivity).
+           The force of the desire is `K_STICKY_PULL * harmony_factor`.
+           Apply this force to pull the two tets together.
+
+    3. // [Critique #1] Apply Energy Dynamics & Emergent Containment
+       Calculate each tet's distance from the origin.
+       IF a tet is past the `CRITICAL_RADIUS`:
+           Calculate a `drain_multiplier` that increases sharply with distance.
+           Apply a severe energy drain: `battery -= drain_rate * drain_multiplier`.
+       ELSE:
+           Apply normal energy charge/drain rates.
+       Clip all battery values between 0 and 1.
+
+    4. // [Critique #1] Apply Battery Force & Emergent Orbital Stability
+       Calculate the implicit tangential velocity for each tet.
+       Calculate a `repulsion_damp_factor` based on this velocity (faster = more dampening).
+       Calculate the base battery force (attraction if cold, repulsion if hot).
+       IF the force is repulsive:
+           Multiply it by the `repulsion_damp_factor`.
+       Apply the final (potentially dampened) battery force.
+
+    5. // -- Verlet Integration --
+       Update all `positions` based on `previous_positions` and accumulated `accelerations`.
+
+    6. // -- Internal Shape Constraint --
+       Iterate 3 times:
+           FOR each tetrahedron:
+               Check the length of all 6 internal edges.
+               If an edge is too long or too short, slightly move its two vertices to correct the length.
+       RETURN updated positions, batteries, etc.
+
+FUNCTION update_magnetic_effects_jit(all_locals, all_biases, ...):
+    // This function handles the "Law of Magnetic Constraint" as a memory-based influence.
+
+    1. // [Critique #2] Update Magnetic Memory (Hysteresis)
+       FOR each magnetized tet (`tet_A`):
+           Calculate the net magnetic field vector at its position from all OTHER magnets.
+           Nudge `tet_A`'s `orientation_bias` vector towards this net field.
+           Apply a slow decay to the `orientation_bias` (`bias *= MAGNETIC_BIAS_DECAY`).
+
+    2. // [Critique #2] Apply Torque
+       Calculate the magnetic moment of `tet_A` (its internal magnetic direction).
+       Calculate the `torque` required to align the moment with the (net_field + orientation_bias).
+       Apply this `torque` as a small, cumulative rotation to `tet_A`'s local vertices.
+
+    RETURN updated local vertices and orientation biases.
+
+FUNCTION conserve_momentum_jit(...)
+    Calculate the total momentum of the entire system.
+    Subtract the average momentum from every tetrahedron to prevent the whole system from drifting.
+
+FUNCTION resolve_collisions_jit(...)
+    Use a k-d tree to find all pairs of tets that are too close.
+    For each overlapping pair, push them directly apart.
+4. Networking Subsystem
+
+Handles multiplayer functionality, clearly separating the "host" (who runs the simulation) from "guests" (who just receive updates).
+
+code
+Code
+download
+content_copy
+expand_less
+CLASS Host:
+    Starts a server and listens for connecting guests.
+    Maintains a list of connected clients.
+    Periodically calls `world.get_state()` and broadcasts the result to all guests.
+    Receives camera position updates from guests to display their avatars.
+
+CLASS Guest:
+    Connects to a host's IP address.
+    Runs a listener thread in the background.
+    WHEN a 'world_state' message is received:
+        It overwrites its local world by calling `world.set_state(received_state)`.
+    Periodically sends its own camera position to the host.
+5. Main Application Logic (The main function)
+
+This is the high-level conductor that orchestrates initialization, the game loop, input, and rendering.
+
+code
+Code
+download
+content_copy
+expand_less
+PROCEDURE main():
+    // -- 1. Initialization --
+    Initialize Pygame, the screen, and the clock.
+    Create a `World` object and a `Camera` object.
+    Start a background thread to "prime" (pre-compile) all JIT functions while showing an intro screen.
+    Check for command-line arguments to start as a host, connect as a guest, or load a file.
+    IF no arguments are given:
+        Attempt to load `tetcraft_save.json`.
+        IF no save file, show a "void screen" until the user presses SPACE to spawn the first tet.
+
+    // -- 2. Main Game Loop --
+    LOOP forever:
+        // -- A. Timekeeping --
+        Calculate `delta_time` since the last frame.
+        Update the simulation `time_scale` based on key presses (Z/C keys) or animations.
+        `scaled_dt = delta_time * time_scale`.
+
+        // -- B. Input Handling --
+        Process all Pygame events (quit, resize, keyboard, mouse).
+        Handle camera movement (WASD, QE, mouse drag).
+        Handle simulation controls (SPACE to spawn, `~` to reset, V to save).
+        Handle networking controls (H to host, TAB to join).
+
+        // -- C. Physics & State Update --
+        IF game_mode is 'single_player' OR 'host':
+            // We are in charge of the simulation
+            CALL `world.update(scaled_dt)`.
+            IF game_mode is 'host':
+                Broadcast the world state to all guests.
+        ELSE IF game_mode is 'guest':
+            // We are just a viewer, so we load the state received from the network
+            IF a new state has arrived from the host:
+                CALL `world.set_state(latest_received_state)`.
+            Send our camera position back to the host.
+
+        // -- D. Rendering --
+        Clear the screen with the appropriate background color (changes with game progress).
+        Draw decorative elements (axes, background particle field).
+        Draw lines for all joints (white) and desires (orange).
+        Get a list of all tetrahedrons and sort them by their distance from the camera (depth sorting).
+        FOR each tetrahedron IN the sorted list:
+            Determine its color based on its state (normal, magnetized).
+            Sort its 4 faces by their distance from the camera.
+            Draw each face as a filled polygon.
+            Draw the edges of the tetrahedron.
+        Draw all UI overlays (FPS, info text, help text, chat messages).
+
+        // -- E. Display --
+        Flip the Pygame display to show the newly drawn frame.
+    END LOOP
+
+    // -- 3. Cleanup --
+    Stop any running network threads.
+    Quit Pygame.
+END PROCEDURE
+"""
+import pygame
 import numpy as np
 import math
 import random
@@ -18,7 +249,7 @@ from scipy.spatial import cKDTree
 # ============================
 # CONFIG
 # ============================
-WIDTH, HEIGHT = 800, 600
+WIDTH, HEIGHT = 1200, 800
 FPS = 60
 
 EDGE_LEN = 2.0
@@ -389,22 +620,11 @@ class World:
         if give_special_colors:
             cols = [(255,255,255), (0,0,0), (255,0,0), (0,255,255)]; random.shuffle(cols); new_tet.colors = cols
         else: new_tet.colors = list(Tetrahedron.FACE_COLORS)
-
-        if len(self.tets) == 0:
-            new_tet.label = "Time"
-        elif len(self.tets) == 1:
-            new_tet.label = "Separation"
-
         self.tets.append(new_tet)
     def spawn_polar_pair(self):
         if not self.tets: return
         parent_tet = random.choice(self.tets); pos1 = parent_tet.pos + norm(np.random.rand(3)) * EDGE_LEN * 5
         pos2 = pos1 + norm(np.random.rand(3)) * EDGE_LEN * 3; tet1, tet2 = Tetrahedron(pos1), Tetrahedron(pos2)
-
-        if len(self.tets) == 2:
-            tet1.label = "Light"
-            tet2.label = "Darkness"
-
         self.tets.extend([tet1, tet2]); polar_face_idx = random.choice([2, 3]); face_verts = Tetrahedron.FACES_NP[polar_face_idx]
         for i in range(3): self.sticky_pairs.append((tet1, face_verts[i], tet2, face_verts[i]))
     def check_magnetization(self):
@@ -545,32 +765,13 @@ def show_void_screen(screen, world):
             if e.type == pygame.KEYDOWN and e.key == pygame.K_SPACE: world.spawn(); waiting = False
         screen.fill((10,10,20)); screen.blit(line1, line1.get_rect(center=(WIDTH//2, HEIGHT//2-30))); screen.blit(line2, line2.get_rect(center=(WIDTH//2, HEIGHT//2+30))); pygame.display.flip(); clock.tick(15)
 
-def draw_player_avatar(screen, cam, pos, color, label):
-    base_verts = Tetrahedron.REST_NP * 2.0
-    verts1 = base_verts + pos
-    verts2 = (base_verts * np.array([1, -1, 1])) + pos
-    all_verts = np.vstack((verts1, verts2))
-    all_screen_pts = [cam.project(v) for v in all_verts]
-    faces = list(Tetrahedron.FACES_NP) + [f + 4 for f in Tetrahedron.FACES_NP]
-    sorted_faces = sorted(faces, key=lambda f: sum(cam.get_transformed_z(all_verts[v_idx]) for v_idx in f), reverse=True)
-
-    for face_indices in sorted_faces:
-        points = [all_screen_pts[i] for i in face_indices]
-        if all(p[0] > -1000 for p in points):
-            try:
-                temp_surf = pygame.Surface((WIDTH, HEIGHT), pygame.SRCALPHA)
-                pygame.draw.polygon(temp_surf, (*color, 100), points)
-                screen.blit(temp_surf, (0, 0))
-                pygame.draw.lines(screen, (255, 255, 255, 150), True, points, 1)
-            except Exception:
-                pass
-
-    font = pygame.font.SysFont(None, 24)
-    ip_text = label.split('_')[-1].split(':')[0]
-    label_surf = font.render(ip_text, True, (255, 255, 255))
-    label_pos = cam.project(pos + np.array([0, EDGE_LEN * 3.5, 0]))
-    if label_pos[0] > -1000:
-        screen.blit(label_surf, label_surf.get_rect(center=label_pos))
+def draw_avatar(screen, cam, pos, color):
+    r, a = EDGE_LEN*math.sqrt(3/8), EDGE_LEN/math.sqrt(3); base_verts = np.array([[0,0,r], [EDGE_LEN/2,-a/2,-r/3], [-EDGE_LEN/2,-a/2,-r/3], [0,a,-r/3]])
+    verts1, verts2 = base_verts + pos, np.array([v * [1,-1,1] for v in base_verts]) + pos; all_verts = np.vstack([verts1, np.array([verts2[0], verts2[2], verts2[1], verts2[3]])]); screen_pts_list, faces = [cam.project(v) for v in all_verts], [(0,1,3), (0,2,1), (0,3,2), (1,2,3), (4,5,7), (4,6,5), (4,7,6), (5,6,7)]
+    for face_indices in sorted(faces, key=lambda face: sum(cam.get_transformed_z(all_verts[i]) for i in face), reverse=True):
+        face_pts = [screen_pts_list[i] for i in face_indices]
+        try: pygame.draw.polygon(screen, color, face_pts); pygame.draw.aalines(screen, (20,20,20), True, face_pts)
+        except: pass
 
 def get_user_input(screen, prompt, initial_text=""):
     input_text, font, active = initial_text, pygame.font.SysFont(None, 32), True
@@ -819,38 +1020,23 @@ def main():
                 if e.key == pygame.K_TAB: discover_and_join()
                 if e.key == pygame.K_t: time_scale = 1.0; add_timed_message("Time scale reset")
             if e.type == pygame.MOUSEBUTTONDOWN:
-                clicked_avatar_id = None
-                for aid, ad in net_avatars.items():
-                    avatar_pos = np.array(ad['pos'])
-                    screen_pos = cam.project(avatar_pos)
-                    click_radius = max(15, 40 * DEFAULT_CAM_DIST / (cam.dist + 1e-6))
-                    if np.linalg.norm(np.array(e.pos) - screen_pos) < click_radius:
-                        clicked_avatar_id = aid
-                        break
-
-                if clicked_avatar_id:
-                    chat_msg = get_user_input(screen, f"Message to {clicked_avatar_id.split('_')[0]}:")
-                    if chat_msg:
-                        if game_mode == 'guest' and guest_instance:
-                            guest_instance.send_chat(chat_msg)
-                            add_network_message(f"You to Host: {chat_msg}")
-                        elif game_mode == 'host' and host_instance:
-                            target_sock = next((s for s, d in host_instance.clients.items() if d['id'] == clicked_avatar_id), None)
-                            if target_sock:
-                                send_msg(target_sock, {'type': 'chat', 'data': chat_msg})
-                                add_network_message(f"You to {clicked_avatar_id.split(':')[0]}: {chat_msg}")
-                else:
-                    if is_interactive and e.button == 1 and hovered_vertex:
-                        dragging = (hovered_vertex[0], hovered_vertex[1], cam.get_transformed_z(hovered_vertex[0].verts()[hovered_vertex[1]]))
-                        locked_sticky_target, sticky_unlock_timer = None, None
-                    if e.button == 3:
-                        rotating, last_mouse, rmb_down_timer, rmb_start_pos = True, e.pos, pygame.time.get_ticks(), e.pos
-                    if e.button == 1:
-                        if is_interactive and world.joints:
-                            cj = min(world.joints, key=lambda j: dist_point_to_line_segment(np.array(e.pos, float), np.array(cam.project(j.A.verts()[j.ia]), float), np.array(cam.project(j.B.verts()[j.ib]), float)), default=None)
-                            if cj and dist_point_to_line_segment(np.array(e.pos, float), np.array(cam.project(cj.A.verts()[cj.ia]), float), np.array(cam.project(cj.B.verts()[cj.ib]), float)) < 5:
-                                world.joints.remove(cj)
-
+                if is_interactive and e.button == 1 and hovered_vertex:
+                    dragging = (hovered_vertex[0], hovered_vertex[1], cam.get_transformed_z(hovered_vertex[0].verts()[hovered_vertex[1]]))
+                    locked_sticky_target, sticky_unlock_timer = None, None
+                if e.button == 3: rotating, last_mouse, rmb_down_timer, rmb_start_pos = True, e.pos, pygame.time.get_ticks(), e.pos
+                if e.button == 1:
+                    clicked_avatar_id = next((aid for aid, ad in net_avatars.items() if np.linalg.norm(np.array(e.pos) - cam.project(ad['pos'])) < 20), None)
+                    if clicked_avatar_id:
+                        chat_msg = get_user_input(screen, "Message:")
+                        if chat_msg:
+                            if game_mode == 'guest' and guest_instance: guest_instance.send_chat(chat_msg)
+                            elif game_mode == 'host' and host_instance:
+                                target_sock = next((s for s, d in host_instance.clients.items() if d['id'] == clicked_avatar_id), None)
+                                if target_sock: send_msg(target_sock, {'type': 'chat', 'data': chat_msg})
+                    elif is_interactive and world.joints:
+                        cj = min(world.joints, key=lambda j: dist_point_to_line_segment(np.array(e.pos, float), np.array(cam.project(j.A.verts()[j.ia]), float), np.array(cam.project(j.B.verts()[j.ib]), float)), default=None)
+                        if cj and dist_point_to_line_segment(np.array(e.pos, float), np.array(cam.project(cj.A.verts()[cj.ia]), float), np.array(cam.project(cj.B.verts()[cj.ib]), float)) < 5:
+                            world.joints.remove(cj)
             if e.type == pygame.MOUSEBUTTONUP:
                 if is_interactive and e.button == 1 and dragging and locked_sticky_target:
                     if dragging[0] != locked_sticky_target[0] or dragging[1] != locked_sticky_target[1]:
@@ -976,10 +1162,6 @@ def main():
                 vert_color = (0,0,0) if (flags['j1'] and not flags['t3']) else (255,255,255)
                 for p in screen_pts: pygame.draw.circle(screen, vert_color, p, 1)
                 if t.label: surf = font_s.render(t.label, True, (255,255,0)); screen.blit(surf, surf.get_rect(center=cam.project(t.pos + [0, 8, 0])))
-
-        for avatar_id, avatar_data in net_avatars.items():
-            avatar_pos = np.array(avatar_data['pos'])
-            draw_player_avatar(screen, cam, avatar_pos, avatar_data['color'], avatar_id)
 
         if flags['t3'] and np.dot(norm(cam.pan - (cam.pan - cam_forward)), [0,0,1]) > 0.7:
             pygame.draw.circle(screen, (0,0,0), (WIDTH//2, HEIGHT//2), int((WIDTH / 2.2) * tl))
