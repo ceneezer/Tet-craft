@@ -106,7 +106,6 @@ START main function:
 
   CLEAN UP network connections and quit.
 """
-
 import pygame
 import numpy as np
 import math
@@ -603,24 +602,83 @@ class World:
         tet_states = [{'id': t.id, 'pos': t.pos, 'pos_prev': t.pos_prev, 'local': t.local, 'local_prev': t.local_prev, 'battery': t.battery, 'colors': t.colors, 'label': t.label, 'orientation_bias': t.orientation_bias} for t in self.tets]
         joint_states = [{'A_id': j.A.id, 'ia': j.ia, 'B_id': j.B.id, 'ib': j.ib} for j in self.joints]
         return {'tets': tet_states, 'joints': joint_states}
+
     def set_state(self, state):
-        self.tets.clear(); self.joints.clear(); self.sticky_pairs.clear(); tet_map = {}
-        for ts in state['tets']:
-            t = Tetrahedron(ts['pos'])
-            t.id = ts['id']
-            t.pos_prev = np.array(ts['pos_prev'])
-            t.local = np.array(ts['local'])
-            t.local_prev = np.array(ts['local_prev'])
-            t.battery = ts['battery']
-            t.colors = ts['colors']
-            t.label = ts.get('label', "")
-            # Safely load orientation_bias, providing a default for older save files
-            t.orientation_bias = np.array(ts.get('orientation_bias', [0.0, 0.0, 0.0]))
-            self.tets.append(t)
-            tet_map[t.id] = t
-        for js in state['joints']:
-            if js['A_id'] in tet_map and js['B_id'] in tet_map:
-                self.joints.append(VertexJoint(tet_map[js['A_id']], js['ia'], tet_map[js['B_id']], js['ib']))
+        self.tets.clear(); self.joints.clear(); self.sticky_pairs.clear()
+        tet_map = {}
+        loaded_tet_ids = set()
+
+        # Safely get tets list, defaulting to an empty list if key is missing
+        tet_states = state.get('tets', [])
+        print(f"Attempting to load {len(tet_states)} tetrahedra from save file...")
+
+        for i, ts in enumerate(tet_states):
+            try:
+                if not isinstance(ts, dict):
+                    print(f"Warning: Tetrahedron entry at index {i} is not a valid object. Skipping.")
+                    continue
+
+                tet_id = ts['id']
+                if tet_id in loaded_tet_ids:
+                    print(f"Warning: Duplicate tetrahedron ID '{tet_id}' found at data index {i}. Skipping.")
+                    continue
+
+                t = Tetrahedron(ts['pos'])
+                t.id = tet_id
+                t.pos_prev = np.array(ts['pos_prev'])
+                t.local = np.array(ts['local'])
+                t.local_prev = np.array(ts['local_prev'])
+                t.battery = ts['battery']
+                t.colors = ts['colors']
+                t.label = ts.get('label', "")
+                t.orientation_bias = np.array(ts.get('orientation_bias', [0.0, 0.0, 0.0]))
+
+                self.tets.append(t)
+                tet_map[t.id] = t
+                loaded_tet_ids.add(t.id)
+
+            except (KeyError, TypeError, ValueError) as e:
+                print(f"Warning: Malformed or incomplete tetrahedron data at data index {i}: {e}. Skipping.")
+
+        # Safely get joints list
+        joint_states = state.get('joints', [])
+        loaded_joints = set()
+        print(f"Attempting to load {len(joint_states)} joints from save file...")
+
+        for i, js in enumerate(joint_states):
+            try:
+                if not isinstance(js, dict):
+                    print(f"Warning: Joint entry at data index {i} is not a valid object. Skipping.")
+                    continue
+
+                a_id, b_id = js['A_id'], js['B_id']
+                ia, ib = js['ia'], js['ib']
+
+                # Canonical key for duplicate detection
+                if a_id < b_id:
+                    joint_key = (a_id, ia, b_id, ib)
+                else:
+                    # Swap everything to maintain the A->B relationship for the key
+                    joint_key = (b_id, ib, a_id, ia)
+
+                if joint_key in loaded_joints:
+                    print(f"Warning: Duplicate joint definition found at data index {i} for tets {a_id} and {b_id}. Skipping.")
+                    continue
+
+                if a_id not in tet_map:
+                    print(f"Warning: Joint at data index {i} references a non-existent tetrahedron ID '{a_id}'. Skipping.")
+                    continue
+                if b_id not in tet_map:
+                    print(f"Warning: Joint at data index {i} references a non-existent tetrahedron ID '{b_id}'. Skipping.")
+                    continue
+
+                self.joints.append(VertexJoint(tet_map[a_id], ia, tet_map[b_id], ib))
+                loaded_joints.add(joint_key)
+
+            except (KeyError, TypeError) as e:
+                print(f"Warning: Malformed or incomplete joint data at data index {i}: {e}. Skipping.")
+        print(f"Successfully loaded {len(self.tets)} tetrahedra and {len(self.joints)} joints.")
+
 
 net_avatars = {}; net_messages = deque(maxlen=5); game_mode = 'single_player'; host_instance, guest_instance = None, None
 
@@ -713,7 +771,6 @@ class Host:
     def __init__(self, world, add_msg_fn, port=None):
         self.world, self.add_msg, self.clients, self.lock, self.server, self.port, self.running = world, add_msg_fn, {}, threading.Lock(), socket.socket(socket.AF_INET, socket.SOCK_STREAM), 0, True
 
-        # <<< CHANGE: Load blacklist on initialization >>>
         self.blacklist = set()
         try:
             with open("blacklist.cfg", "r") as f:
@@ -741,8 +798,6 @@ class Host:
         while self.running:
             try:
                 client_sock, addr = self.server.accept()
-
-                # <<< CHANGE: Check connecting IP against the blacklist >>>
                 if addr[0] in self.blacklist:
                     print(f"### Rejected connection from blacklisted IP: {addr[0]}")
                     client_sock.close()
@@ -809,7 +864,6 @@ def main():
     print("  -connect <ip>:<port>   (Connect directly to a server)")
     print("  -listen <port>         (Launch directly as a host on a port)")
     print("  -file <filename>       (Load a specific save file on start)")
-    # <<< CHANGE: Added CLI info for blacklist.cfg >>>
     print("  blacklist.cfg          (File with one IP per line to block)")
     print("TET~CRAFT Initializing...")
 
@@ -858,9 +912,17 @@ def main():
         if show_message: add_timed_message("Simulation Reset", duration=2)
 
     def save_world_to_file():
-        if world.tets:
-            with open(SAVE_FILENAME, 'w') as f: json.dump(world.get_state(), f, cls=NumpyEncoder, indent=2)
+        if not world.tets:
+            add_timed_message("Cannot save an empty universe.", duration=3)
+            return
+        try:
+            with open(SAVE_FILENAME, 'w') as f:
+                json.dump(world.get_state(), f, cls=NumpyEncoder, indent=2)
             add_timed_message(f"Saved universe to {SAVE_FILENAME}", duration=3)
+        except IOError as e:
+            add_timed_message(f"Error saving file: {e}", duration=4)
+            print(f"Error saving to {SAVE_FILENAME}: {e}")
+
     def connect_as_guest(host_ip, port):
         global guest_instance, game_mode
         try:
@@ -902,13 +964,22 @@ def main():
     elif cli_load_file:
         if os.path.exists(cli_load_file):
             try:
+                print(f"Attempting to load world from '{cli_load_file}'...")
                 with open(cli_load_file, 'r', encoding='utf-8-sig') as f:
-                    world.set_state(json.load(f))
+                    file_content = f.read()
+                    data = json.loads(file_content)
+                world.set_state(data)
                 add_timed_message(f"Loaded {cli_load_file}"); loaded_from_save = True
-            except (json.JSONDecodeError, TypeError, KeyError) as e:
-                print(f"Error loading file '{cli_load_file}': {e}. Starting new universe.")
+            except json.JSONDecodeError as e:
+                # This catches JSON syntax errors (e.g., missing comma, bracket)
+                print(f"Error: Could not parse JSON in '{cli_load_file}' at line {e.lineno}, column {e.colno}: {e.msg}")
+                print("Starting a new, empty universe.")
+            except Exception as e:
+                # This catches other errors during loading, which might originate from set_state
+                print(f"An unexpected error occurred while processing data from '{cli_load_file}': {e}")
+                print("Starting a new, empty universe.")
         else:
-            print(f"File '{cli_load_file}' not found. Starting new universe.")
+            print(f"Error: File '{cli_load_file}' not found. Starting a new, empty universe.")
 
     if not (loaded_from_save or cli_connect_addr or cli_listen_port):
         show_void_screen(screen, world)
@@ -1055,7 +1126,6 @@ def main():
             if len(world.tets) == 1 and not flags['t0']: flags['t0'] = True; add_timed_message("LET THERE BE TIME!", -20); add_timed_message("... and let it have a beginning.", 20)
             if len(world.tets) >= 2 and not flags['t2']:
                 flags['t2'] = True
-                # <<< CHANGE: Removed animation trigger >>>
                 add_timed_message("LET THERE BE SEPARATION!", -20); add_timed_message("And let it chase time ever into the future.", 20)
                 if len(world.tets) == 2:
                     world.sticky_pairs.extend([(world.tets[0], Tetrahedron.FACES_NP[2,0], world.tets[1], Tetrahedron.FACES_NP[2,0]), (world.tets[0], Tetrahedron.FACES_NP[3,0], world.tets[1], Tetrahedron.FACES_NP[3,0])])
