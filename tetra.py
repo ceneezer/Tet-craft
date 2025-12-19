@@ -1,4 +1,113 @@
-﻿import pygame
+﻿PSEUDOCODE="""
+DEFINE all game constants (physics forces, colors, screen size, network ports).
+INITIALIZE Pygame window, sound, and fonts.
+CREATE the main Camera and World objects.
+SHOW a title screen while pre-compiling performance-critical functions in the background.
+
+STRUCTURE Camera:
+  STORES: yaw, pitch, zoom_distance, 3D_pan_position.
+  FUNCTION project(3D_point): returns 2D_screen_coordinate.
+  FUNCTION unproject(2D_point): returns 3D_world_coordinate.
+
+STRUCTURE Tetrahedron:
+  STORES: current_position, previous_position (for physics), vertex_positions, label, battery_level, magnetism_status.
+
+STRUCTURE World:
+  STORES: a list of all Tetrahedrons, a list of all Joints.
+  FUNCTION update():
+    RUN all physics calculations for one frame.
+    CHECK for collisions.
+    CHECK for magnetic interactions.
+    CHECK for vertices that are close enough to form new joints.
+  FUNCTION spawn(): creates a new tetrahedron.
+  FUNCTION save_state()/load_state(): saves or loads the world to/from a file.
+
+STRUCTURE Host (Server):
+  FUNCTION start():
+    LOAD a list of banned IPs from "blacklist.cfg".
+    LISTEN for new players on the network.
+  FUNCTION on_player_connect(player_IP):
+    IF player_IP is in the blacklist, REJECT connection.
+    ELSE, ACCEPT connection and start a new thread for them.
+  FUNCTION broadcast_loop():
+    PERIODICALLY send the entire World state to all connected players.
+  FUNCTION receive_loop(player):
+    LISTEN for updates from a player (camera position, chat messages) and apply them.
+
+STRUCTURE Guest (Client):
+  FUNCTION connect(host_IP):
+    CONNECT to the Host.
+    START a thread to listen for messages.
+  FUNCTION listen_loop():
+    WHEN a World state is received, REPLACE local world with it.
+    WHEN a chat message is received, DISPLAY it.
+  FUNCTION send_updates():
+    PERIODICALLY send own camera position and other actions to the Host.
+
+START main function:
+  PARSE command-line arguments (-connect, -listen, -file).
+
+  BASED on arguments:
+    - Start as a Host.
+    - Connect as a Guest.
+    - Load a world from a save file.
+    - IF nothing specified, show a start screen and wait for user input.
+
+  // ===================
+  // == Main Game Loop ==
+  // ===================
+  LOOP until user quits:
+
+    // 1. TIMING
+    CALCULATE time passed since the last frame.
+
+    // 2. INPUT HANDLING
+    FOR each keyboard or mouse event:
+      HANDLE window quitting or resizing.
+      HANDLE key presses for actions like:
+        - Save, Reset, Explode.
+        - Spawn new tet.
+        - Host a new game, Join a game.
+      HANDLE mouse clicks:
+        - IF click on another player's avatar, PROMPT for a chat message and send.
+        - IF left-click on a vertex, START dragging it.
+        - IF right-click and drag, ROTATE the camera.
+        - IF left-click on a joint, DELETE it.
+      HANDLE mouse wheel to ZOOM camera.
+
+    // 3. GAME STATE UPDATE
+    UPDATE camera position and rotation from keyboard/mouse input.
+
+    IF an object is being dragged:
+      CALCULATE the 3D position of the mouse cursor.
+      APPLY force to the object to pull it towards the cursor, scaled by zoom level.
+      HIGHLIGHT potential connection points on other nearby tets.
+
+    IF game is in single-player or host mode:
+      CALL World.update() to run one step of the physics simulation.
+      IF hosting, BROADCAST the updated World state to all clients.
+
+    ELSE IF game is in client mode:
+      APPLY the latest World state received from the host.
+      SEND local camera position to the host.
+
+    // 4. DRAWING
+    CLEAR the screen.
+    DRAW the background effects (starfield, swirling "past" tets).
+    DRAW all world objects (tets, joints, connection lines), sorted by depth.
+    DRAW player avatars at their respective camera locations.
+    DRAW all on-screen text (FPS, game info, temporary messages, chat).
+    UPDATE the display.
+
+  END LOOP
+  // ===================
+  // == End Game Loop ==
+  // ===================
+
+  CLEAN UP network connections and quit.
+"""
+
+import pygame
 import numpy as np
 import math
 import random
@@ -374,7 +483,7 @@ class PastClump:
         self.tets = []
         self.yaw, self.pitch, self.roll = 0, 0, 0
         self.pos = np.array([0, 0, -2500])
-    def update(self, num_tets_in_world, time_scale, center_of_mass):
+    def update(self, num_tets_in_world, time_scale, center_of_mass, time_lerp):
         self.pos = center_of_mass + np.array([0, 0, -2500])
         target_num_tets = max(1, num_tets_in_world - 3)
         while len(self.tets) < target_num_tets: self.tets.append(PastTetrahedron(np.random.uniform(-10, 10, 3)))
@@ -385,10 +494,17 @@ class PastClump:
         self.yaw += 0.002 * spin_factor; self.pitch += 0.003 * spin_factor; self.roll += 0.005 * spin_factor
         cy, sy = math.cos(self.yaw), math.sin(self.yaw); cp, sp = math.cos(self.pitch), math.sin(self.pitch); cr, sr = math.cos(self.roll), math.sin(self.roll)
         rot_matrix = np.array([[cp*cy, sp*sr - cp*sy*cr, sp*cr + cp*sy*sr], [sy, cy*cr, -cy*sr], [-sp*cy, cp*sr + sp*sy*cr, cp*cr - sp*sy*sr]])
-        color_lerp = np.clip((time_scale - 0.5) / 7.0, 0, 1)
-        color = np.array([180, 50, 50]) * color_lerp + np.array([50, 50, 180]) * (1 - color_lerp)
+        color_lerp_val = np.clip((time_scale - 0.5) / 7.0, 0, 1)
+        color = np.array([180, 50, 50]) * color_lerp_val + np.array([50, 50, 180]) * (1 - color_lerp_val)
+
+        # +++ ENHANCED SCALING LOGIC +++
+        # This scales the clump's radius based on the time_lerp (tl), just like the black hole.
+        # It shrinks to 10% of its max size instead of 0% for a better visual.
+        clump_scale_factor = 0.1 + 0.9 * time_lerp
+        clump_radius = (len(self.tets) * 3) * clump_scale_factor
+
         for i, tet in enumerate(self.tets):
-            offset = np.array([math.sin(i*2.1), math.cos(i*1.7), math.sin(i*0.8)]) * (len(self.tets) * 3)
+            offset = np.array([math.sin(i*2.1), math.cos(i*1.7), math.sin(i*0.8)]) * clump_radius
             tet.pos = self.pos + np.dot(rot_matrix, offset)
             tet.local = np.dot(tet.REST_NP, rot_matrix.T)
             tet.colors = [np.clip(color, 0, 255)] * 4
@@ -656,6 +772,67 @@ def show_void_screen(screen, world):
         screen.blit(line2, line2.get_rect(center=(WIDTH//2, HEIGHT//2+30)))
         pygame.display.flip()
         clock.tick(15)
+
+# ============================
+# +++ NEW DRAWING FUNCTION +++
+# ============================
+def draw_black_hole_and_disk(screen, cam, flags, tl, cam_forward):
+    """Draws the 'future' black hole and its accretion disk, behind all other objects."""
+    global WIDTH, HEIGHT
+
+    # The condition to draw is when flag 't3' is active and the camera is looking "forward"
+    # into the positive Z direction of the world space.
+    is_looking_forward = np.dot(norm(cam.pan - (cam.pan - cam_forward)), [0,0,1]) > 0.7
+
+    if flags['t3'] and is_looking_forward:
+        center_x, center_y = WIDTH // 2, HEIGHT // 2
+        hole_radius = int((WIDTH / 2.2) * tl)
+        if hole_radius <= 1: return
+
+        disk_inner_radius = hole_radius * 1.1
+        disk_outer_radius = hole_radius * 2.5
+        num_segments = 72  # More segments for a smoother gradient
+
+        # Create a temporary surface for the disk to handle transparency correctly
+        disk_surface = pygame.Surface((WIDTH, HEIGHT), pygame.SRCALPHA)
+
+        # Apply a vertical squash factor based on camera pitch to give a 3D perspective
+        pitch_squash = abs(math.cos(cam.pitch))
+
+        for i in range(num_segments):
+            angle1 = 2 * math.pi * i / num_segments
+            angle2 = 2 * math.pi * (i + 1) / num_segments
+
+            # Define the four corners of this segment of the disk in screen space
+            points = [
+                (center_x + disk_inner_radius * math.cos(angle1), center_y + disk_inner_radius * math.sin(angle1) * pitch_squash),
+                (center_x + disk_outer_radius * math.cos(angle1), center_y + disk_outer_radius * math.sin(angle1) * pitch_squash),
+                (center_x + disk_outer_radius * math.cos(angle2), center_y + disk_outer_radius * math.sin(angle2) * pitch_squash),
+                (center_x + disk_inner_radius * math.cos(angle2), center_y + disk_inner_radius * math.sin(angle2) * pitch_squash),
+            ]
+
+            # Calculate color based on a simulated Doppler shift relative to camera yaw
+            avg_angle = (angle1 + angle2) / 2.0
+
+            # The factor rotates with the camera's yaw. cos makes left/right sides shift.
+            # Side moving away from viewer (relative right) is redshifted.
+            # Side moving towards viewer (relative left) is blueshifted.
+            doppler_factor = math.cos(avg_angle - cam.yaw)
+
+            red   = int(128 + 127 * doppler_factor)
+            blue  = int(128 - 127 * doppler_factor)
+            alpha = 200  # Make the disk semi-transparent
+
+            color = (np.clip(red, 0, 255), 0, np.clip(blue, 0, 255), alpha)
+
+            pygame.draw.polygon(disk_surface, color, points)
+
+        # Blit the completed transparent disk surface onto the main screen
+        screen.blit(disk_surface, (0, 0))
+
+        # Draw the black hole event horizon on top of the accretion disk
+        pygame.draw.circle(screen, (0, 0, 0), (center_x, center_y), hole_radius)
+
 
 def draw_player_avatar(screen, cam, pos, color, label):
     base_verts = Tetrahedron.REST_NP * 2.0
@@ -1085,9 +1262,16 @@ def main():
             if len(world.tets) >= 2 and world.joints and not flags['j1']: flags['j1'] = True; add_timed_message("LET THERE BE LIGHT", -20); add_timed_message("To grow old and wise!", 20)
             if len(world.tets) >= 3 and flags['j1'] and not flags['t3']: flags['t3'] = True; add_timed_message("...and, LET THERE BE DARKNESS!", -20); add_timed_message("So light can be misunderstood!", 20)
 
+        # ---+++ RENDER FRAME +++---
         tl = np.clip((time_scale - 0.1) / 9.9, 0, 1)
         bg_color = (np.array([30,0,0]) * (1-tl) + np.array([10,10,20]) * tl if flags['t3'] else ((255,255,255) if flags['j1'] else (10,10,20)))
         screen.fill(bg_color)
+
+        # Calculate camera's forward vector once per frame for various effects
+        cam_forward = np.array([math.sin(cam.yaw)*math.cos(cam.pitch), -math.sin(cam.pitch), math.cos(cam.yaw)*math.cos(cam.pitch)])
+
+        # ---+++ NEW: Draw the "future" black hole and disk first, so it's behind everything +++---
+        draw_black_hole_and_disk(screen, cam, flags, tl, cam_forward)
 
         if len(world.tets) >= 3 and frame_count % 5 == 0:
             num_stars_to_add = 4
@@ -1108,13 +1292,14 @@ def main():
                     screen.set_at(p_star.astype(int), (200, 200, 200))
 
         if flags['t3']:
-            past_clump.update(len(world.tets), time_scale, world.center_of_mass)
+            past_clump.update(len(world.tets), time_scale, world.center_of_mass, tl)
             if len(particles) < len(world.tets)*5: particles.extend([np.random.uniform(-1, 1, 3) for _ in range(len(world.tets)*5 - len(particles))])
             pc = np.clip(np.array([120, 100, 100]) + min(len(world.tets), 50), 0, 255)
             for p in particles:
                 sp = cam.project(world.center_of_mass + p * FIELD_SCALE * 4)
                 if 0 <= sp[0] < WIDTH and 0 <= sp[1] < HEIGHT: screen.set_at(sp, pc)
-            cam_forward = np.array([math.sin(cam.yaw)*math.cos(cam.pitch), -math.sin(cam.pitch), math.cos(cam.yaw)*math.cos(cam.pitch)])
+
+            # This logic now only controls drawing the "past" clump when looking backward
             if np.dot(norm(cam.pan - (cam.pan - cam_forward)), [0,0,-1]) > 0.5:
                 for ptet in past_clump.tets:
                     try: pygame.draw.polygon(screen, ptet.colors[0], [cam.project(v) for v in ptet.verts()[ptet.FACES_NP[0]]])
@@ -1129,6 +1314,7 @@ def main():
         elif len(world.tets) > 0 and not flags['j1']: pygame.draw.circle(screen, (255,255,255), cam.project(world.center_of_mass), 3)
 
         if world.tets:
+            # +++ CORRECTED LINE +++
             awv = np.array([t.local + t.pos for t in world.tets]).reshape(-1, 3)
             id_idx = {t.id: i for i, t in enumerate(world.tets)}; asv = cam.project_many(awv).reshape(len(world.tets), 4, 2)
             if is_interactive and dragging and locked_sticky_target:
@@ -1162,9 +1348,6 @@ def main():
         for avatar_id, avatar_data in net_avatars.items():
             avatar_pos = np.array(avatar_data['pos'])
             draw_player_avatar(screen, cam, avatar_pos, avatar_data['color'], avatar_id)
-
-        if flags['t3'] and np.dot(norm(cam.pan - (cam.pan - cam_forward)), [0,0,1]) > 0.7:
-            pygame.draw.circle(screen, (0,0,0), (WIDTH//2, HEIGHT//2), int((WIDTH / 2.2) * tl))
 
         now_ticks = pygame.time.get_ticks(); text_color = (0,0,0) if (flags['j1'] and not flags['t3']) else (200,200,200)
         msgs = [m for m in msgs if now_ticks < m[2]]
