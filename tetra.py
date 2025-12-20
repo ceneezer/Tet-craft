@@ -1,4 +1,7 @@
 ﻿PSEUDOCODE="""
+In a star terk (roughly) universe, it would take
+10^142 planets to build the machine capable of holding the universe using this simulation... not impossible.
+
 DEFINE all game constants (physics forces, colors, screen size, network ports).
 INITIALIZE Pygame window, sound, and fonts.
 CREATE the main Camera and World objects.
