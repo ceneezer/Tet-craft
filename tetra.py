@@ -1,6 +1,13 @@
 ﻿PSEUDOCODE="""
-In a star terk (roughly) kleinverse, it would take
-10^142 planets to build the machine capable of holding the kleinverse using this simulation... not impossible.
+Apparently, In a star terk (roughly) kleinverse, it would take 10^142 planets to build the machine capable of holding the kleinverse using this simulation... not impossible.
+
+key points:
+- TETs are the most basic 3D Structure (triangular or curve the most 2D, line the only 1D and point the only 0D) - moving through time becoming 4D, and interacting, branching 5th and higher.
+The center of TETs is always moving - but there is no way to measure it except as relative to all TETs.
+- K_UNIFIED_FORCE (between all TETs and center) is basically God's level of interference (free will override - tiny in the extreme >1:billions)
+- K_PULL (between any two TETs only) is an "image" of K_UNIFIED_FORCE - temporarily overriding, powered by ego's will, but less perfect, less understanding.
+Lies are the only way to delay God's will, central collapse/cohesion.
+- "Time" then becomes essentially the result of misunderstanding - and starting from different places, different perspectives and growing different memories, allowing for discovery instead of immediate recognition, alternate perspectives.  I think the shortest universe was only about 8 days, where we didn't eat the fruit.
 
 DEFINE all game constants (physics forces, colors, screen size, network ports).
 INITIALIZE Pygame window, sound, and fonts.
