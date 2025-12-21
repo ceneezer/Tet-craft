@@ -1,6 +1,6 @@
 ﻿PSEUDOCODE="""
-In a star terk (roughly) universe, it would take
-10^142 planets to build the machine capable of holding the universe using this simulation... not impossible.
+In a star terk (roughly) kleinverse, it would take
+10^142 planets to build the machine capable of holding the kleinverse using this simulation... not impossible.
 
 DEFINE all game constants (physics forces, colors, screen size, network ports).
 INITIALIZE Pygame window, sound, and fonts.
@@ -626,7 +626,7 @@ def show_intro(screen, cam):
             if e.type == pygame.VIDEORESIZE: WIDTH, HEIGHT = e.w, e.h; screen = pygame.display.set_mode((WIDTH, HEIGHT), pygame.RESIZABLE); font_lg = pygame.font.SysFont('Arial Black', min(WIDTH, HEIGHT)//8); font_sm = pygame.font.SysFont('Arial', min(WIDTH, HEIGHT)//25)
         screen.fill((10,10,20)); title = font_lg.render("TET~CRAFT", True, (255, 50, 50)); sub = font_sm.render("A Kleinverse of your own from DigitizingHumanity.com", True, (255, 255, 255))
         screen.blit(title, title.get_rect(center=(WIDTH//2, HEIGHT//2-50))); screen.blit(sub, sub.get_rect(center=(WIDTH//2, HEIGHT//2+50)))
-        jit_surf = font_jit.render("Confining Universe...", True, (0, 255, 0)); screen.blit(jit_surf, (10, 10))
+        jit_surf = font_jit.render("Confining kleinverse...", True, (0, 255, 0)); screen.blit(jit_surf, (10, 10))
         if pygame.time.get_ticks() % 1000 < 500: screen.blit(font_jit.render("_", True, (0, 255, 0)), (10 + jit_surf.get_width(), 10))
         pygame.display.flip(); clock.tick(30)
 def show_void_screen(screen, world):
@@ -916,10 +916,10 @@ def main():
         locked_sticky_target, sticky_unlock_timer = None, None; animation_state = 'IDLE'
         if show_message: add_timed_message("Simulation Reset", duration=2)
     def save_world_to_file():
-        if not world.tets: add_timed_message("Cannot save an empty universe.", duration=3); return
+        if not world.tets: add_timed_message("Cannot save an empty kleinverse.", duration=3); return
         try:
             with open(SAVE_FILENAME, 'w') as f: json.dump(world.get_state(), f, cls=NumpyEncoder, indent=2)
-            add_timed_message(f"Saved universe to {SAVE_FILENAME}", duration=3)
+            add_timed_message(f"Saved kleinverse to {SAVE_FILENAME}", duration=3)
         except IOError as e: add_timed_message(f"Error saving file: {e}", duration=4)
     def connect_as_guest(host_ip, port):
         global guest_instance, game_mode
