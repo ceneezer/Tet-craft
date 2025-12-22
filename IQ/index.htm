@@ -1,0 +1,47 @@
+﻿<!DOCTYPE html><html>
+   <head>
+      <title>Flatland: Lost In The Digital Roots</title>
+      <link rel="stylesheet" href="style.css?r=1">
+      <script src="console.js?r=4"></script>
+      <script src="map.js?r=6"></script>
+      <script src="sprite.js?r=7"></script>
+      <script src="fight.js?r=3"></script>
+   </head>
+   <body>
+      <aside label="controls">
+         <input type="button" label="up" value="&nbsp;&nbsp;UP&nbsp;&nbsp;" onclick="handleMovement(0, -1);" /><br />
+         <input type="button" label="left" value="&nbsp;LEFT&nbsp;" onclick="handleMovement(-1, 0);" />
+         <input type="button" label="jump" value="SPACE" onclick="handleRandomHop();" />
+         <input type="button" label="right" value="RIGHT" onclick="handleMovement(1, 0);" /><br />
+         <input type="button" label="left" value="DOWN" onclick="handleMovement(0, 1);" /><br />
+      </aside>
+      <canvas id="cityCanvas" width="800" height="800" label="Game Board"></canvas>
+   </body>
+</html>
+<script>
+window.addEventListener('load', () => {
+   const base=2; //base 2 needs 2 gives 9xp
+   const size=2; //base 3 needs 5 gives 16XP
+
+   document.addEventListener('consolelog', (e) => {
+   if (e.detail.message.includes(' ')) {
+      // Trigger room entry animations or effects (future improvements)
+   }
+   });
+
+   const testCity = generateCity(size, base); // From map.js
+   createMap(testCity.array, base, 'cityCanvas');
+   createEntity('player', null, {
+      x: base,
+      y: base,
+      health: { current: 10, max: 10 },
+      onReady: () => {
+if (DEBUG===true) console.log('Player sprite loaded with context:', game.player.image.ctx);
+      }
+   });
+
+   drawCity('cityCanvas', testCity.array, game.map.colorMap);
+});
+
+</script>
+<script src="controls.js?r=5"></script>

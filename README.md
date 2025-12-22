@@ -1,26 +1,3 @@
-﻿## Lost In The Digital Roots IQ test ##
-
-### Install:/run ###
-
-Literally download the IQ folder and run the html file.
-
-### Instructions ###
-
-In my day we walked uphill to schol bothways, and didn't need no instructions!
-
-There are literally 5 buttons, it shouldn't take you long to get the jist of it.
-
-Also, 'tis an IQ test, looking at the (very elegant) code is not cheating - though changing it, or the running copy say using browser tools, would be!  Once you know the rules you should be able to play with on pen and paper - like in he good old days!
-
-## BitVote.ca (expired, circa 2015 3rd version beginning from about 2010) ##
-
-- Copy files from bitvote folder onto your LAMP, in a served folder. \
-- Edit _cfg as per your MySQL server (may need to add address if off server into inc.db.php) \
-(optional) There's a .sh to rip the .gov.ca history. (may need editing - I *think it's still running weekly on mine, maybe not bug free.
-(optional) customize the pub folder for your logos ect
-- ... oh, don't forget to change permissions to serve it - may need to move the inc.* files into the parent directory (very helpful) if I forgot to edit that in the public version.
-- ... serve? (see google for troubleshooting)
-
 ## TET~CRAFT v2.1 ##
 
 Apache 2.0 - preview it exampled at: https://youtu.be/gP9ZtCif9zw
@@ -55,7 +32,7 @@ Can I get from you so little as an Amen ceneezer!?! (#opWorldPeace) \
 All the better in Jesus name - maybe even as much as a share? \
 The more, the sooner, don't make me beg further!
 
-### TET~CRAFT Install ###
+### Install ###
 
 Download/copypasta tetra.py (you don't *need* the rest) \
 python -m venv tetcraft (after, place tetra.py inside)\
@@ -65,7 +42,16 @@ pip install numpy pygame numba \
 (optional) git pull (url) \
 python tetra.py <options> 
 
-### Pseudocode ###
+## BitVote.ca (expired, circa 2015 3rd version beginning from about 2010) ##
+
+Copy files from bitvote folder onto your LAMP, in a served folder. \
+Edit _cfg as per your MySQL server (may need to add address if off server into inc.db.php) \
+(optional) There's a .sh to rip the .gov.ca history. (may need editing - I *think it's still running weekly on mine, maybe not bug free.
+(optional) customize the pub folder for your logos ect
+... oh, don't forget to change permissions to serve it - may need to move the inc.* files into the parent directory (very helpful) if I forgot to edit that in the public version.
+... serve? (see google for troubleshooting)
+
+### Psuedocode ###
 
 TetCraft Program Explained in Pseudo-Code 
 1. Configuration & Constants
