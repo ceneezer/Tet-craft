@@ -1,4 +1,4 @@
-﻿(Everything is Apache 2.0)
+﻿### (Everything is Apache 2.0) ###
 
  - \tetra.py (The only file you need for TET~CRAFT - see instructions bellow)
  - \bitvote (Direct Democracy, Open Source, Blockchain Backed)
@@ -11,10 +11,12 @@
  - \old (old versions of tetra.py)
  - \fractalOfceneeze.py (self explanatory - the python for my fractal)
  - \mobeus.py (a nice visualizer for the different dimensions of a mobeus)
+(The .json's are example save files... the .ico is an icon :D)
 
-## BitVote.ca $$
+## BitVote.ca ##
 
-(expired, circa 2015 3rd version beginning from about 2010)
+(expired, circa 2015 3rd version beginning from about 2010) \
+The domain expired 3 times since.
 
 ### Instructions ###
 
@@ -27,6 +29,8 @@
 
 ## Lost In The Digital Roots Gamified IQ Test ##
 
+(Good Luck)
+
 ### Instructions ###
 
 - Copy (/IQ) folder
@@ -34,8 +38,10 @@
 
 In my day games didn't come with instructions and we walked to school uphill both ways.  It's literally 5 buttons, shouldn't take you an hour to pass level 1 - unless you a monkey :p \
 NOTE: 'tis an IQ test, looking at the code isn't cheating - though changing it or the running form would be. You should be able to play it on paper once you pass level 7 or so... You know, like in the good old days? you think e played stick-wheel all day? \
-YES IT DOES WORK! \n
-There's a reason you got dumber.
+YES IT DOES WORK! And you need to pass level 1 to get IQ ranked! \n
+There's a reason you got dumber. \n
+Also, your IQ should go up as you play - it's that good a test, much like chess.  I made it to IQ: 175 - and it may need updates to go further, that hurt my head.
+
 
 ## TET~CRAFT v2.3 ##
 
@@ -47,9 +53,9 @@ Share with friends and chat - non-destructively.
 
 This Game/Simulator attempts to improve upon minecraft by using tetragrams. Intending to simulate molecular bonding of FeO4, Magnetite, likely responsible for the complexity we call life (suggesting God's most primitive rules are very basic indeed). But gamified.... Tech-tree/Adventure/Translation needing further implementation (check branches, I'm done with it). These Kleinverses are ever complexifying - eventually they will live!
 
-V1.0 was a working prototype, V2.0 Was a solid foundation, V2.1 Optimized it, allowing for over 5K tets on an old machine. (16G no video card 6 core - min requirements probably a 386 or so? maybe even a 286 if you can replace python or transcribe to BASIC/Assembly - ahhh, the good old days :D)
+V1.0 was a working prototype, V2.0 Was a solid foundation, V2.1 Optimized it, allowing for over 5K tets on an old machine - 2.3 makes the black hole pretty and added a sound for messages, along with minor tweaks to make it more physics based. (16G no video card 6 core - min requirements probably a 386 or so? maybe even a 286 if you can replace python or transcribe to BASIC/Assembly - ahhh, the good old days :D)
 
-You can Chat remotely with friends through unlimited, unrestricted (and unsecured - white/blacklists needed) WAN connectivity and grow your universe from three basic facts into infinite complexity (only restricted by hardware - time, memory and storage for saves).
+You can Chat remotely with friends through unlimited, unrestricted (and unsecured) WAN connectivity and grow your universe from three basic facts into infinite complexity (only restricted by hardware - time, memory and storage for saves).
 
 The environment is a 4 or Tetra-Sphere, which maps a Klien bottles topology, in which top and bottom link through left and right to create the illusion of a circle. Behind you is you, in the past, blue-shifted or red-shifted as you scale time - infinitely ahead is a singularity, growing and shrinking likewise.
 
@@ -73,13 +79,14 @@ The more, the sooner, don't make me beg further!
 
 ### Install ###
 
-Download/copypasta tetra.py (you don't *need* the rest) \
-python -m venv tetcraft (after, place tetra.py inside)\
-cd tetcraft \
-source bin/activate \
-pip install numpy pygame numba \
-(optional) git pull (url) \
-python tetra.py <options>
+- Download/copypasta tetra.py (you don't *need* the rest) \
+- python -m venv tetcraft (after, place tetra.py inside)\
+- cd tetcraft \
+- source bin/activate \
+- pip install numpy pygame numba \
+- (optional) git pull <url> \
+- (optional) Create and modify blacklist.cfg as needed, auto-loaded. \
+- python tetra.py <options>
 
 ### Psuedocode ###
 
