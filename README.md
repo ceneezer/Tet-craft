@@ -84,7 +84,7 @@ The more, the sooner, don't make me beg further!
 - cd tetcraft \
 - source bin/activate \
 - pip install numpy pygame numba \
-- (optional) git pull <url> \
+- (optional) git pull <url> (thanks for archiving a backup, stupid censors) \
 - (optional) Create and modify blacklist.cfg as needed, auto-loaded. \
 - python tetra.py <options>
 
@@ -313,7 +313,7 @@ https://ceneezer.icu/omniverse/ \
 https://www.youtube.com/playlist?list=PL7LCRYC3-EsoiXSJDinBk3z2_8kMvLIGh \
 (Omniversal Revelation Decology and Retrogenisis Pentology) \
 https://thankyoutoken.abacusai.app/about \
-(Solution to post labor "econemy") \
+(Solution to post labor "economy") \
 https://ceneezer.icu/constitution.txt \
 (Example constitution for post-scarcity) \
 https://www.youtube.com/playlist?list=PL7LCRYC3-EspW5QYTN6nkBUl73L4r7-YA \
