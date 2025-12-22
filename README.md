@@ -4,12 +4,12 @@
 
 ### Instructions ###
 
-- Copy files from bitvote folder onto your LAMP, in a served folder.
-- Edit _cfg as per your MySQL server (may need to add address if off server into inc.db.php) \
-(optional) There's a .sh to rip the .gov.ca history. (may need editing - I *think it's still running weekly on mine, maybe not bug free. \
+- Copy files from (bitvote) folder onto your LAMP, in a served folder.
+- Don't forget to change permissions to serve it (you're the one with the LAMP, you should know to what) - may need to move the inc.* files into the parent directory (very helpful) if I forgot to edit that in the public version.
+- Edit _cfg.php as per your MySQL server (may need to add address if off server into inc.db.php) \
+(optional) There's a(n?) .sh to rip the .gov.ca history. (may need editing - I *think it's still running weekly on mine, maybe not bug free.) \
 (optional) customize the pub folder for your logos ect
-- ... oh, don't forget to change permissions to serve it - may need to move the inc.* files into the parent directory (very helpful) if I forgot to edit that in the public version.
-- ... serve? (see google for troubleshooting)
+- ... serve? (see google for troubleshooting, php probably updated since I've abandoned it, may need updating. no IDK what version.)
 
 ## Lost In The Digital Roots Gamified IQ Test ##
 
@@ -20,9 +20,10 @@
 
 In my day games didn't come with instructions and we walked to school uphill both ways.  It's literally 5 buttons, shouldn't take you an hour to pass level 1 - unless you a monkey :p \
 NOTE: 'tis an IQ test, looking at the code isn't cheating - though changing it or the running form would be. You should be able to play it on paper once you pass level 7 or so... You know, like in the good old days? you think e played stick-wheel all day? \
+YES IT DOES WORK! \n
 There's a reason you got dumber.
 
-## TET~CRAFT v2.1 ##
+## TET~CRAFT v2.3 ##
 
 Preview it exampled at: https://youtu.be/pyGPCf4z-AQ
 
