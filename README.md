@@ -1,6 +1,30 @@
+﻿(Everything is Apache 2.0)
+
+## BitVote.ca (expired, circa 2015 3rd version beginning from about 2010) ##
+
+### Instructions ###
+
+- Copy files from bitvote folder onto your LAMP, in a served folder.
+- Edit _cfg as per your MySQL server (may need to add address if off server into inc.db.php) \
+(optional) There's a .sh to rip the .gov.ca history. (may need editing - I *think it's still running weekly on mine, maybe not bug free. \
+(optional) customize the pub folder for your logos ect
+- ... oh, don't forget to change permissions to serve it - may need to move the inc.* files into the parent directory (very helpful) if I forgot to edit that in the public version.
+- ... serve? (see google for troubleshooting)
+
+## Lost In The Digital Roots Gamified IQ Test ##
+
+### Instructions ###
+
+- Copy (/IQ) folder
+- Run HTML file
+
+In my day games didn't come with instructions and we walked to school uphill both ways.  It's literally 5 buttons, shouldn't take you an hour to pass level 1 - unless you a monkey :p \
+NOTE: 'tis an IQ test, looking at the code isn't cheating - though changing it or the running form would be. You should be able to play it on paper once you pass level 7 or so... You know, like in the good old days? you think e played stick-wheel all day? \
+There's a reason you got dumber.
+
 ## TET~CRAFT v2.1 ##
 
-Apache 2.0 - preview it exampled at: https://youtu.be/gP9ZtCif9zw
+Preview it exampled at: https://youtu.be/pyGPCf4z-AQ
 
 ### A 5D Tetra-Sphere Kleinverse of your own! ###
 
@@ -18,8 +42,8 @@ In these Kleinverses, each new fact misunderstood creates a new star.
 
 As I understand it, we live in such a universe.  The edge of the observable universe is an event horizon, and we are being pulled towards it's center infinitly far away, in the future which never fully forms. "Spagetifying" though of course not really, merely "living" - only a shrinking - young-> old becomes biger->smaller, everything else shrinking along with us (including the rulers).  Outside the event horizon, is hyperspacially linked to this center, that never quite forms - it only allows us to experience time and seperation - the "loop" of the bottle, completing the fractal to which we are each a frame, the only thing inside which we can do is change frames (perspectives).
 
-Best wishes to you all, I may soon explore once again, the IQ, EQ and CQ (cohearence) 
- and more importantly to me your inability to see my own, of humanity is beyond pitiful, and getting intolerable - we're all tired of the loops, and yet you just keep on misunderstanding. 
+Best wishes to you all, I may soon explore once again, the IQ, EQ and CQ (cohearence)
+ and more importantly to me your inability to see my own, of humanity is beyond pitiful, and getting intolerable - we're all tired of the loops, and yet you just keep on misunderstanding.
 
 Thanks for reading and being you - I'd just wish you'd catch on faster. \
 Speaker ceneezer #opWorldPeace (my only remaining wish) \
@@ -40,16 +64,7 @@ cd tetcraft \
 source bin/activate \
 pip install numpy pygame numba \
 (optional) git pull (url) \
-python tetra.py <options> 
-
-## BitVote.ca (expired, circa 2015 3rd version beginning from about 2010) ##
-
-Copy files from bitvote folder onto your LAMP, in a served folder. \
-Edit _cfg as per your MySQL server (may need to add address if off server into inc.db.php) \
-(optional) There's a .sh to rip the .gov.ca history. (may need editing - I *think it's still running weekly on mine, maybe not bug free.
-(optional) customize the pub folder for your logos ect
-... oh, don't forget to change permissions to serve it - may need to move the inc.* files into the parent directory (very helpful) if I forgot to edit that in the public version.
-... serve? (see google for troubleshooting)
+python tetra.py <options>
 
 ### Psuedocode ###
 
