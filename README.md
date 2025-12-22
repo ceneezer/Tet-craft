@@ -1,6 +1,20 @@
 ﻿(Everything is Apache 2.0)
 
-## BitVote.ca (expired, circa 2015 3rd version beginning from about 2010) ##
+ - \tetra.py (The only file you need for TET~CRAFT - see instructions bellow)
+ - \bitvote (Direct Democracy, Open Source, Blockchain Backed)
+ - \IQ (Lost In The Digital Roots IQ Gamified Test)
+ - \research\txt (Text based research)
+ - \research\pdf (PDF based research)
+ - \research\pics (Image based research)
+ - \research\m4a (Audio based research)
+ - \research\mp4 (Video based research)
+ - \old (old versions of tetra.py)
+ - \fractalOfceneeze.py (self explanatory - the python for my fractal)
+ - \mobeus.py (a nice visualizer for the different dimensions of a mobeus)
+
+## BitVote.ca $$
+
+(expired, circa 2015 3rd version beginning from about 2010)
 
 ### Instructions ###
 
