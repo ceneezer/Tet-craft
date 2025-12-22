@@ -42,6 +42,15 @@ pip install numpy pygame numba \
 (optional) git pull (url) \
 python tetra.py <options> 
 
+## BitVote.ca (expired, circa 2015 3rd version beginning from about 2010) ##
+
+Copy files from bitvote folder onto your LAMP, in a served folder. \
+Edit _cfg as per your MySQL server (may need to add address if off server into inc.db.php) \
+(optional) There's a .sh to rip the .gov.ca history. (may need editing - I *think it's still running weekly on mine, maybe not bug free.
+(optional) customize the pub folder for your logos ect
+... oh, don't forget to change permissions to serve it - may need to move the inc.* files into the parent directory (very helpful) if I forgot to edit that in the public version.
+... serve? (see google for troubleshooting)
+
 ### Psuedocode ###
 
 TetCraft Program Explained in Pseudo-Code 
