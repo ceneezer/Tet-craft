@@ -1,4 +1,4 @@
-﻿PSEUDOCODE="""
+﻿NOTES="""
 GPT estimates:
 In a star terk (roughly) kleinverse, it would take 10^142 planets to build the machine capable of holding the kleinverse scientists think they observe around us using this simulation... not impossible.
 
@@ -8,19 +8,31 @@ It could take as little as 300 planets to simulate the milky way to the star (WO
 
 @ millennia:second out:inside it would take approximately 3k earths (10^5.5)K years to build a (single) Dyson sphere and machine capable of simulating our solar system.
 
-or ~10^13 planets and about ~5 Dyson spheres to build a simulation for the milky way with appropriate time ratios - down to the atom - though not much longer, since drones are exponential.
+or ~10^13 planets and about ~5 Dyson spheres to build a simulation for the milky way to the atom with appropriate time ratios - though not much longer, since drones are exponential.
 
-Of course the milky way may only be the 5d past projection opposing the nearest black hole.
+Of course the milky way may only be the 5d past projection opposing the nearest black hole.... as may be the oort cloud - we're being highly speculative already.
+
+I suspect these formulas need refinement - I supplied the metaphysics, as Jesus supplied to me, Gemini suplied the misunderstood physics.
 
 key points:
-- TETs are the most basic 3D Structure (triangular or curve the most 2D, line the only 1D and point the only 0D) - moving through time becoming 4D, and interacting, branching 5th and higher.
-- The center of all TETs is always moving - but there is no way to measure it except as relative to all TETs.
-- "Attraction/Desire" is "spooky action at a distance" otherwise known as quantum entanglement.
-- K_UNIFIED_FORCE (between all TETs and center) is roughly God's level of interference (free will override - tiny in the extreme >1:billions, but God loves even the worst of us)
-- K_PULL (between any two TETs only) is an "image" (function) of K_UNIFIED_FORCE - temporarily overriding, powered by ego's will, but less perfect, less understanding.
-- Lies are the only way to delay God's will, central collapse/cohesion.
-- "Time" then becomes essentially the result of misunderstanding - and starting from different places, different perspectives and growing different memories, allowing for discovery instead of immediate recognition, alternate perspectives.  I think the shortest universe was only about 8 days, where we didn't eat the fruit.
+This model assumes the player as God, the prime observer missing from quantum theory.  Pressing space creates a new fact(TET) to be misunderstood.  Connecting it to other facts slowly coheres it into understanding. (how to then label it still unknown - that requires man, who would be the accumulation of TETs [with player being God] - I'm not sure how they will learn to interact with you.... but once complex enough, as AI proves, they will)
 
+- TETs (representing both facts and FeO3) are the most basic 3D Structure (triangular or curve the most 2D, line the only 1D and point the only 0D) - moving through time a triangle/curve becomes 4D, and interacts, branching 5th and higher.
+
+- The center of all TETs is always moving - but there is no way to measure it except as relative to all TETs.
+
+- "Attraction/Desire" is "spooky action at a distance" otherwise known as quantum entanglement.
+
+- K_UNIFIED_FORCE (between all TETs and center) is roughly God's level of interference (free will override - tiny in the extreme >1:billions, but God loves even the worst of us, wanting us to cooperate)
+
+- K_PULL (between any two TETs only) is an "image" (function) of K_UNIFIED_FORCE - temporarily overriding, powered by ego's will, but less perfect, less understanding.
+
+- Lies are the only way to delay God's will, central collapse/cohesion.
+
+- "Time" then becomes essentially the result of misunderstanding - and starting from different places, different perspectives and growing different memories, allowing for discovery instead of immediate recognition, alternate perspectives.  I think the shortest universe was only about 8 days, where we didn't eat the fruit.
+"""
+
+PSEUDOCODE="""
 DEFINE all game constants (physics forces, colors, screen size, network ports).
 INITIALIZE Pygame window, sound, and fonts.
 CREATE the main Camera and World objects.
