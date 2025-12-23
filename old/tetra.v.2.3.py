@@ -37,101 +37,112 @@ This model assumes the player as God, the prime observer missing from quantum th
 """
 
 PSEUDOCODE="""
-PROGRAM: TET_CRAFT_SIMULATION
-// Goal: Make pyramids float in space, stick together, and look cool near a black hole.
+DEFINE all game constants (physics forces, colors, screen size, network ports).
+INITIALIZE Pygame window, sound, and fonts.
+CREATE the main Camera and World objects.
+SHOW a title screen while pre-compiling performance-critical functions in the background.
 
-SECTION 1: THE TOOLBOX (Setup)
-    IMPORT: Graphics_Tool (Pygame), Math_Tool (Numpy), Internet_Tool (Socket)
-    IMPORT: Speed_Booster (Numba) // Because standard Python is too slow for this math.
+STRUCTURE Camera:
+  STORES: yaw, pitch, zoom_distance, 3D_pan_position.
+  FUNCTION project(3D_point): returns 2D_screen_coordinate.
+  FUNCTION unproject(2D_point): returns 3D_world_coordinate.
 
-    DEFINE RULES:
-        Screen_Size = 800x600
-        Gravity = A little bit
-        Magnetism = Spinny forces
-        Time_Speed = Variable (Chaos factor)
+STRUCTURE Tetrahedron:
+  STORES: current_position, previous_position (for physics), vertex_positions, label, battery_level, magnetism_status.
 
-SECTION 2: THE FAST MATH ZONE (JIT Functions)
-    // These functions are pre-compiled to run at lightspeed
-    FUNCTION Math_Physics(positions, batteries):
-        Calculate energy fields (Law of Balance).
-        Push things away from origin.
-        Pull sticky things together.
-        Move everything based on speed (Verlet Integration).
-        Keep the pyramids shaped like pyramids (don't let them squash).
-        RETURN new_positions
+STRUCTURE World:
+  STORES: a list of all Tetrahedrons, a list of all Joints.
+  FUNCTION update():
+    RUN all physics calculations for one frame.
+    CHECK for collisions.
+    CHECK for magnetic interactions.
+    CHECK for vertices that are close enough to form new joints.
+  FUNCTION spawn(): creates a new tetrahedron.
+  FUNCTION save_state()/load_state(): saves or loads the world to/from a file.
 
-    FUNCTION Math_Camera(3D_points):
-        Turn 3D space numbers (X, Y, Z) into 2D screen dots (X, Y).
-        If dot is behind camera, hide it.
+STRUCTURE Host (Server):
+  FUNCTION start():
+    LOAD a list of banned IPs from "blacklist.cfg".
+    LISTEN for new players on the network.
+  FUNCTION on_player_connect(player_IP):
+    IF player_IP is in the blacklist, REJECT connection.
+    ELSE, ACCEPT connection and start a new thread for them.
+  FUNCTION broadcast_loop():
+    PERIODICALLY send the entire World state to all connected players.
+  FUNCTION receive_loop(player):
+    LISTEN for updates from a player (camera position, chat messages) and apply them.
 
-SECTION 3: THE THINGS (Classes)
-    CLASS Camera:
-        I have a position and angle.
-        I look at things.
+STRUCTURE Guest (Client):
+  FUNCTION connect(host_IP):
+    CONNECT to the Host.
+    START a thread to listen for messages.
+  FUNCTION listen_loop():
+    WHEN a World state is received, REPLACE local world with it.
+    WHEN a chat message is received, DISPLAY it.
+  FUNCTION send_updates():
+    PERIODICALLY send own camera position and other actions to the Host.
 
-    CLASS Tetrahedron (The Pyramid):
-        I have 4 corners.
-        I have a battery charge.
-        I can be magnetic.
+START main function:
+  PARSE command-line arguments (-connect, -listen, -file).
 
-    CLASS World:
-        I hold a list of Tetrahedrons.
-        I hold a list of Connections (Joints).
-        FUNCTION Update():
-            Run "The Fast Math Zone".
-            Check if pyramids bumped into each other.
-            Check if pyramids want to snap together.
+  BASED on arguments:
+    - Start as a Host.
+    - Connect as a Guest.
+    - Load a world from a save file.
+    - IF nothing specified, show a start screen and wait for user input.
 
-    CLASS Network (Host/Guest):
-        Send my pyramids to friend.
-        Get friend's pyramids.
-        Chat "Hello".
+  // ===================
+  // == Main Game Loop ==
+  // ===================
+  LOOP until user quits:
 
-SECTION 4: THE SPECIAL EFFECTS (Rendering)
-    FUNCTION Draw_Black_Hole():
-        Find center of universe.
-        Draw black circle (The Shadow).
-        Draw glowing donut (Accretion Disk).
-        // The tricky part:
-        Bend the light of the back of the donut so it looks like it's above the black hole.
-        Change colors: Red if moving away, Blue if coming closer.
+    // 1. TIMING
+    CALCULATE time passed since the last frame.
 
-    FUNCTION Draw_Past_4Sphere():
-        Pretend the "Past" is a giant bubble around the camera.
-        Draw dots on the bubble.
-        Color them based on how "old" they are.
+    // 2. INPUT HANDLING
+    FOR each keyboard or mouse event:
+      HANDLE window quitting or resizing.
+      HANDLE key presses for actions like:
+        - Save, Reset, Explode.
+        - Spawn new tet.
+        - Host a new game, Join a game.
+      HANDLE mouse clicks:
+        - IF click on another player's avatar, PROMPT for a chat message and send.
+        - IF left-click on a vertex, START dragging it.
+        - IF right-click and drag, ROTATE the camera.
+        - IF left-click on a joint, DELETE it.
+      HANDLE mouse wheel to ZOOM camera.
 
-SECTION 5: THE MAIN LOOP (The Heartbeat)
-    STARTUP:
-        Did human type an IP address? -> Connect to friend.
-        Did human type nothing? -> Start alone in the void.
+    // 3. GAME STATE UPDATE
+    UPDATE camera position and rotation from keyboard/mouse input.
 
-    WHILE Program_Is_Running:
-        1. LISTEN TO HUMAN:
-           - Pressed 'W/A/S/D'? -> Move Camera.
-           - Clicked Mouse? -> Drag a pyramid.
-           - Pressed Space? -> Create new pyramid.
+    IF an object is being dragged:
+      CALCULATE the 3D position of the mouse cursor.
+      APPLY force to the object to pull it towards the cursor, scaled by zoom level.
+      HIGHLIGHT potential connection points on other nearby tets.
 
-        2. TALK TO INTERNET:
-           - If Hosting: Send world data to guest.
-           - If Guest: Ask host "Where are the things?"
+    IF game is in single-player or host mode:
+      CALL World.update() to run one step of the physics simulation.
+      IF hosting, BROADCAST the updated World state to all clients.
 
-        3. DO PHYSICS:
-           - Update the World (Move pyramids, calculate magnets).
+    ELSE IF game is in client mode:
+      APPLY the latest World state received from the host.
+      SEND local camera position to the host.
 
-        4. DRAW PICTURES:
-           - Fill background (Red if chaotic, Blue if calm).
-           - Draw the 4-Sphere "Past" bubbles.
-           - Draw the Black Hole & Lensed Donut.
-           - Draw the Pyramids (calculate 3D -> 2D).
-           - Draw Text (FPS, Chat messages).
+    // 4. DRAWING
+    CLEAR the screen.
+    DRAW the background effects (starfield, swirling "past" tets).
+    DRAW all world objects (tets, joints, connection lines), sorted by depth.
+    DRAW player avatars at their respective camera locations.
+    DRAW all on-screen text (FPS, game info, temporary messages, chat).
+    UPDATE the display.
 
-        5. FLIP SCREEN:
-           - Show the new picture to the human.
-           - Wait a tiny bit (to keep 60 FPS).
+  END LOOP
+  // ===================
+  // == End Game Loop ==
+  // ===================
 
-    END WHILE
-END PROGRAM
+  CLEAN UP network connections and quit.
 """
 
 import pygame
@@ -193,7 +204,7 @@ MIN_ZOOM_DIST = DEFAULT_CAM_DIST / 100.0
 MAX_ZOOM_DIST = DEFAULT_CAM_DIST / 0.01
 
 # =========================================================================
-# v3.1 UNIFIED LAW OF BALANCE CONSTANTS (Klein-Metric Adjusted)
+# v3.0 UNIFIED LAW OF BALANCE CONSTANTS
 # =========================================================================
 K_UNIFIED_FORCE = 0.0000002
 
@@ -205,6 +216,7 @@ FIELD_QUADRATIC_DECAY = 0.000001
 
 # --- ENERGY EQUILIBRIUM PARAMETERS ---
 ENERGY_EQUILIBRIUM_RATE = 0.05
+# =========================================================================
 
 SAVE_FILENAME = "tetcraft_save.json"
 
@@ -238,7 +250,6 @@ def norm_axis_njit(arr):
 
 @njit(fastmath=True, cache=True)
 def get_ambient_energy_field(dist_from_origin):
-    # Field represents the gradient of the 4-sphere projection
     exp_term = FIELD_AMPLITUDE * np.exp(-(dist_from_origin / FIELD_SCALE)**2)
     linear_decay = FIELD_LINEAR_DECAY * dist_from_origin
     quadratic_decay = FIELD_QUADRATIC_DECAY * dist_from_origin**2
@@ -250,26 +261,17 @@ def project_many_jit(vecs, pan, yaw, pitch, dist, width, height):
     cp, sp = math.cos(pitch), math.sin(pitch)
     transformed = vecs - pan
     x, y, z = transformed[:, 0], transformed[:, 1], transformed[:, 2]
-    # Rotate Y (Yaw) then X (Pitch)
     x_rot = cy * x - sy * z
     z_rot = sy * x + cy * z
     y_rot = cp * y - sp * z_rot
     z_final = sp * y + cp * z_rot
-
     depth = dist + z_final
-    # Prevent divide by zero / behind camera glitches
-    # Using a small epsilon for "near plane"
-    safe_depth = np.where(depth < 0.1, 0.1, depth)
-
-    scale = FOCAL_LENGTH / safe_depth
+    depth[np.abs(depth) < 0.1] = 0.1
+    scale = FOCAL_LENGTH / depth
     screen_x = width / 2 + x_rot * scale
     screen_y = height / 2 - y_rot * scale
-
-    # Mark points behind camera
-    mask = depth <= 0.1
-    screen_x[mask] = -10000
-    screen_y[mask] = -10000
-
+    screen_x[depth <= 0.1] = -1000
+    screen_y[depth <= 0.1] = -1000
     return np.stack((screen_x, screen_y), axis=1)
 
 @njit(fastmath=True, cache=True)
@@ -278,10 +280,9 @@ def get_transformed_z_many_jit(vecs, pan, yaw, pitch):
     cp, sp = math.cos(pitch), math.sin(pitch)
     transformed = vecs - pan
     x, y, z = transformed[:, 0], transformed[:, 1], transformed[:, 2]
-    # Standard rotation matrix application for Z depth
-    z_rot = sy * x + cy * z
-    z_final = sp * y + cp * z_rot
-    return z_final
+    zz = sy * x + cy * z
+    zz2 = sp * y + cp * zz
+    return zz2
 
 @njit(fastmath=True, cache=True)
 def world_update_physics_jit(
@@ -294,58 +295,43 @@ def world_update_physics_jit(
 
     dist_from_origin = np.sqrt(np.sum(positions**2, axis=1))
     ambient_energies = get_ambient_energy_field(dist_from_origin)
-
-    # Unified Force: Matter seeks energy equilibrium
     energy_delta = ambient_energies - batteries
     force_magnitudes = energy_delta * K_UNIFIED_FORCE * (dist_from_origin + 1.0)
     radial_directions = norm_axis_njit(positions)
     acc += radial_directions * force_magnitudes[:, np.newaxis]
 
-    # Energy Transfer
     energy_transfer = (ambient_energies - batteries) * ENERGY_EQUILIBRIUM_RATE * scaled_dt
     batteries += energy_transfer
     batteries = np.clip(batteries, 0.0, 1.0)
 
-    # Sticky Pairs (Cohesion)
     for i in range(sticky_pairs_data.shape[0]):
         idx1, v_idx1, idx2, v_idx2 = sticky_pairs_data[i]
         p1 = positions[idx1] + locals[idx1, v_idx1]
         p2 = positions[idx2] + locals[idx2, v_idx2]
         delta = p2 - p1
         dist = np.linalg.norm(delta)
-
         if dist > 1e-6:
             battery_diff = abs(batteries[idx1] - batteries[idx2])
             harmony_factor = 1.0 / (battery_diff + STICKY_PULL_HARMONY_SENSITIVITY)
             harmony_factor = min(harmony_factor, 1.0 / STICKY_PULL_HARMONY_SENSITIVITY)
-
             force_magnitude = K_STICKY_PULL * harmony_factor
-
-            # Exponential snap strength if pulled apart
             if dist > STICKY_EXPONENTIAL_THRESHOLD:
                 multiplier = (dist / STICKY_EXPONENTIAL_THRESHOLD)**2
                 multiplier = min(100.0, multiplier)
                 force_magnitude *= multiplier
-
             force_vec = delta / dist * force_magnitude
             acc[idx1] += force_vec
             acc[idx2] -= force_vec
 
-    # Verlet Integration
     pos_temp = positions.copy()
     positions += (positions - positions_prev) * DAMPING + acc * dt_sq
     positions_prev[:] = pos_temp
 
-    # Local Shape Constraint (Rigid Body Approximation)
     local_temp = locals.copy()
     locals += (locals - locals_prev) * DAMPING
     locals_prev[:] = local_temp
-
-    # Center locals (prevent drift)
     mean_centers = np.sum(locals, axis=1) / 4.0
     locals -= mean_centers[:, np.newaxis, :]
-
-    # Edge constraints (keep tetrahedrons tetrahedral)
     for _ in range(3):
         p1 = locals[:, edges[:, 0], :]
         p2 = locals[:, edges[:, 1], :]
@@ -355,22 +341,18 @@ def world_update_physics_jit(
         safe_dist = np.where(mask, dist, 1.0)
         diff = (safe_dist - EDGE_LEN) / safe_dist * 0.5
         correction = delta * diff[:, :, np.newaxis]
-
-        # Apply corrections
         for i in range(num_tets):
             if not np.any(mask[i]): continue
             for j in range(edges.shape[0]):
                 if mask[i, j]:
                     locals[i, edges[j, 0], :] += correction[i, j, :]
                     locals[i, edges[j, 1], :] -= correction[i, j, :]
-
     return positions, positions_prev, locals, locals_prev, batteries
 
 @njit(fastmath=True, cache=True)
 def update_magnetic_effects_jit(locals_arr, orientation_biases, positions, magnet_indices, magnet_polarities, scaled_dt):
     num_magnets = magnet_indices.shape[0]
     orientation_biases *= MAGNETIC_BIAS_DECAY
-
     if num_magnets < 2: return locals_arr, orientation_biases
 
     for i_idx, tet_idx1 in enumerate(magnet_indices):
@@ -380,7 +362,6 @@ def update_magnetic_effects_jit(locals_arr, orientation_biases, positions, magne
             delta = positions[tet_idx2] - positions[tet_idx1]
             dist_sq = np.dot(delta, delta)
             if dist_sq > 1e-6:
-                # Inverse square law approximation
                 field_strength = magnet_polarities[j_idx] / (dist_sq + MAGNETIC_EPSILON_SQ)
                 net_b_field += delta * (field_strength / np.sqrt(dist_sq))
 
@@ -388,20 +369,15 @@ def update_magnetic_effects_jit(locals_arr, orientation_biases, positions, magne
         bias += (net_b_field - bias) * K_MAGNETIC_BIAS_BUILDUP * scaled_dt
         orientation_biases[tet_idx1] = bias
 
-        # Apply torque to locals based on alignment
-        # Face 0 (Base) defines "forward" for the magnet
         moment_vec = norm_njit(locals_arr[tet_idx1, 0]) * magnet_polarities[i_idx]
         total_field = net_b_field + bias
         torque_vec = np.cross(moment_vec, total_field)
         torque_magnitude = np.linalg.norm(torque_vec)
-
         if torque_magnitude > 1e-6:
             rotation_amount = torque_magnitude * K_MAGNETIC_TORQUE * scaled_dt
-            # Rotate all vertices
             for v_idx in range(4):
                  rotated_vec = locals_arr[tet_idx1, v_idx] + np.cross(torque_vec, locals_arr[tet_idx1, v_idx]) * rotation_amount
                  locals_arr[tet_idx1, v_idx] = rotated_vec
-
     return locals_arr, orientation_biases
 
 @njit(fastmath=True, cache=True)
@@ -450,39 +426,23 @@ def resolve_joints_jit(locals_arr, joints_data):
 class Camera:
     def __init__(self):
         self.yaw, self.pitch, self.dist, self.pan = 0.0, 0.35, DEFAULT_CAM_DIST, np.zeros(3)
-        self.forward = np.array([0.0, 0.0, 1.0])
-        self.right = np.array([1.0, 0.0, 0.0])
-        self.up = np.array([0.0, 1.0, 0.0])
-
-    def update_vectors(self):
-        cy, sy = math.cos(self.yaw), math.sin(self.yaw)
-        cp, sp = math.cos(self.pitch), math.sin(self.pitch)
-        # Calculate Forward vector (Simulating View Matrix rotation)
-        self.forward = np.array([sy * cp, -sp, cy * cp])
-        self.right = np.array([cy, 0, -sy]) # Simplified right vector on XZ plane
-        self.up = np.cross(self.right, self.forward)
-
     def get_transformed_z(self, v):
         v = v - self.pan; cy, sy = math.cos(self.yaw), math.sin(self.yaw); cp, sp = math.cos(self.pitch), math.sin(self.pitch)
         x, y, z = v; zz = sy*x + cy*z; zz2 = sp*y + cp*zz
         return zz2
-
     def project(self, v):
         global WIDTH, HEIGHT
         v = v - self.pan; cy, sy = math.cos(self.yaw), math.sin(self.yaw); cp, sp = math.cos(self.pitch), math.sin(self.pitch)
         x, y, z = v; x, z = cy*x - sy*z, sy*x + cy*z; y, z = cp*y - sp*z, sp*y + cp*z
         depth = self.dist + z
-        if depth <= 0.1: return (-10000, -10000)
+        if depth <= 0.1: return (-1000, -1000)
         scale = FOCAL_LENGTH / depth
         return (WIDTH//2 + int(x * scale), HEIGHT//2 - int(y * scale))
-
     def project_many(self, vecs):
         global WIDTH, HEIGHT
         return project_many_jit(vecs, self.pan, self.yaw, self.pitch, self.dist, WIDTH, HEIGHT)
-
     def get_transformed_z_many(self, vecs):
         return get_transformed_z_many_jit(vecs, self.pan, self.yaw, self.pitch)
-
     def unproject(self, screen_pos, depth_z):
         global WIDTH, HEIGHT; mx, my = screen_pos
         scale = FOCAL_LENGTH / (self.dist + depth_z + 1e-9)
@@ -492,7 +452,6 @@ class Camera:
         y_rot, z_rot = cp * y_cam + sp * depth_z, -sp * y_cam + cp * depth_z
         x_world, z_world = cy * x_cam + sy * z_rot, -sy * x_cam + cy * z_rot
         return np.array([x_world, y_rot, z_world]) + self.pan
-
     def zoom(self, factor): self.dist = np.clip(self.dist * factor, MIN_ZOOM_DIST, MAX_ZOOM_DIST)
     def get_state(self): return {'yaw': self.yaw, 'pitch': self.pitch, 'dist': self.dist, 'pan': self.pan}
     def set_state(self, state): self.yaw, self.pitch, self.dist, self.pan = state['yaw'], state['pitch'], state['dist'], np.array(state['pan'])
@@ -500,16 +459,12 @@ class Camera:
 @njit(cache=True)
 def norm(v):
     n = np.linalg.norm(v); return v / n if n > 1e-9 else np.zeros_like(v)
-
-# --- FIXED JIT FUNCTION: REMOVED INTERNAL np.array() CASTING ---
 @njit(cache=True)
 def dist_point_to_line_segment(p, a, b):
-    # p, a, b are expected to be numpy arrays passed from caller
-    ap = p - a
-    ab = b - a
-    dot_ab = np.dot(ab, ab)
-    t = np.dot(ap, ab) / (dot_ab + 1e-9)
-    t = max(0.0, min(1.0, t))
+    a, b = np.array(a), np.array(b)
+    ap = p - a; ab = b - a
+    t = np.dot(ap, ab) / (np.dot(ab, ab) + 1e-9)
+    t = max(0, min(1, t))
     closest = a + t * ab
     return np.linalg.norm(p - closest)
 
@@ -556,78 +511,31 @@ class PastTetrahedron(Tetrahedron):
         super().__init__(pos)
         self.colors = [(0,0,0)] * 4
 
-# --- REWORKED PAST PROJECTION CLASS ---
-class PastProjection4Sphere:
-    """
-    Simulates the projection of the past on a 4-sphere topology.
-    Instead of a single clump, it projects points onto a hypersphere shell
-    surrounding the observer, red/blue shifted by time delta.
-    """
+class PastClump:
     def __init__(self):
-        self.points = []
-        self.max_points = 200
-        self.rotation_4d = np.eye(4)
-        self.angle_accum = 0.0
-
-    def update_and_draw(self, screen, cam, center_of_mass, num_tets, time_scale, width, height):
-        target_points = min(num_tets * 4, self.max_points)
-
-        # Populate points if needed (representing past echoes)
-        while len(self.points) < target_points:
-            # Random point on 3-sphere (unit 4D vector)
-            u = np.random.normal(0, 1, 4)
-            u /= np.linalg.norm(u)
-            self.points.append(u)
-
-        # Rotate the 4-sphere based on time
-        self.angle_accum += 0.002 * time_scale
-        c, s = math.cos(0.005 * time_scale), math.sin(0.005 * time_scale)
-        # Simple rotation in XW and YZ planes to simulate 4D tumble
-        rot_xw = np.array([[c, 0, 0, -s], [0, 1, 0, 0], [0, 0, 1, 0], [s, 0, 0, c]])
-
-        center_screen = np.array([width//2, height//2])
-
-        # Calculate appearance based on camera orientation vs 4D projection
-        # We project 4D -> 3D Stereographic -> 2D Screen
-
-        radius = 800.0  # Distance of the "Past" shell
-
-        for i, p4 in enumerate(self.points):
-            # Apply 4D rotation
-            p4 = np.dot(rot_xw, p4)
-            self.points[i] = p4 # Store state
-
-            # Stereographic projection 4D -> 3D
-            # (x,y,z) = (X,Y,Z) / (1 - W)
-            denom = 1.0 - p4[3]
-            if abs(denom) < 0.001: denom = 0.001
-            p3 = p4[:3] / denom * radius + center_of_mass
-
-            # Now project to 2D using camera
-            screen_pos = cam.project(p3)
-
-            # Check if strictly behind black hole?
-            # The prompt says: "appearing only as a point on the 4sphere, which should be behind the black hole"
-            # In a 4-sphere, "Behind" the center in 4D space maps to the "outside" or "infinity" in 3D projection.
-
-            if screen_pos[0] > -1000:
-                # Color based on W component (time depth) and velocity
-                shift = (p4[3] + 1) / 2.0 # 0 to 1
-
-                # Redshift/Blueshift logic
-                # W > 0 (Future-ward/Receding) -> Red
-                # W < 0 (Past-ward/Approaching loop) -> Blue
-                red = int(255 * shift)
-                blue = int(255 * (1-shift))
-                color = (np.clip(red, 50, 255), 20, np.clip(blue, 50, 255))
-
-                size = max(1, int(4 * (1.0 - abs(p4[3]))))
-
-                # Topology wrapping: Top/Bottom map through Left/Right
-                # Just visualization: if close to borders, draw phantom points?
-                # For now, just draw the main point.
-                if 0 <= screen_pos[0] < width and 0 <= screen_pos[1] < height:
-                     pygame.draw.circle(screen, color, screen_pos, size)
+        self.tets = []
+        self.yaw, self.pitch, self.roll = 0, 0, 0
+        self.pos = np.array([0, 0, -2500])
+    def update(self, num_tets_in_world, time_scale, center_of_mass, time_lerp):
+        self.pos = center_of_mass + np.array([0, 0, -2500])
+        target_num_tets = max(1, num_tets_in_world - 3)
+        while len(self.tets) < target_num_tets: self.tets.append(PastTetrahedron(np.random.uniform(-10, 10, 3)))
+        while len(self.tets) > target_num_tets: self.tets.pop()
+        spin_factor = (time_scale - 1.0) * 0.5
+        if time_scale < 0.5: spin_factor += (0.5 - time_scale) * 2.0
+        if time_scale > 7.5: spin_factor += (time_scale - 7.5) * 0.5
+        self.yaw += 0.002 * spin_factor; self.pitch += 0.003 * spin_factor; self.roll += 0.005 * spin_factor
+        cy, sy = math.cos(self.yaw), math.sin(self.yaw); cp, sp = math.cos(self.pitch), math.sin(self.pitch); cr, sr = math.cos(self.roll), math.sin(self.roll)
+        rot_matrix = np.array([[cp*cy, sp*sr - cp*sy*cr, sp*cr + cp*sy*sr], [sy, cy*cr, -cy*sr], [-sp*cy, cp*sr + sp*sy*cr, cp*cr - sp*sy*sr]])
+        color_lerp_val = np.clip((time_scale - 0.5) / 7.0, 0, 1)
+        color = np.array([180, 50, 50]) * color_lerp_val + np.array([50, 50, 180]) * (1 - color_lerp_val)
+        clump_scale_factor = 0.1 + 0.9 * time_lerp
+        clump_radius = (len(self.tets) * 3) * clump_scale_factor
+        for i, tet in enumerate(self.tets):
+            offset = np.array([math.sin(i*2.1), math.cos(i*1.7), math.sin(i*0.8)]) * clump_radius
+            tet.pos = self.pos + np.dot(rot_matrix, offset)
+            tet.local = np.dot(tet.REST_NP, rot_matrix.T)
+            tet.colors = [np.clip(color, 0, 255)] * 4
 
 class World:
     def __init__(self, sound):
@@ -716,7 +624,7 @@ class World:
     def get_state(self):
         tet_states = [{'id': t.id, 'pos': t.pos, 'pos_prev': t.pos_prev, 'local': t.local, 'local_prev': t.local_prev, 'battery': t.battery, 'colors': t.colors, 'label': t.label, 'orientation_bias': t.orientation_bias} for t in self.tets]
         joint_states = [{'A_id': j.A.id, 'ia': j.ia, 'B_id': j.B.id, 'ib': j.ib} for j in self.joints]
-        return {'tets': tet_states, 'joints': joint_states, 'center_of_mass': self.center_of_mass}
+        return {'tets': tet_states, 'joints': joint_states}
     def set_state(self, state):
         self.tets.clear(); self.joints.clear(); self.sticky_pairs.clear()
         tet_map = {}
@@ -731,7 +639,6 @@ class World:
             try:
                 if js['A_id'] in tet_map and js['B_id'] in tet_map: self.joints.append(VertexJoint(tet_map[js['A_id']], js['ia'], tet_map[js['B_id']], js['ib']))
             except (KeyError, TypeError): continue
-        if 'center_of_mass' in state: self.center_of_mass = np.array(state['center_of_mass'])
         print(f"Loaded {len(self.tets)} tets and {len(self.joints)} joints.")
 
 net_avatars = {}; net_messages = deque(maxlen=5); game_mode = 'single_player'; host_instance, guest_instance = None, None
@@ -744,9 +651,6 @@ def prime_jit_functions(cam):
     world_update_physics_jit(dummy_pos, dummy_pos_prev, dummy_locals, dummy_locals_prev, dummy_batteries, 1/60.0, 1.0, dummy_edges, dummy_sticky_pairs)
     update_magnetic_effects_jit(dummy_locals, dummy_orientation_biases, dummy_pos, dummy_magnet_indices, dummy_magnet_polarities, 1/60.0)
     conserve_momentum_jit(dummy_pos, dummy_pos_prev); resolve_collisions_jit(dummy_pos, np.array([[0, 1], [2, 3]])); resolve_joints_jit(dummy_locals, dummy_joints)
-    # Prime the dist func
-    dist_point_to_line_segment(np.array([1.0, 1.0], dtype=np.float64), np.array([0.0, 0.0], dtype=np.float64), np.array([2.0, 2.0], dtype=np.float64))
-
 def show_intro(screen, cam):
     global WIDTH, HEIGHT
     font_lg = pygame.font.SysFont('Arial Black', min(WIDTH, HEIGHT)//8); font_sm = pygame.font.SysFont('Arial', min(WIDTH, HEIGHT)//25); font_jit = pygame.font.SysFont('Monospace', 18)
@@ -772,169 +676,98 @@ def show_void_screen(screen, world):
         screen.fill((10,10,20)); line1 = font_lg.render("Welcome to the void of (mis)understanding...", True, (200,200,200)); line2 = font_sm.render("(Press SPACE to begin)", True, (150,150,150))
         screen.blit(line1, line1.get_rect(center=(WIDTH//2, HEIGHT//2-30))); screen.blit(line2, line2.get_rect(center=(WIDTH//2, HEIGHT//2+30))); pygame.display.flip(); clock.tick(15)
 
-# --- REWORKED BLACK HOLE RENDERER ---
-def draw_standard_black_hole(screen, cam, flags, tl, center_pos):
+def draw_black_hole_and_disk(screen, cam, flags, tl, cam_forward):
     """
-    Renders a Schwarzschild-like black hole with dual accretion disks (Horizontal + Vertical).
-    Mixing occurs based on camera angle.
-    Includes gravitational lensing distortion and Doppler shift.
+    Draws two accretion disks (horizontal and vertical), making the most "face-on"
+    disk a full circle and the other a half-circle occluded by the first.
     """
-    if not flags['t3']: return
+    global WIDTH, HEIGHT
+    is_looking_forward = np.dot(norm(cam_forward), [0, 0, 1]) > 0.7
+    if not (flags['t3'] and is_looking_forward):
+        return
 
-    # Calculate screen center for the BH (projected infinity or center mass)
-    # The prompt says it should always be "ahead". We map "ahead" to the center of mass
-    # but strictly enforce z-sorting so it appears as the backdrop for future.
+    # --- Tweakable Constants ---
+    SHADOW_RADIUS_FACTOR = 1.0; LENSING_LIFT_FACTOR = 0.35
+    DOPPLER_BEAMING_FACTOR = 2.5; GRAVITATIONAL_REDSHIFT_DIMMING = 0.6
+    center_x, center_y = WIDTH // 2, HEIGHT // 2
+    shadow_radius = int((WIDTH / 2.8) * tl * SHADOW_RADIUS_FACTOR)
+    if shadow_radius <= 2: return
+    disk_inner_radius, disk_outer_radius = shadow_radius, shadow_radius * 2.5
+    num_segments = 90
 
-    bh_screen_pos = cam.project(center_pos)
-    if bh_screen_pos[0] == -10000: return # Behind camera
+    # Nested helper function to draw a single disk
+    def _draw_single_disk(orientation, is_full_disk):
+        lensed_surf = pygame.Surface((WIDTH, HEIGHT), pygame.SRCALPHA)
+        polygons = []
+        pitch_squash = abs(math.sin(cam.pitch))
+        yaw_squash = abs(math.cos(cam.yaw))
 
-    cx, cy = bh_screen_pos
+        for i in range(num_segments):
+            angle1, angle2 = 2*math.pi*i/num_segments, 2*math.pi*(i+1)/num_segments
+            avg_angle = (angle1 + angle2) / 2.0
 
-    # Radius grows with Time Scale (Chaos)
-    radius_base = (WIDTH / 6.0) * tl
-    shadow_radius = radius_base * 0.8
-    if shadow_radius < 5: return
+            if not is_full_disk:
+                if orientation == 'horizontal': # Occluded by vertical YZ plane
+                    is_visible = (math.cos(avg_angle) * cam_forward[0]) <= 0
+                else: # Vertical, occluded by horizontal XZ plane
+                    is_visible = (math.cos(avg_angle) * cam_forward[1]) <= 0
+                if not is_visible: continue
 
-    # Camera vectors
-    cam.update_vectors()
-    view_dir = cam.forward
+            if orientation == 'horizontal':
+                doppler_factor = math.cos(avg_angle - cam.yaw)
+                red, blue = 128 + 127*doppler_factor, 128 - 127*doppler_factor
+            else: # Vertical
+                doppler_factor = -math.sin(avg_angle)
+                red, blue = 128 + 127*doppler_factor, 128 - 127*doppler_factor
 
-    # 1. Determine disk orientations
-    # Horizontal disk normal is Y-up (0,1,0)
-    # Vertical disk normal is X-right (1,0,0) (arbitrary choice for "Vertical")
+            brightness = (1.0 + doppler_factor * DOPPLER_BEAMING_FACTOR)**2
+            brightness *= (GRAVITATIONAL_REDSHIFT_DIMMING + (1.0 - GRAVITATIONAL_REDSHIFT_DIMMING))
+            halo_brightness = brightness * 0.7
 
-    # Calculate viewing angles for mixing
-    dot_h = abs(np.dot(view_dir, np.array([0, 1, 0]))) # 1 if looking from top, 0 if edge on
-    dot_v = abs(np.dot(view_dir, np.array([1, 0, 0])))
+            halo_color = (np.clip(red*halo_brightness,0,255), np.clip(60*halo_brightness,0,255), np.clip(blue*halo_brightness,0,255), 255)
+            disk_color = (np.clip(red*brightness,0,255), np.clip(60*brightness,0,255), np.clip(blue*brightness,0,255), 255)
 
-    # Draw function for a single disk ring
-    def draw_lensed_disk(normal, color_base, phase_offset):
-        # Create a surface for the disk
-        disk_surf = pygame.Surface((WIDTH, HEIGHT), pygame.SRCALPHA)
+            points = []
+            for radius in [disk_outer_radius, disk_inner_radius]:
+                for angle in [angle2, angle1]:
+                    if orientation == 'horizontal':
+                        px, py = center_x + radius*math.cos(angle), center_y + radius*math.sin(angle)*pitch_squash
+                    else: # vertical
+                        px, py = center_x + radius*math.sin(angle)*yaw_squash, center_y + radius*math.cos(angle)
+                    points.append((px, py))
+            polygons.append({'color': disk_color, 'points': points})
 
-        # Geometry config
-        segments = 60
-        inner_r = shadow_radius * 1.5
-        outer_r = shadow_radius * 3.5
+            lensed_points = []
+            for x, y in points:
+                vertical_lift = (y - center_y) * LENSING_LIFT_FACTOR
+                lifted_y = y - abs(vertical_lift) if (y < center_y) else y + abs(vertical_lift)
+                lensed_points.append((x, lifted_y))
+            pygame.draw.polygon(lensed_surf, halo_color, lensed_points)
 
-        # Basis vectors for the disk plane
-        if abs(normal[1]) > 0.9: # Horizontal Plane (XZ)
-            u_vec = np.array([1, 0, 0])
-            v_vec = np.array([0, 0, 1])
-        else: # Vertical Plane (YZ)
-            u_vec = np.array([0, 1, 0])
-            v_vec = np.array([0, 0, 1])
+        return polygons, lensed_surf
 
-        # Pre-calculate projected points
-        pts_inner = []
-        pts_outer = []
+    # --- Facing Logic ---
+    horizontal_normal = np.array([0, 1, 0]); vertical_normal = np.array([1, 0, 0])
+    horizontal_facing = abs(np.dot(cam_forward, horizontal_normal))
+    vertical_facing = abs(np.dot(cam_forward, vertical_normal))
 
-        # Doppler shift calculation vector (tangent to rotation)
-        # Assume counter-clockwise rotation
+    # The MORE facing disk is now the full one (fg), the LESS facing is the half (bg)
+    if horizontal_facing >= vertical_facing:
+        fg_orient, bg_orient = 'horizontal', 'vertical'
+    else:
+        fg_orient, bg_orient = 'vertical', 'horizontal'
 
-        for i in range(segments + 1):
-            theta = (i / segments) * 2 * math.pi
+    bg_polys, bg_lensed = _draw_single_disk(bg_orient, is_full_disk=False)
+    fg_polys, fg_lensed = _draw_single_disk(fg_orient, is_full_disk=True)
 
-            # Position in disk plane
-            pos_local = (u_vec * math.cos(theta) + v_vec * math.sin(theta))
-
-            # Doppler factor: Dot product of velocity (tangent) and view direction projected on plane
-            # Tangent is (-sin, cos) in u,v basis
-            tangent = (-u_vec * math.sin(theta) + v_vec * math.cos(theta))
-            doppler = np.dot(tangent, view_dir)
-
-            # World positions
-            p_in = center_pos + pos_local * inner_r
-            p_out = center_pos + pos_local * outer_r
-
-            # Project to screen
-            s_in = cam.project(p_in)
-            s_out = cam.project(p_out)
-
-            if s_in[0] == -10000 or s_out[0] == -10000: continue
-
-            # --- LENSING LOGIC ---
-            # If the point is "behind" the black hole relative to camera, pull it out
-            # Calculate distance from screen center
-            dx_in, dy_in = s_in[0] - cx, s_in[1] - cy
-            dist_sq_in = dx_in*dx_in + dy_in*dy_in + 0.1
-
-            # Lensing factor (Einstein radius approx)
-            lens_str = 20000.0 * radius_base
-
-            # Simple distortion: if behind (dot product with view > 0 from center), lift up
-            # Actually, standard BH visuals: The back of the disk bends UP and DOWN.
-
-            # We approximate by pushing points away from center of screen inverse to distance
-            # Only apply strong lensing to the "back" of the disk
-            # Back is where pos_local dot view_dir > 0
-            is_back = np.dot(pos_local, view_dir) > 0
-
-            if is_back:
-                # Vertical displacement on screen
-                lens_y = (lens_str / dist_sq_in) * (1.0 if s_in[1] < cy else -1.0)
-                s_in = (s_in[0], s_in[1] - lens_y * 0.5) # Pull inner edge
-
-                dx_out, dy_out = s_out[0] - cx, s_out[1] - cy
-                dist_sq_out = dx_out*dx_out + dy_out*dy_out + 0.1
-                lens_y_out = (lens_str / dist_sq_out) * (1.0 if s_out[1] < cy else -1.0)
-                s_out = (s_out[0], s_out[1] - lens_y_out * 0.2)
-
-            pts_inner.append((s_in, doppler))
-            pts_outer.append((s_out, doppler))
-
-        # Draw quads
-        for i in range(len(pts_inner) - 1):
-            p1, d1 = pts_inner[i]
-            p2, d2 = pts_outer[i]
-            p3, d3 = pts_outer[i+1]
-            p4, d4 = pts_inner[i+1]
-
-            # Color modulation
-            # Redshift (receding -> d > 0 -> Red), Blueshift (approaching -> d < 0 -> Blue)
-            d_avg = (d1 + d2 + d3 + d4) / 4.0
-
-            intensity = 0.5 + 0.5 * math.cos(phase_offset) # Simple texture
-
-            # Base Colors
-            c_r, c_g, c_b = color_base
-
-            # Apply Doppler
-            # d_avg ranges roughly -1 to 1
-            shift = (d_avg + 1) / 2.0 # 0 to 1
-
-            # Approaching (0) -> Blue/White, Receding (1) -> Red/Dim
-            red_mult = 0.5 + shift
-            blue_mult = 1.5 - shift
-            bright_mult = 1.0 - (shift * 0.4) # Receding is dimmer
-
-            final_color = (
-                np.clip(c_r * red_mult * bright_mult, 0, 255),
-                np.clip(c_g * 0.8 * bright_mult, 0, 255),
-                np.clip(c_b * blue_mult * bright_mult, 0, 255),
-                180 # Alpha
-            )
-
-            pygame.draw.polygon(disk_surf, final_color, [p1, p2, p3, p4])
-
-        return disk_surf
-
-    # Render Horizontal
-    # Mix factor: If looking straight down (dot=1), horizontal is full circle.
-    # If looking edge on (dot=0), it's a line (but lensed).
-    surf_h = draw_lensed_disk(np.array([0,1,0]), (255, 100, 50), pygame.time.get_ticks()*0.002)
-    screen.blit(surf_h, (0,0))
-
-    # Render Vertical (if mixed)
-    if dot_h < 0.9: # If not looking straight down at horizontal, see vertical
-        surf_v = draw_lensed_disk(np.array([1,0,0]), (50, 100, 255), pygame.time.get_ticks()*0.003)
-        screen.blit(surf_v, (0,0))
-
-    # Draw The Shadow (Event Horizon)
-    # Just a black circle at the center, ensuring it covers the back-lensed geometry
-    pygame.draw.circle(screen, (0,0,0), (cx, cy), int(shadow_radius))
-    # Photon ring (thin bright line)
-    pygame.draw.circle(screen, (255, 240, 200), (cx, cy), int(shadow_radius * 1.05), 2)
+    # --- RENDER LAYERS IN CORRECT PHYSICAL ORDER ---
+    screen.blit(bg_lensed, (0, 0)); screen.blit(fg_lensed, (0, 0))
+    photon_ring_radius = shadow_radius * 0.98
+    pygame.draw.circle(screen, (255, 240, 200, 50), (center_x, center_y), photon_ring_radius + 2, width=3)
+    pygame.draw.circle(screen, (255, 255, 220), (center_x, center_y), photon_ring_radius, width=1)
+    pygame.draw.circle(screen, (0, 0, 0), (center_x, center_y), shadow_radius)
+    for poly in bg_polys: pygame.draw.polygon(screen, poly['color'], poly['points'])
+    for poly in fg_polys: pygame.draw.polygon(screen, poly['color'], poly['points'])
 
 
 def draw_player_avatar(screen, cam, pos, color, label):
@@ -944,7 +777,7 @@ def draw_player_avatar(screen, cam, pos, color, label):
     sorted_faces = sorted(faces, key=lambda f: sum(cam.get_transformed_z(all_verts[v_idx]) for v_idx in f), reverse=True)
     for face_indices in sorted_faces:
         points = [all_screen_pts[i] for i in face_indices]
-        if all(p[0] > -10000 for p in points):
+        if all(p[0] > -1000 for p in points):
             try:
                 temp_surf = pygame.Surface((WIDTH, HEIGHT), pygame.SRCALPHA)
                 pygame.draw.polygon(temp_surf, (*color, 100), points); screen.blit(temp_surf, (0, 0))
@@ -952,8 +785,7 @@ def draw_player_avatar(screen, cam, pos, color, label):
             except Exception: pass
     font = pygame.font.SysFont(None, 24); ip_text = label.split('_')[-1].split(':')[0]
     label_surf = font.render(ip_text, True, (255, 255, 255)); label_pos = cam.project(pos + np.array([0, EDGE_LEN * 3.5, 0]))
-    if label_pos[0] > -10000: screen.blit(label_surf, label_surf.get_rect(center=label_pos))
-
+    if label_pos[0] > -1000: screen.blit(label_surf, label_surf.get_rect(center=label_pos))
 def get_user_input(screen, prompt, initial_text=""):
     input_text, font, active = initial_text, pygame.font.SysFont(None, 32), True
     while active:
@@ -1063,7 +895,7 @@ class Guest:
 def main():
     print("CLI Options:\n  -connect <ip>:<port>\n  -listen <port>\n  -file <filename>\n  -t <scale> -z <zoom> -o <x,y,z>\n  blacklist.cfg\nTET~CRAFT Initializing...")
     cli_connect_addr, cli_listen_port, cli_load_file = None, None, None
-    cli_time_scale, cli_zoom_factor, cli_cam_pan = None, None, None
+    cli_time_scale, cli_zoom_factor, cli_cam_pan = None, None, None # +++ NEW CLI VARS
     args = sys.argv[1:]; i = 0
     while i < len(args):
         if args[i] == '-connect' and i + 1 < len(args): cli_connect_addr = args[i+1]; i += 1
@@ -1071,6 +903,7 @@ def main():
             cli_listen_port = DEFAULT_PORT
             if i + 1 < len(args) and args[i+1].isdigit(): cli_listen_port = int(args[i+1]); i += 1
         elif args[i] == '-file' and i + 1 < len(args): cli_load_file = args[i+1]; i += 1
+        # +++ NEW CLI PARSING LOGIC +++
         elif args[i] == '-t' and i + 1 < len(args):
             try: cli_time_scale = float(args[i+1]); i += 1
             except ValueError: print(f"Invalid value for -t: {args[i+1]}")
@@ -1083,6 +916,7 @@ def main():
                 if len(coords) == 3: cli_cam_pan = coords; i += 1
                 else: print(f"Invalid format for -o: must be x,y,z. Got: {args[i+1]}")
             except ValueError: print(f"Invalid coordinates for -o: {args[i+1]}")
+        # +++ END NEW CLI PARSING +++
         i += 1
 
     global WIDTH, HEIGHT, clock, game_mode, host_instance, guest_instance, net_avatars, net_messages
@@ -1095,9 +929,11 @@ def main():
     flags = {'t0': False, 't1': False, 't2': False, 'j1': False, 't3': False}; msgs = []
     dragging, rotating, last_mouse = None, False, (0,0); time_scale = 1.0; reset_timer = None
     locked_sticky_target, sticky_unlock_timer = None, None; frame_count = 0
-    rmb_down_timer, rmb_start_pos = None, None; past_projection = PastProjection4Sphere()
-    animation_state = 'IDLE'
+    rmb_down_timer, rmb_start_pos = None, None; past_clump = PastClump(); particles = []
+    animation_state = 'IDLE'; animation_start_time, animation_duration = 0, 0
+    start_zoom, start_time_scale = 0, 1.0; star_field_points = []
 
+    # +++ APPLY CLI SETTINGS +++
     if cli_time_scale is not None: time_scale = cli_time_scale
     if cli_zoom_factor is not None: cam.dist = DEFAULT_CAM_DIST / max(0.01, cli_zoom_factor)
     if cli_cam_pan is not None: cam.pan = (np.array(cli_cam_pan) - 0.5) * 2.0 * FIELD_SCALE
@@ -1105,11 +941,11 @@ def main():
     def add_timed_message(text, y_offset=0, duration=4): msgs.append([text, y_offset, pygame.time.get_ticks() + duration * 1000])
     def add_network_message(text): net_messages.append([text, time.time() + 8])
     def reset_simulation(show_message=True):
-        nonlocal flags, time_scale, world, cam, dragging, rotating, locked_sticky_target, sticky_unlock_timer, animation_state
+        nonlocal flags, time_scale, world, cam, dragging, rotating, locked_sticky_target, sticky_unlock_timer, animation_state, star_field_points
         global game_mode, host_instance, guest_instance, net_avatars, net_messages
         if host_instance: host_instance.stop(); host_instance = None
         if guest_instance: guest_instance.stop(); guest_instance = None
-        world.tets.clear(); world.joints.clear(); world.sticky_pairs.clear(); past_projection.points.clear()
+        world.tets.clear(); world.joints.clear(); world.sticky_pairs.clear(); star_field_points.clear()
         net_avatars.clear(); net_messages.clear(); flags = {k: False for k in flags}
         cam.__init__(); time_scale = 1.0; game_mode = 'single_player'; dragging, rotating = None, False
         locked_sticky_target, sticky_unlock_timer = None, None; animation_state = 'IDLE'
@@ -1200,14 +1036,8 @@ def main():
                     if is_interactive and e.button == 1 and hovered_vertex: dragging = (hovered_vertex[0], hovered_vertex[1], cam.get_transformed_z(hovered_vertex[0].verts()[hovered_vertex[1]])); locked_sticky_target, sticky_unlock_timer = None, None
                     if e.button == 3: rotating, last_mouse, rmb_down_timer, rmb_start_pos = True, e.pos, pygame.time.get_ticks(), e.pos
                     if is_interactive and e.button == 1 and world.joints:
-                        # Fixed the Numba TypeError: ensuring numpy arrays are passed to jit function
-                        mouse_pos_arr = np.array(e.pos, dtype=np.float64)
-                        cj = min(world.joints, key=lambda j: dist_point_to_line_segment(mouse_pos_arr, np.array(cam.project(j.A.verts()[j.ia]), dtype=np.float64), np.array(cam.project(j.B.verts()[j.ib]), dtype=np.float64)), default=None)
-
-                        if cj:
-                            d_check = dist_point_to_line_segment(mouse_pos_arr, np.array(cam.project(cj.A.verts()[cj.ia]), dtype=np.float64), np.array(cam.project(cj.B.verts()[cj.ib]), dtype=np.float64))
-                            if d_check < 8: world.joints.remove(cj)
-
+                        cj = min(world.joints, key=lambda j: dist_point_to_line_segment(np.array(e.pos), cam.project(j.A.verts()[j.ia]), cam.project(j.B.verts()[j.ib])), default=None)
+                        if cj and dist_point_to_line_segment(np.array(e.pos), cam.project(cj.A.verts()[cj.ia]), cam.project(cj.B.verts()[cj.ib])) < 8: world.joints.remove(cj)
             if e.type == pygame.MOUSEBUTTONUP:
                 if is_interactive and e.button == 1 and dragging and locked_sticky_target and dragging[0] != locked_sticky_target[0]: world.sticky_pairs.append((dragging[0], dragging[1], *locked_sticky_target))
                 if e.button == 1: dragging, locked_sticky_target, sticky_unlock_timer = None, None, None
@@ -1222,6 +1052,7 @@ def main():
             if e.type == pygame.MOUSEWHEEL: cam.zoom(ZOOM_SPEED if e.y < 0 else 1/ZOOM_SPEED)
 
         keys = pygame.key.get_pressed()
+        # +++ CAMERA PITCH FIX: Removed np.clip to restore looping behavior +++
         cam.pitch += ORBIT_SPEED * unscaled_dt * (int(keys[pygame.K_w]) - int(keys[pygame.K_s]))
         cam.yaw += ORBIT_SPEED * unscaled_dt * (int(keys[pygame.K_d]) - int(keys[pygame.K_a]))
         if keys[pygame.K_r]: cam.zoom(1/ZOOM_SPEED)
@@ -1234,17 +1065,12 @@ def main():
         if is_interactive and dragging:
             t_drag, i_drag, dd = dragging; m3d = cam.unproject(pygame.mouse.get_pos(), dd); delta = m3d - t_drag.verts()[i_drag]
             t_drag.local[i_drag] += delta * MOUSE_PULL_STRENGTH * (DEFAULT_CAM_DIST / cam.dist); t_drag.pos += delta * BODY_PULL_STRENGTH * (DEFAULT_CAM_DIST / cam.dist)
-            mp2, best_dist = np.array(pygame.mouse.get_pos(), dtype=np.float64), 50; avs = cam.project_many(np.array([t.local + t.pos for t in world.tets]).reshape(-1, 3))
+            mp2, best_dist = np.array(pygame.mouse.get_pos()), 50; avs = cam.project_many(np.array([t.local + t.pos for t in world.tets]).reshape(-1, 3))
             current_hover_target = None
-
-            # Pre-calc dragging point screen pos for JIT
-            drag_pt_screen = np.array(cam.project(t_drag.verts()[i_drag]), dtype=np.float64)
-
             for tidx, tt in enumerate(world.tets):
                 for vidx in range(4):
                     if tt == t_drag and vidx == i_drag: continue
-                    # Call fixed JIT function with explicit arrays
-                    d = dist_point_to_line_segment(avs[tidx*4+vidx], drag_pt_screen, mp2)
+                    d = dist_point_to_line_segment(avs[tidx*4+vidx], cam.project(t_drag.verts()[i_drag]), mp2)
                     if d < best_dist: best_dist, current_hover_target = d, (tt, vidx)
             locked_sticky_target = current_hover_target
             if locked_sticky_target: sticky_unlock_timer = pygame.time.get_ticks() + 5000
@@ -1267,17 +1093,34 @@ def main():
             if len(world.tets) >= 2 and world.joints and not flags['j1']: flags['j1'] = True; add_timed_message("LET THERE BE LIGHT", -20); add_timed_message("To grow old and wise!", 20)
             if len(world.tets) >= 3 and flags['j1'] and not flags['t3']: flags['t3'] = True; add_timed_message("...and, LET THERE BE DARKNESS!", -20); add_timed_message("So light can be misunderstood!", 20)
 
-        # Draw Background / Black Hole
         tl = np.clip((time_scale - 0.1) / 9.9, 0, 1)
-        bg_color = tuple(np.array([30,0,0]) * (1-tl) + np.array([5,5,10]) * tl if flags['t3'] else ((255,255,255) if flags['j1'] else (10,10,20)))
+        bg_color = tuple(np.array([30,0,0]) * (1-tl) + np.array([10,10,20]) * tl if flags['t3'] else ((255,255,255) if flags['j1'] else (10,10,20)))
         screen.fill(bg_color)
 
-        if flags['t3']:
-            # The "Past" - projected 4-Sphere points
-            past_projection.update_and_draw(screen, cam, world.center_of_mass, len(world.tets), time_scale, WIDTH, HEIGHT)
+        cam_forward = np.array([math.sin(cam.yaw)*math.cos(cam.pitch), -math.sin(cam.pitch), math.cos(cam.yaw)*math.cos(cam.pitch)])
+        draw_black_hole_and_disk(screen, cam, flags, tl, cam_forward)
 
-            # The "Future" - Black Hole at center
-            draw_standard_black_hole(screen, cam, flags, tl, world.center_of_mass)
+        if len(world.tets) >= 3 and frame_count % 5 == 0:
+            for _ in range(4):
+                r = 80.0 + len(star_field_points) * 0.05; theta, phi = random.uniform(0, 2*math.pi), math.acos(2*random.uniform(0,1)-1)
+                star_pos = np.array([r*math.sin(phi)*math.cos(theta), r*math.sin(phi)*math.sin(theta), r*math.cos(phi)]) + world.center_of_mass
+                star_field_points.append(star_pos)
+        if star_field_points:
+            for p_star in cam.project_many(np.array(star_field_points)):
+                if 0 <= p_star[0] < WIDTH and 0 <= p_star[1] < HEIGHT: screen.set_at(p_star.astype(int), (200, 200, 200))
+
+        if flags['t3']:
+            past_clump.update(len(world.tets), time_scale, world.center_of_mass, tl)
+            if len(particles) < len(world.tets)*5: particles.extend([np.random.uniform(-1, 1, 3) for _ in range(len(world.tets)*5 - len(particles))])
+            pc = np.clip(np.array([120, 100, 100]) + min(len(world.tets), 50), 0, 255)
+            for p in particles:
+                sp = cam.project(world.center_of_mass + p * FIELD_SCALE * 4)
+                if 0 <= sp[0] < WIDTH and 0 <= sp[1] < HEIGHT: screen.set_at(sp, pc)
+            # +++ ROBUST FIX: Check if camera is pointing strongly towards negative Z +++
+            if cam_forward[2] < -0.7:
+                for ptet in past_clump.tets:
+                    try: pygame.draw.polygon(screen, ptet.colors[0], [cam.project(v) for v in ptet.verts()[ptet.FACES_NP[0]]])
+                    except Exception: pass
 
         if flags['j1']:
             ac = [(255,0,0), (255,255,255) if flags['t3'] else (0,0,0), (0,255,255)] if flags['t3'] else [(255,0,0), (0,0,0)]
@@ -1302,7 +1145,7 @@ def main():
                     cc = [(0,0,0)]*4; cc[2 if t.magnetism==1 else 3] = Tetrahedron.FACE_COLORS[2 if t.magnetism==1 else 3]
                 for fidx in np.argsort(np.mean(cam.get_transformed_z_many(world_verts[Tetrahedron.FACES_NP]), axis=1))[::-1]:
                     points = screen_pts[Tetrahedron.FACES_NP[fidx]]
-                    if not np.any(points < -100): pygame.draw.polygon(screen, cc[fidx], points)
+                    if not np.any(points < 0): pygame.draw.polygon(screen, cc[fidx], points)
                 for i, j in t.EDGES_NP: pygame.draw.line(screen, (0,0,0), screen_pts[i], screen_pts[j], 1)
                 vert_color = (0,0,0) if (flags['j1'] and not flags['t3']) else (255,255,255)
                 for p in screen_pts: pygame.draw.circle(screen, vert_color, p, 1)
