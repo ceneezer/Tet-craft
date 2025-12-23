@@ -1,5 +1,5 @@
 ﻿NOTES="""
-One way to look at dark/mater/energy is a misunderstanding - we don't know what it is - we do know we misunderstand *something - thinking it as the things we do, is the "lie'
+One way to look at dark mater/energy is a misunderstanding - we don't know what it is - we do know we misunderstand *something - thinking it as the things we do, is the "lie" - not so much that it materialises, just that it is a warping of our view.
 
 GPT estimates:
 In a star terk (roughly) kleinverse, it would take 10^142 planets to build the machine capable of holding the kleinverse scientists think they observe around us using this simulation... not impossible.
