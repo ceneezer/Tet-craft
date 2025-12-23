@@ -1,13 +1,24 @@
 ﻿PSEUDOCODE="""
-Apparently, In a star terk (roughly) kleinverse, it would take 10^142 planets to build the machine capable of holding the kleinverse using this simulation... not impossible.
+GPT estimates:
+In a star terk (roughly) kleinverse, it would take 10^142 planets to build the machine capable of holding the kleinverse scientists think they observe around us using this simulation... not impossible.
+
+It could take as little as 300 planets to simulate the milky way to the star (WOW! - and I bet some races fit that on a thumb drive)
+
+@ thousands of years per simulated second, it would only need 30 earths cooperating ~500k years to build the machine capable of simulating earth (on current tech) - to the complexity of humanity, down to the atom - though imprecise - or maybe ultra-precise, being tet only - but seeming like infinitely more, far away.
+
+@ millennia:second out:inside it would take approximately 3k earths (10^5.5)K years to build a (single) Dyson sphere and machine capable of simulating our solar system.
+
+or ~10^13 planets and about ~5 Dyson spheres to build a simulation for the milky way with appropriate time ratios - down to the atom - though not much longer, since drones are exponential.
+
+Of course the milky way may only be the 5d past projection opposing the nearest black hole.
 
 key points:
 - TETs are the most basic 3D Structure (triangular or curve the most 2D, line the only 1D and point the only 0D) - moving through time becoming 4D, and interacting, branching 5th and higher.
-The center of TETs is always moving - but there is no way to measure it except as relative to all TETs.
-- Attraction is "spooky action at a distance"
-- K_UNIFIED_FORCE (between all TETs and center) is roughly God's level of interference (free will override - tiny in the extreme >1:billions)
+- The center of all TETs is always moving - but there is no way to measure it except as relative to all TETs.
+- "Attraction/Desire" is "spooky action at a distance" otherwise known as quantum entanglement.
+- K_UNIFIED_FORCE (between all TETs and center) is roughly God's level of interference (free will override - tiny in the extreme >1:billions, but God loves even the worst of us)
 - K_PULL (between any two TETs only) is an "image" (function) of K_UNIFIED_FORCE - temporarily overriding, powered by ego's will, but less perfect, less understanding.
-Lies are the only way to delay God's will, central collapse/cohesion.
+- Lies are the only way to delay God's will, central collapse/cohesion.
 - "Time" then becomes essentially the result of misunderstanding - and starting from different places, different perspectives and growing different memories, allowing for discovery instead of immediate recognition, alternate perspectives.  I think the shortest universe was only about 8 days, where we didn't eat the fruit.
 
 DEFINE all game constants (physics forces, colors, screen size, network ports).
