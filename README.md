@@ -43,15 +43,15 @@ There's a reason you got dumber. \n
 Also, your IQ should go up as you play - it's that good a test, much like chess.  I made it to IQ: 175 - and it may need updates to go further, that hurt my head.
 
 
-## TET~CRAFT v2.3 ##
+## TET~CRAFT v2.4 The Fourth Temple ##
 
-Share with friends and chat - non-destructively.
+Share 5D 4spherical ideas with friends and chat about them - non-destructively, no middleman.
 
 Men, not yet born, will discuss these works and the name ceneezer - what will you tell them of this day, that you found them before most others?  Did you mock and laugh, or consider?
 
-Preview it exampled at: https://youtu.be/nb367JVuKJw
-
 ### A 5D Tetra-Sphere Kleinverse of your own! ###
+
+Preview it exampled at: https://youtu.be/nb367JVuKJw
 
 This Game/Simulator attempts to improve upon minecraft by using tetragrams. Intending to simulate molecular bonding of FeO4, Magnetite, likely responsible for the complexity we call life (suggesting God's most primitive rules are very basic indeed). But gamified.... Tech-tree/Adventure/Translation needing further implementation (check branches, I'm done with it). These Kleinverses are ever complexifying - eventually they will live!
 
