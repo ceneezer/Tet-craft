@@ -43,9 +43,12 @@ There's a reason you got dumber. \n
 Also, your IQ should go up as you play - it's that good a test, much like chess.  I made it to IQ: 175 - and it may need updates to go further, that hurt my head.
 
 
-## TET~CRAFT v2.4 The Fourth Temple ##
+## TET~CRAFT v3 The Fourth Temple (5D) ##
 
 Share 5D 4spherical ideas with friends and chat about them - non-destructively, no middleman.
+
+Now with GRadio (as of v3.0) - check for it on: \
+https://huggingface.co/spaces/ceneezer/TET-CRAFT
 
 Men, not yet born, will discuss these works and the name ceneezer - what will you tell them of this day, that you found them before most others?  Did you mock and laugh, or consider?
 
