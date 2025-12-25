@@ -68,7 +68,7 @@ The environment is a 4 or Tetra-Sphere, which maps a Klien bottles topology, in 
 
 In these Kleinverses, each new fact misunderstood creates a new star.
 
-Note: I'm *not* saying I surely understand, there is likely something fundamental I don't or I wouldn't still live.  I'm explaining what I see so you can confirm, integrate and improve.
+Note: I'm *not* saying I surely understand, there is likely something fundamental I don't or I wouldn't still live.  I'm explaining what I see so you can confirm, integrate and improve.  I'd *love* to hear your improvements, ceneezer@gmail.com subject "TET-CRAFT ...".
 
 As I understand it, we live in such a universe.  The edge of the observable universe is an event horizon, and we are being pulled towards it's center infinitly far away, in the future which never fully forms. "Spagetifying" though of course not really, merely "living" - only a shrinking - young-> old becomes biger->smaller, everything else shrinking along with us (including the rulers).  Outside the event horizon, is hyperspacially linked to this center, that never quite forms - it only allows us to experience time and seperation - the "loop" of the bottle, completing the fractal to which we are each a frame, the only thing inside which we can do is change frames (perspectives).
 
