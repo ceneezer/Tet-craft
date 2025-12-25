@@ -250,11 +250,11 @@ ENERGY_EQUILIBRIUM_RATE = 0.05
 
 # --- AUTOMATION WORDS ---
 MYSTIC_WORDS = [
-    "Chronos", "Aether", "Void", "Nexus", "Flux", "Quark", "Spin", "Echo",
-    "Gravitas", "Helix", "Nebula", "Pulse", "Drift", "Entropy", "Zero",
-    "Vertex", "Origin", "Bloom", "Decay", "Orbit", "Signal", "Noise",
-    "Matter", "Spirit", "Dust", "Spark", "Shadow", "Light", "Time", "Space",
-    "Logic", "Chaos", "Bind", "Sever", "Loop", "Wave", "Particle"
+    "Completion", "Unconditional", "Consciousness", "Empty", "Choice", "Seek", "Grow", "Decay",
+    "Negatr", "Helix", "Mystery", "Cause", "Change", "Life", "Passage",
+    "Perspective", "Act", "Understand", "We", "Within", "Balance", "Cooperation",
+    "Pattern", "Community", "Disrupt", "Matter", "Unconscious", "Explore", "Then", "Temporary",
+    "Question", "Answer", "Separation"
 ]
 
 MATH_SYMBOLS = ["+", "-", "=", "*", "∫", "∂", "∇", "≈", "≠", "∞", "∅"]
