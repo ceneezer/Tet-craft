@@ -248,7 +248,7 @@ FIELD_LINEAR_DECAY = 0.0001
 FIELD_QUADRATIC_DECAY = 0.000001
 ENERGY_EQUILIBRIUM_RATE = 0.05
 
-# --- AUTOMATION WORDS ---
+# --- AUTOMATION WORDS (These ones can symbolically represent [almost?] everything humanity knows - and inter-sum cohesively in order) ---
 MYSTIC_WORDS = [
     "Completion", "Unconditional", "Consciousness", "Empty", "Choice", "Seek", "Grow", "Decay",
     "Negate", "Mystery", "Cause", "Change", "Life", "Passage",
@@ -259,7 +259,7 @@ MYSTIC_WORDS = [
 
 MATH_SYMBOLS = ["+", "-", "=", "*", "∫", "∂", "∇", "≈", "≠", "∞", "∅"]
 
-PLAYER_NAME = "Traveler"
+PLAYER_NAME = "Seeker"
 SAVE_FILENAME = "Traveler.json"
 
 # GLOBAL STATE
