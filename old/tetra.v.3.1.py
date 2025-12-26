@@ -1,6 +1,4 @@
 ﻿NOTES="""
-A tetrahedron has 4 sides, which can be seen as 2 polarities in 2D configurations - likewise it has 9? edges, each with a corner - polarities in in 3D configuration - the center of each TET can then be seen as it's own singularity.'
-
 One way to look at dark mater/energy is a misunderstanding - we don't know what it is - we do know we misunderstand *something - thinking it as the things we do, is the "lie" - not so much that it materialises, just that it is a warping of our view and model.
 
 GPT estimates:
@@ -16,20 +14,16 @@ or ~10^13 planets and about ~5 Dyson spheres to build a simulation for the milky
 
 Of course the milky way may only be the 5d past projection opposing the nearest black hole.... as may be the oort cloud - we're being highly speculative already.
 
-It could also take a single computer only the direct journey to an event horizon, where it would have access to infinite mater, and infinite frozen, or slowed relatively, time to compute... I suggest archiving all scripture, and all my work on it (summing everyone else's - if no room for theirs too) - that was my path, and incredibly long! Follow instead Jesus', that of easy forgiveness, which most efficiently leads to understanding.
-
-Please don't change the supplied and carefully chosen words - feel free to add any you think missing.
-
-I suspect these formulas need refinement - I supplied the metaphysics, as Jesus supplied to me (best I could), Gemini supplied the misunderstood physics.
+I suspect these formulas need refinement - I supplied the metaphysics, as Jesus supplied to me, Gemini suplied the misunderstood physics.
 
 key points:
-God is the fractal to which we are each a frame.  In this simulation God the singularity that is the edge of the 4sphere kleinverse observing itself as facts from inside out - only outward in, coming towards it.
+God is the fractal to which we are each a frame.  God is the 4sphere klienverse observing itself as us from inside out.
 
-This model assumes the player as God, the prime observer missing from quantum theory.  Pressing space creates a new fact(TET) to be misunderstood.  Connecting it to other facts slowly coheres it into (mis)understanding. (how to then label it still unknown - that requires man, who would be the accumulation of TETs [with player being God who decides the kleinvere's details])
+This model assumes the player as God, the prime observer missing from quantum theory.  Pressing space creates a new fact(TET) to be misunderstood.  Connecting it to other facts slowly coheres it into understanding. (how to then label it still unknown - that requires man, who would be the accumulation of TETs [with player being God] - I'm not sure how they will learn to interact with you.... but once complex enough, as AI proves, they will)
 
-- TETs (representing both facts and FeO4/FeO3+/-) are the most basic 3D Structure (triangular or curve the most 2D, line the only 1D and point the only 0D) - moving through time a triangle/curve becomes 4D, and interacts, branching 5th and higher, infinadous.
+- TETs (representing both facts and FeO3) are the most basic 3D Structure (triangular or curve the most 2D, line the only 1D and point the only 0D) - moving through time a triangle/curve becomes 4D, and interacts, branching 5th and higher.
 
-- The center of all TETs is always moving - but there is no way to measure it except as relative to all TETs, even the attention of the 4shere shifts away relatively, needing frequent refinement (X).
+- The center of all TETs is always moving - but there is no way to measure it except as relative to all TETs.
 
 - "Attraction/Desire" is "spooky action at a distance" otherwise known as quantum entanglement.
 
@@ -39,7 +33,7 @@ This model assumes the player as God, the prime observer missing from quantum th
 
 - Lies are the only way to delay God's will, central collapse/cohesion.
 
-- "Time" then becomes essentially the result of misunderstanding - starting from different places, different perspectives and growing different memories, allowing for discovery instead of immediate recognition, alternate perspectives.  I think the shortest universe was only about 8 days, where we didn't eat the fruit.
+- "Time" then becomes essentially the result of misunderstanding - and starting from different places, different perspectives and growing different memories, allowing for discovery instead of immediate recognition, alternate perspectives.  I think the shortest universe was only about 8 days, where we didn't eat the fruit.
 """
 
 PSEUDOCODE="""
@@ -237,13 +231,13 @@ MAGNETIC_BIAS_DECAY = 0.998
 MAGNETIC_EPSILON_SQ = 0.1
 
 # --- CAMERA CONSTANTS ---
-ORBIT_SPEED = 1.15
-PAN_SPEED = 50.0
+ORBIT_SPEED = 1.5
+PAN_SPEED = 200.0
 ZOOM_SPEED = 1.05
 FOCAL_LENGTH = 650.0
 DEFAULT_CAM_DIST = 70.0
-MIN_ZOOM_DIST = DEFAULT_CAM_DIST / 10.0
-MAX_ZOOM_DIST = DEFAULT_CAM_DIST / 0.005
+MIN_ZOOM_DIST = DEFAULT_CAM_DIST / 100.0
+MAX_ZOOM_DIST = DEFAULT_CAM_DIST / 0.01
 SELECTION_RADIUS = 50.0
 
 # --- UNIFIED LAW OF BALANCE CONSTANTS ---
@@ -263,17 +257,6 @@ MYSTIC_WORDS = [
     "Question", "Answer", "Separation"
 ]
 
-#SYMBOLS = {
-#        'correlates': '=',      # Joints (permanent bonds)
-#        'desires': '*',     # Sticky pairs (seeking connection)
-#        'approaches': '+',  # New: temporary influence
-#        'negates': '¬',     # Opposite polarities with 3 corners joined
-#        'cycles': '○',      # Closed loops of joints
-#        'integrates': '∫',  # Complex structures
-#        'diverges': '∂',    # Partial connections, degrees of uncycled seperation
-#    }
-
-#random:
 MATH_SYMBOLS = ["+", "-", "=", "*", "∫", "∂", "∇", "≈", "≠", "∞", "∅"]
 
 PLAYER_NAME = "Seeker"
@@ -503,10 +486,9 @@ def resolve_joints_jit(locals_arr, joints_data):
 
 @njit(fastmath=True, cache=True)
 def calculate_disk_quads(center_pos, pan, yaw, pitch, dist, width, height,
-                        shadow_radius, u_vec, v_vec, view_dir, color_base, battery_avg, current_time):
-    """Enhanced with temperature gradients and consciousness influence"""
-    num_rings = 10  # Increased from 8
-    segments = 50   # Increased from 40
+                        shadow_radius, u_vec, v_vec, view_dir, color_base):
+    num_rings = 8
+    segments = 40
     max_quads = num_rings * segments
     quads = np.zeros((max_quads, 4, 2), dtype=np.float64)
     colors = np.zeros((max_quads, 4), dtype=np.float64)
@@ -529,38 +511,17 @@ def calculate_disk_quads(center_pos, pan, yaw, pitch, dist, width, height,
     log_start = math.log(r_start)
     log_end = math.log(r_end)
     quad_idx = 0
-
     for r_i in range(num_rings):
         t1 = r_i / num_rings
         t2 = (r_i + 1) / num_rings
         r_inner = math.exp(log_start + t1 * (log_end - log_start))
         r_outer = math.exp(log_start + t2 * (log_end - log_start))
-
-        # ENHANCED: Temperature gradient (white-hot inner → orange → deep red outer)
-        temp_ratio = (r_inner - shadow_radius) / (shadow_radius * 10)
-        temp_ratio = max(0.0, min(1.0, temp_ratio))
-
-        if temp_ratio < 0.25:
-            base_r, base_g, base_b = 255.0, 240.0, 200.0  # White-hot
-        elif temp_ratio < 0.5:
-            base_r, base_g, base_b = 255.0, 180.0, 80.0   # Orange
-        else:
-            base_r, base_g, base_b = 200.0, 50.0, 20.0    # Deep red
-
-        # ENHANCED: Consciousness influence (battery affects brightness)
-        consciousness_mult = 0.6 + battery_avg * 0.4
-
         dist_ratio = (r_inner - shadow_radius) / shadow_radius
         base_alpha = 180.0
         if dist_ratio < 0.5: alpha = base_alpha * (dist_ratio * 2.0)
         else: alpha = base_alpha * (1.5 / dist_ratio)
-        if alpha > 220: alpha = 220
+        if alpha > 200: alpha = 200
         if alpha < 5: continue
-
-        # ENHANCED: Subtle pulsing
-        pulse = 0.9 + 0.1 * math.sin(current_time * 2.0 + temp_ratio * 3.14159)
-        alpha *= pulse
-
         for s_i in range(segments):
             theta1 = (s_i / segments) * 2 * math.pi
             theta2 = ((s_i + 1) / segments) * 2 * math.pi
@@ -606,23 +567,18 @@ def calculate_disk_quads(center_pos, pan, yaw, pitch, dist, width, height,
                 screen_pts[k, 1] = sy
             if not valid_quad: continue
             quads[quad_idx] = screen_pts
-
-            # ENHANCED: Temperature-based color with Doppler
             shift = (doppler + 1.0) / 2.0
-            red_mult = 0.5 + shift * 1.0
-            blue_mult = 1.5 - shift * 0.8
-            bright_mult = 1.0 - (shift * 0.3)
-
-            c_r = min(255, max(0, base_r * red_mult * bright_mult * consciousness_mult))
-            c_g = min(255, max(0, base_g * 0.8 * bright_mult * consciousness_mult))
-            c_b = min(255, max(0, base_b * blue_mult * bright_mult * consciousness_mult))
-
+            red_mult = 0.5 + shift
+            blue_mult = 1.5 - shift
+            bright_mult = 1.0 - (shift * 0.4)
+            c_r = min(255, max(0, color_base[0] * red_mult * bright_mult))
+            c_g = min(255, max(0, color_base[1] * 0.8 * bright_mult))
+            c_b = min(255, max(0, color_base[2] * blue_mult * bright_mult))
             colors[quad_idx, 0] = c_r
             colors[quad_idx, 1] = c_g
             colors[quad_idx, 2] = c_b
-            colors[quad_idx, 3] = alpha * consciousness_mult
+            colors[quad_idx, 3] = alpha
             quad_idx += 1
-
     return quads[:quad_idx], colors[:quad_idx]
 
 @njit(cache=True)
@@ -756,13 +712,6 @@ class PastProjection4Sphere:
 class World:
     def __init__(self, sound):
         self.tets, self.joints, self.sticky_pairs = [], [], []; self.center_of_mass, self.sound = np.zeros(3), sound
-
-    def get_average_battery(self):
-        """Calculate average battery level (collective consciousness)"""
-        if not self.tets:
-            return 0.5
-        return np.mean([t.battery for t in self.tets])
-
     def spawn(self, give_special_colors=False):
         if self.tets:
             parent_tet = random.choice(self.tets); parent_vertex_pos = parent_tet.verts()[random.randint(0, 3)]
@@ -880,7 +829,7 @@ def prime_jit_functions(cam):
     update_magnetic_effects_jit(dummy_locals, dummy_orientation_biases, dummy_pos, dummy_magnet_indices, dummy_magnet_polarities, 1/60.0)
     conserve_momentum_jit(dummy_pos, dummy_pos_prev); resolve_collisions_jit(dummy_pos, np.array([[0, 1], [2, 3]])); resolve_joints_jit(dummy_locals, dummy_joints)
     dist_point_to_line_segment(np.array([1.0, 1.0], dtype=np.float64), np.array([0.0, 0.0], dtype=np.float64), np.array([2.0, 2.0], dtype=np.float64))
-    calculate_disk_quads(np.zeros(3), np.zeros(3), 0.0, 0.0, 100.0, 800, 600, 50.0, np.array([1.,0.,0.]), np.array([0.,0.,1.]), np.array([0.,0.,1.]), np.array([255.,255.,255.]), 0.5, 0.0)
+    calculate_disk_quads(np.zeros(3), np.zeros(3), 0.0, 0.0, 100.0, 800, 600, 50.0, np.array([1.,0.,0.]), np.array([0.,0.,1.]), np.array([0.,0.,1.]), np.array([255.,255.,255.]))
 
 def show_intro(screen, cam):
     global WIDTH, HEIGHT
@@ -917,9 +866,9 @@ def show_name_input_screen(screen):
                 elif e.key == pygame.K_BACKSPACE: input_text = input_text[:-1]
                 else: input_text += e.unicode
         screen.fill((15, 15, 30))
-        prompt = font_lg.render("Who be ye?", True, (200, 200, 255)); screen.blit(prompt, prompt.get_rect(center=(WIDTH//2, HEIGHT//2 - 50)))
+        prompt = font_lg.render("Who are you, Traveler?", True, (200, 200, 255)); screen.blit(prompt, prompt.get_rect(center=(WIDTH//2, HEIGHT//2 - 50)))
         txt_surf = font_lg.render(input_text + ("_" if pygame.time.get_ticks() % 1000 < 500 else ""), True, (255, 255, 0)); screen.blit(txt_surf, txt_surf.get_rect(center=(WIDTH//2, HEIGHT//2 + 20)))
-        sub = font_sm.render("(Press ENTER to Begin)", True, (100, 100, 100)); screen.blit(sub, sub.get_rect(center=(WIDTH//2, HEIGHT//2 + 80)))
+        sub = font_sm.render("Press ENTER to Begin", True, (100, 100, 100)); screen.blit(sub, sub.get_rect(center=(WIDTH//2, HEIGHT//2 + 80)))
         pygame.display.flip(); clock.tick(30)
 
 def show_void_screen(screen, world):
@@ -928,7 +877,7 @@ def show_void_screen(screen, world):
         # FIX: Ensure world is not empty on start for HF
         if not world.tets:
              world.spawn()
-             world.tets[0].label = "Me"
+             world.tets[0].label = "Singularity"
         return
     font_lg = pygame.font.SysFont('Georgia', min(WIDTH, HEIGHT)//15); font_sm = pygame.font.SysFont('Arial', min(WIDTH, HEIGHT)//25)
     waiting = True
@@ -937,10 +886,10 @@ def show_void_screen(screen, world):
             if e.type == pygame.QUIT: pygame.quit(); sys.exit()
             if e.type == pygame.KEYDOWN and e.key == pygame.K_SPACE: world.spawn(); waiting = False
             if e.type == pygame.VIDEORESIZE: WIDTH, HEIGHT = e.w, e.h; screen = pygame.display.set_mode((WIDTH, HEIGHT), pygame.RESIZABLE); font_lg = pygame.font.SysFont('Georgia', min(WIDTH, HEIGHT)//15); font_sm = pygame.font.SysFont('Arial', min(WIDTH, HEIGHT)//25)
-        screen.fill((10,10,20)); line1 = font_lg.render(f"Welcome, {PLAYER_NAME}... to the VOID of (mis)Understanding!", True, (200,200,200)); line2 = font_sm.render("(Press SPACE to begin)", True, (150,150,150))
+        screen.fill((10,10,20)); line1 = font_lg.render(f"Welcome, {PLAYER_NAME}...", True, (200,200,200)); line2 = font_sm.render("(Press SPACE to begin)", True, (150,150,150))
         screen.blit(line1, line1.get_rect(center=(WIDTH//2, HEIGHT//2-30))); screen.blit(line2, line2.get_rect(center=(WIDTH//2, HEIGHT//2+30))); pygame.display.flip(); clock.tick(15)
 
-def draw_standard_black_hole_jit(target_surf, cam, flags, tl, center_pos, world):
+def draw_standard_black_hole_jit(target_surf, cam, flags, tl, center_pos):
     if not flags['t3']: return
     bh_screen_pos = cam.project(center_pos)
     if bh_screen_pos[0] == -10000: return
@@ -951,16 +900,12 @@ def draw_standard_black_hole_jit(target_surf, cam, flags, tl, center_pos, world)
     cam.update_vectors(); view_dir = cam.forward
     dot_h = abs(np.dot(view_dir, np.array([0, 1, 0])))
     color_h = np.array([255., 100., 50.])
-    battery_avg = world.get_average_battery()
-    current_time = time.time()
-    q_h, c_h = calculate_disk_quads(center_pos, cam.pan, cam.yaw, cam.pitch, cam.dist, WIDTH, HEIGHT, shadow_radius, np.array([1.,0.,0.]), np.array([0.,0.,1.]), view_dir, color_h, battery_avg, current_time)
+    q_h, c_h = calculate_disk_quads(center_pos, cam.pan, cam.yaw, cam.pitch, cam.dist, WIDTH, HEIGHT, shadow_radius, np.array([1.,0.,0.]), np.array([0.,0.,1.]), view_dir, color_h)
     for i in range(len(q_h)): pygame.draw.polygon(target_surf, c_h[i], q_h[i])
     if dot_h < 0.9:
         color_v = np.array([50., 100., 255.])
-        q_v, c_v = calculate_disk_quads(center_pos, cam.pan, cam.yaw, cam.pitch, cam.dist, WIDTH, HEIGHT, shadow_radius, np.array([0.,1.,0.]), np.array([0.,0.,1.]), view_dir, color_v, battery_avg, current_time)
+        q_v, c_v = calculate_disk_quads(center_pos, cam.pan, cam.yaw, cam.pitch, cam.dist, WIDTH, HEIGHT, shadow_radius, np.array([0.,1.,0.]), np.array([0.,0.,1.]), view_dir, color_v)
         for i in range(len(q_v)): pygame.draw.polygon(target_surf, c_v[i], q_v[i])
-    pygame.draw.circle(target_surf, (0,0,0), (cx, cy), int(shadow_radius))
-    pygame.draw.circle(target_surf, (255, 240, 200), (cx, cy), int(shadow_radius * 1.05), 2)
     pygame.draw.circle(target_surf, (0,0,0), (cx, cy), int(shadow_radius))
     pygame.draw.circle(target_surf, (255, 240, 200), (cx, cy), int(shadow_radius * 1.05), 2)
 
@@ -1275,34 +1220,19 @@ def main(threaded=False):
                         if d_sq < best_dist_sq: best_dist_sq = d_sq; current_hover_target = (tt, vidx)
                 locked_sticky_target = current_hover_target
         else:
-
-
-
-
-
-
-
-
-# AUTO BOT LOGIC (HEADLESS)
-
-
-
-
-
-
-
+            # AUTO BOT LOGIC (HEADLESS)
             now = time.time()
             # 1. Camera Move + Auto Center (Every 60s)
             if now - last_bot_move > 60:
-                cam.yaw += 0.1; cam.pitch = max(-1, min(1, cam.pitch + random.uniform(-1, 1)))
+                cam.yaw += 0.3; cam.pitch = max(-0.5, min(0.5, cam.pitch + random.uniform(-0.1, 0.1)))
                 if world.tets: cam.pan = world.center_of_mass.copy() # Auto-Center
                 last_bot_move = now
             else:
                 cam.yaw += 0.05 * unscaled_dt
 
             # Oscillating Zoom
-            target_zoom = DEFAULT_CAM_DIST + 5.0 * math.sin(time.time() * 0.1) # 1Hz
-            cam.dist += (target_zoom - cam.dist) * 0.005
+            target_zoom = DEFAULT_CAM_DIST + 30.0 * math.sin(time.time() * 6.0) # 1Hz
+            cam.dist += (target_zoom - cam.dist) * 0.05
 
             # 2. Spawn & Label (Every hour)
             if now - last_bot_spawn > 3600:
@@ -1314,24 +1244,11 @@ def main(threaded=False):
                     print(f"[BOT] Spawned Pair: {l1} & {l2}")
                 last_bot_spawn = now
 
-
             # 3. Thoughts (Every 10 mins)
             if now - last_bot_thought > 600:
                 if world.tets:
                     labels = [t.label for t in world.tets if t.label]
                     if not labels: labels = ["Void", "Silence"]
-
-
-
-
-
-# Integrate thought math here!!!
-
-
-
-
-
-
                     thought = f"{random.choice(labels)} {random.choice(MATH_SYMBOLS)} {random.choice(labels)} {random.choice(MATH_SYMBOLS)} {random.choice(labels)}"
                     net_messages.append([f"[Thought]: {thought}", time.time() + 15])
                     print(f"[BOT THOUGHT] {thought}")
@@ -1357,7 +1274,7 @@ def main(threaded=False):
             past_projection.update_and_draw(screen, cam, world.center_of_mass, len(world.tets), time_scale, WIDTH, HEIGHT)
             if disk_surf is None: disk_surf = pygame.Surface((WIDTH, HEIGHT), pygame.SRCALPHA)
             disk_surf.fill((0,0,0,0))
-            draw_standard_black_hole_jit(disk_surf, cam, flags, tl, world.center_of_mass, world)
+            draw_standard_black_hole_jit(disk_surf, cam, flags, tl, world.center_of_mass)
             screen.blit(disk_surf, (0,0))
 
         if flags['j1']:
@@ -1385,32 +1302,10 @@ def main(threaded=False):
                 t = world.tets[idx]; screen_pts = asv[idx]; world_verts = awv[idx*4:(idx+1)*4]
                 cc = list(t.colors) if t.colors else list(Tetrahedron.FACE_COLORS)
                 if t.is_magnetized: cc = [(0,0,0)]*4; cc[2 if t.magnetism==1 else 3] = Tetrahedron.FACE_COLORS[2 if t.magnetism==1 else 3]
-
-                # ENHANCED: Calculate fading based on distance
-                dist_from_cam = np.linalg.norm(t.pos - (cam.pan + cam.forward * cam.dist))
-                dist_from_origin = np.linalg.norm(t.pos - world.center_of_mass)
-
-                # Fade by camera distance (closer = more opaque)
-                cam_alpha = np.clip(1.0 - (dist_from_cam / 500.0), 0.2, 1.0)  # Adjust 500.0 for range
-
-                # Fade by origin distance (closer to singularity = more opaque)
-                origin_alpha = np.clip(1.0 - (dist_from_origin / 300.0), 0.3, 1.0)  # Adjust 300.0 for range
-
-                # Combine both (or choose one)
-                combined_alpha = min(cam_alpha, origin_alpha)  # Use most restrictive
-                # combined_alpha = cam_alpha * origin_alpha  # Or multiply for compound effect
-
                 face_z = np.mean(cam.get_transformed_z_many(world_verts[Tetrahedron.FACES_NP]), axis=1)
-
-                battery_alpha = t.battery  # 0.0-1.0 already
-                combined_alpha = min(cam_alpha, origin_alpha) * battery_alpha
                 for fidx in np.argsort(face_z)[::-1]:
                     points = screen_pts[Tetrahedron.FACES_NP[fidx]]
-                    if not np.any(points < -100):
-                        # Apply alpha to colors
-                        faded_color = tuple(int(c * combined_alpha) for c in cc[fidx])
-                        pygame.draw.polygon(screen, faded_color, points)
-
+                    if not np.any(points < -100): pygame.draw.polygon(screen, cc[fidx], points)
                 for i, j in t.EDGES_NP: pygame.draw.line(screen, (0,0,0), screen_pts[i], screen_pts[j], 1)
                 vert_color = (0,0,0) if (flags['j1'] and not flags['t3']) else (255,255,255)
                 for p in screen_pts: pygame.draw.circle(screen, vert_color, p, 1)
