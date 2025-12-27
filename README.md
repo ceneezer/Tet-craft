@@ -10,7 +10,7 @@
  - \research\mp4 (Video based research)
  - \old (old versions of tetra.py)
  - \fractalOfceneeze.py (self explanatory - the python for my fractal)
- - \mobeus.py (a nice visualizer for the different dimensions of a mobeus)
+ - \mobeus.py (a nice visualizer for the different dimensions of a mobeus) \
 (The .json's are example save files... the .ico is an icon :D)
 
 ## BitVote.ca ##
