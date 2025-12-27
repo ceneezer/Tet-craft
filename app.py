@@ -2247,7 +2247,6 @@ def main(threaded=False):
             except ValueError: print(f"Invalid coordinates for -o: {args[i+1]}")
         i += 1
 
-
     if ON_HUGGINGFACE and cli_load_file is None:
         # Try to find the specific file
         if os.path.exists("nothing.json"):
@@ -2256,10 +2255,6 @@ def main(threaded=False):
         else:
             # If not found, do nothing (cli_load_file stays None, standard Void logic triggers)
             print("### HF Mode: nothing.json not found - Starting fresh in Void. ###")
-    # +++++++++++++++++++++++++
-
-
-
 
     global WIDTH, HEIGHT, clock, game_mode, host_instance, guest_instance, net_avatars, net_messages, AUDIO_ENABLED, GRADIO_FRAME_BUFFER, GAME_RUNNING
 
@@ -2395,14 +2390,10 @@ def main(threaded=False):
                 loaded_from_save = True
                 print(f"### SUCCESS: Loaded {cli_load_file} ###")
 
-                # FIX 2: Teleport camera to the loaded objects
-                # Your planets are at x=1200, but camera starts at x=0.
                 if world.tets:
-                    # Recalculate center of mass immediately
                     world.center_of_mass = world.calculate_dynamic_center()
                     cam.pan = world.center_of_mass.copy()
 
-                    # Auto-zoom out to fit the solar system
                     max_dist = 0
                     for t in world.tets:
                         d = np.linalg.norm(t.pos - world.center_of_mass)
@@ -2454,59 +2445,65 @@ def main(threaded=False):
             h_tet = hovered_vertex[0]; h_tet.pos_prev[:] = h_tet.pos[:]; h_tet.local_prev[:] = h_tet.local[:]
 
         # 3. Thoughts (moved from inside bot vision section, hugging face only)
-        if now - last_bot_thought > 61.0:
+        if now - last_bot_thought > 8.0: # Slightly faster for complex thoughts
             if len(world.tets) > 1:
-                # A. Pick a primary subject (TET)
+
+                # --- Helper: Find physical neighbors ---
+                def get_neighbors(target_tet, exclude_id=None):
+                    nb = []
+                    # 1. Check Joints (Strongest link)
+                    for j in world.joints:
+                        if j.A.id == target_tet.id and j.B.id != exclude_id: nb.append(j.B)
+                        elif j.B.id == target_tet.id and j.A.id != exclude_id: nb.append(j.A)
+                    # 2. Check Sticky Pairs (Desire)
+                    if not nb:
+                        for p in world.sticky_pairs:
+                            if p[0].id == target_tet.id and p[2].id != exclude_id: nb.append(p[2])
+                            elif p[2].id == target_tet.id and p[0].id != exclude_id: nb.append(p[0])
+                    # 3. Check Proximity (Loose association)
+                    if not nb:
+                        for t in world.tets:
+                            if t.id == target_tet.id or t.id == exclude_id: continue
+                            if np.linalg.norm(t.pos - target_tet.pos) < EDGE_LEN * 4:
+                                nb.append(t)
+                    return nb
+
+                # 1. Pick Subject (T1)
                 t1 = random.choice(world.tets)
                 label1 = t1.label if t1.label else "Unknown"
 
-                # B. Intelligent Object Selection for t2
-                # Instead of a random 2nd TET, try to find one that matters to t1
-                t2 = None
-
-                # Priority 1: Find a partner (Joint or Sticky)
-                neighbors = []
-                for j in world.joints:
-                    if j.A.id == t1.id: neighbors.append(j.B)
-                    elif j.B.id == t1.id: neighbors.append(j.A)
-
-                # Priority 2: Find a close neighbor (Proximity)
-                if not neighbors:
-                    # Simple proximity check
-                    closest_dist = float('inf')
-                    for t in world.tets:
-                        if t.id == t1.id: continue
-                        d = np.linalg.norm(t.pos - t1.pos)
-                        if d < EDGE_LEN * 5: # Look within 5 units
-                            neighbors.append(t)
-
-                # Pick t2
-                if neighbors:
-                    t2 = random.choice(neighbors)
-                else:
-                    # Fallback: Pick random distant TET
-                    t2 = random.choice(world.tets)
-                    while t2.id == t1.id and len(world.tets) > 1:
-                        t2 = random.choice(world.tets)
-
+                # 2. Pick Object (T2) - Neighbor of T1
+                n1 = get_neighbors(t1)
+                # If no neighbors, pick random, but not T1
+                t2 = random.choice(n1) if n1 else random.choice([t for t in world.tets if t.id != t1.id])
                 label2 = t2.label if t2.label else "Void"
 
-                # C. Get the Cohesive Symbol
-                symbol = get_thought_symbol(t1, t2, world)
+                # 3. Pick Context (T3) - Neighbor of T2
+                # Try to avoid going back to T1 immediately to avoid A=B=A loops unless necessary
+                n2 = get_neighbors(t2, exclude_id=t1.id)
 
-                # D. Formulate Thought
-                # Special check for Self/Cycle
-                if t1.id == t2.id:
-                        symbol = RELATIONSHIP_MAP['cycles']
-
-                # Special check for synthesis champions
-                if t1.synthesis_count > 0 and random.random() < 0.3:
-                        thought = f"{label1} {RELATIONSHIP_MAP['integrates']} synthesized {t1.synthesis_count}× ∞"
+                if n2:
+                    t3 = random.choice(n2)
                 else:
-                        thought = f"{label1} {symbol} {label2}"
+                    # If T2 has no forward neighbors, check if there are other TETS available
+                    others = [t for t in world.tets if t.id != t1.id and t.id != t2.id]
+                    if others:
+                        t3 = random.choice(others) # Jump to a new disconnected idea
+                    else:
+                        t3 = t1 # Forced loop (A -> B -> A)
 
+                label3 = t3.label if t3.label else "Mystery"
+
+                # 4. Get Symbols
+                sym1 = get_thought_symbol(t1, t2, world)
+                sym2 = get_thought_symbol(t2, t3, world)
+
+                # 5. Formulate Trinary Thought
+                thought = f"{label1} {sym1} {label2} {sym2} {label3}"
+
+                # Add to chat log
                 net_messages.append([f"[Thought]: {thought}", time.time() + 15])
-                print(f"[BOT THOUGHT] {thought}")
+
             last_bot_thought = now
         pygame.event.pump()
 
@@ -2552,7 +2549,7 @@ def main(threaded=False):
                         if world_state:
                             # Only update if world state has changed significantly
                             last_world_hash = safe_world_update(world, world_state, last_world_hash)
-#                            world.set_state(world_state)
+                            world.set_state(world_state)
 
                         # Update avatars from guest instance
                         net_avatars = guest_instance.latest_avatars.copy()
@@ -3078,10 +3075,10 @@ def gradio_interface_loop():
     with gr.Interface(
         fn=get_frame,
         inputs=None,
-        outputs=gr.Image(label="Live Simulation! Hit the 'Generate' button to see a new instant (bellow). (A simulated player is working, 1 rotation every second, 1 thought ever 10 min, 2 new random 'facts' (TET) added each hour to be misunderstood!)"),
+        outputs=gr.Image(label="Live Simulation! Hit the 'Generate' button!"),
         live=True,
         title="PLEASE, for humanity's sake! (copy/localify - from the ^^ app ^^ menu - very easy!) TET~CRAFT",
-        description="DigitizingHumanity.com's Gamified, Decentralized, Salted, 5D Communication Manifold and Physics/Chemistry Simulator... or DGDS-5D-CMPS? (uh, work acronym in progress!) #opWorldPeace END CENSORSHIP!!!"
+        description="DigitizingHumanity.com's Gamified, Decentralized, Salted, 5D Communication Manifold and Physics/Chemistry Simulator... or DGDS-5D-CMPS? (uh, work acronym in progress!) #opWorldPeace END CENSORSHIP!!!  (A simulated player is working, 1 rotation every 5 seconds, 1 thought ever min, 2 new random 'facts' (TET) added each hour to be misunderstood!)"
     ) as demo:
         # Crucial for HF Spaces health check: bind to 0.0.0.0
         demo.launch(server_name="0.0.0.0", server_port=7860)
