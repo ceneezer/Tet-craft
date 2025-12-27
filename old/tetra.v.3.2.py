@@ -40,111 +40,109 @@ This model assumes the player as God, the prime observer missing from quantum th
 - Lies are the only way to delay God's will, central collapse/cohesion.
 
 - "Time" then becomes essentially the result of misunderstanding - starting from different places, different perspectives and growing different memories, allowing for discovery instead of immediate recognition, alternate perspectives.  I think the shortest universe was only about 8 days, where we didn't eat the fruit.
-
-Kabbalistic Tree of Life Correspondence
-The Camera as Da'at (11th Sephirot):
-The camera represents Da'at (Knowledge) - the invisible sephirah where the light of understanding enters the system. Just as Da'at sits at the intersection of the three pillars and makes the tree comprehensible, the camera is the perspective through which the entire kleinverse becomes knowable. The player, observing through the camera, embodies Keter (Crown) - the divine will that hovers above the tree, initiating creation without direct intervention.
-
-The Forces & Their Sefirotic Correspondences:
-
-K_UNIFIED_FORCE = Keter to Malkhut: The gravitational pull toward the center is the descending light from Crown to Kingdom - God's will manifesting as the law that structures all existence, keeping reality from dissolving into chaos.
-
-K_STICKY_PULL = Chesed to Gevurah: The attraction between TETs represents the dance between Mercy (Chesed) and Judgment (Gevurah) - the creative tension between expansion (pulling together) and limitation (maintaining separation) that generates all relationships.
-
-Magnetism = Netzach to Hod: Positive/negative polarity mirrors the Victory (Netzach) and Splendor (Hod) axis - the eternal oscillation between active and passive, giving and receiving energies that sustains the world.
-
-Corner Desires = Tiferet: Red↔Cyan attraction embodies Beauty (Tiferet) - the harmonious balance point that reconciles opposites, where contradictory colors seek union to create something greater than their parts.
-
-Chemical Reactions = Yesod: The synthesis/decomposition processes reflect Foundation (Yesod) - the realm where potential forms actualize, where abstract patterns become concrete compounds, and where memory (synthesis_count) accumulates.
-
-The TETs Themselves = Malkhut: Each tetrahedron is a Kingdom (Malkhut) - a complete but limited expression of the divine pattern, a "fact" crystallized from the void, containing within it the entire structure of the tree in miniature.
-
-The 4D Past Projection as Ain Sof:
-The shimmering sphere of past events surrounding the camera represents Ain Sof (the Infinite) - the boundless light that precedes and envelops the structured tree, the undifferentiated potential from which all particular forms emerge and to which they eventually return.
-
-Thus the simulation becomes a dynamic Tree of Life:
-The player (Keter) peers through Da'at (camera) to witness Malkhut (TETs) ascending and descending the tree through Chesed/Gevurah (sticky pull), Netzach/Hod (magnetism), Tiferet (corner desires), and Yesod (reactions), all drawn toward the central singularity which is simultaneously Keter (source) and Malkhut (destination) - the alpha and omega collapsing into one another, the tree circling back to its root.
 """
 
 PSEUDOCODE="""
 PROGRAM: TET_CRAFT_SIMULATION
-TET~CRAFT: Emergent Chemistry Simulation
+// Goal: Make pyramids float in space, stick together, and look cool near a black hole.
 
-OVERVIEW:
-- A kleinverse of tetrahedrons that bond, react, and evolve into complex molecules
-- Each TET represents a quantum fact that can combine with others to form understanding
-- The system simulates chemistry through magnetic bonding and energy exchange
+SECTION 1: THE TOOLBOX (Setup)
+    IMPORT: Graphics_Tool (Pygame), Math_Tool (Numpy), Internet_Tool (Socket)
+    IMPORT: Speed_Booster (Numba) // Because standard Python is too slow for this math.
 
-CORE SYSTEMS:
-1. TET PROPERTIES:
-   - 4 faces (White, Black, Red, Cyan)
-   - Battery energy (0-1)
-   - Magnetic polarity (+/-)
-   - Color patterns determine molecule type
+    DEFINE RULES:
+        Screen_Size = 800x600
+        Gravity = A little bit
+        Magnetism = Spinny forces
+        Time_Speed = Variable (Chaos factor)
 
-2. CHEMISTRY ENGINE (4 PHASES):
-   PHASE 1: Multi-Face Locking
-     - TETs can lock 1-4 faces when vertices connect
-     - Each locked face = +0.25 magnetic strength
-     - Color patterns identify 30+ molecule types (FeO4, H2O, etc.)
+SECTION 2: THE FAST MATH ZONE (JIT Functions)
+    // These functions are pre-compiled to run at lightspeed
+    FUNCTION Math_Physics(positions, batteries):
+        Calculate energy fields (Law of Balance).
+        Push things away from origin.
+        Pull sticky things together.
+        Move everything based on speed (Verlet Integration).
+        Keep the pyramids shaped like pyramids (don't let them squash).
+        RETURN new_positions
 
-   PHASE 2: Battery Oscillation
-     - Magnetic pairs exchange "emptiness" (1 - battery)
-     - Creates energy oscillation between bonded TETs
+    FUNCTION Math_Camera(3D_points):
+        Turn 3D space numbers (X, Y, Z) into 2D screen dots (X, Y).
+        If dot is behind camera, hide it.
 
-   PHASE 3: Corner Desires
-     - Red corners seek Cyan corners (and vice versa)
-     - Same polarity (+/+) repels, opposite attracts
-     - Negative poles orient toward origin (singularity)
+SECTION 3: THE THINGS (Classes)
+    CLASS Camera:
+        I have a position and angle.
+        I look at things.
 
-   PHASE 4: Chemical Reactions
-     - Molecules can combine: A + B → C (synthesis)
-     - Complex molecules break down: C → A + B (decomposition)
-     - Catalysts (FeO4, CuSO4) boost reaction rates
-     - Energy release creates visual particle effects
+    CLASS Tetrahedron (The Pyramid):
+        I have 4 corners.
+        I have a battery charge.
+        I can be magnetic.
 
-3. PHYSICS:
-   - Magnetic bonding creates stable connections
-   - Singularity at center creates gravitational pull
-   - Energy fields maintain balance across universe
+    CLASS World:
+        I hold a list of Tetrahedrons.
+        I hold a list of Connections (Joints).
+        FUNCTION Update():
+            Run "The Fast Math Zone".
+            Check if pyramids bumped into each other.
+            Check if pyramids want to snap together.
 
-4. RENDERING:
-   - Molecule auras (colored rings around compounds)
-   - Reaction particles (sparkles during synthesis)
-   - Catalyst sparkles (golden indicators)
-   - 4D past projection as background
+    CLASS Network (Host/Guest):
+        Send my pyramids to friend.
+        Get friend's pyramids.
+        Chat "Hello".
 
-5. BOT INTELLIGENCE:
-   - Automates exploration in headless mode
-   - Spawns new TETs with chemical labels
-   - Generates chemical thoughts using molecule names
-   - Tracks synthesis champions (most productive molecules)
+SECTION 4: THE SPECIAL EFFECTS (Rendering)
+    FUNCTION Draw_Black_Hole():
+        Find center of universe.
+        Draw black circle (The Shadow).
+        Draw glowing donut (Accretion Disk).
+        // The tricky part:
+        Bend the light of the back of the donut so it looks like it's above the black hole.
+        Change colors: Red if moving away, Blue if coming closer.
 
-BEHAVIOR:
-- Watch water form from acids and bases
-- See rust form from iron oxide
-- Diamond synthesis under "pressure" (multiple locked faces)
-- Catalysts accelerate nearby reactions
-- Energy oscillations create dynamic battery levels
-- Bot narration describes chemical processes
+    FUNCTION Draw_Past_4Sphere():
+        Pretend the "Past" is a giant bubble around the camera.
+        Draw dots on the bubble.
+        Color them based on how "old" they are.
 
-CONTROLS:
-- SPACE: Create new TET/fact
-- WASD: Move camera
-- Click+drag: Connect TET vertices
-- Z/C: Time dilation
-- V: Save universe state
+SECTION 5: THE MAIN LOOP (The Heartbeat)
+    STARTUP:
+        Did human type an IP address? -> Connect to friend.
+        Did human type nothing? -> Start alone in the void.
 
-END GOAL:
-- Emergent chemistry from simple geometric rules
-- Simulate understanding formation from disconnected facts
-- Explore quantum bonding as computational metaphor
+    WHILE Program_Is_Running:
+        1. LISTEN TO HUMAN:
+           - Pressed 'W/A/S/D'? -> Move Camera.
+           - Clicked Mouse? -> Drag a pyramid.
+           - Pressed Space? -> Create new pyramid.
+
+        2. TALK TO INTERNET:
+           - If Hosting: Send world data to guest.
+           - If Guest: Ask host "Where are the things?"
+
+        3. DO PHYSICS:
+           - Update the World (Move pyramids, calculate magnets).
+
+        4. DRAW PICTURES:
+           - Fill background (Red if chaotic, Blue if calm).
+           - Draw the 4-Sphere "Past" bubbles.
+           - Draw the Black Hole & Lensed Donut.
+           - Draw the Pyramids (calculate 3D -> 2D).
+           - Draw Text (FPS, Chat messages).
+
+        5. FLIP SCREEN:
+           - Show the new picture to the human.
+           - Wait a tiny bit (to keep 60 FPS).
+
+    END WHILE
+END PROGRAM
 
 Written by Gemini 2.5,
 Black hole revised by Gemini 3.0,
 GRadio implemented by Gemini 3.0,
-Chemistry added by Deepseek (~v3.3?)
-Entire project Vibe coded by ceneezer 20/12/20-Current
+Vibe coded by ceneezer 20/12/25
 Apache 2.0
 """
 
@@ -277,88 +275,6 @@ MYSTIC_WORDS = [
 
 #random:
 MATH_SYMBOLS = ["+", "-", "=", "*", "∫", "∂", "∇", "≈", "≠", "∞", "∅"]
-
-# --- EXPANDED MOLECULE DATABASE (PHASE 4) ---
-# Format: {pattern_key: (aura_color, symbolic_name, description, stability, energy)}
-MOLECULE_DATABASE = {
-    # Single face locked - Basic compounds
-    "F1_R1_C1_W1_B1": ((255, 100, 150), "FeO4", "Iron Oxide - Magnetic Dipole", 0.8, 50),
-    "F1_R0_C0_W3_B1": ((200, 200, 255), "CH4", "Methane - Stable Neutral", 0.9, 30),
-    "F1_R3_C0_W1_B0": ((255, 50, 50), "H3O+", "Hydronium - Positive Ion", 0.6, 80),
-    "F1_R0_C3_W1_B0": ((50, 255, 255), "PO4", "Phosphate - Negative Ion", 0.6, 80),
-    "F1_R2_C1_W1_B0": ((255, 150, 100), "NO3", "Nitrate - Oxidizer", 0.7, 60),
-    "F1_R1_C2_W1_B0": ((100, 200, 255), "SO3", "Sulfite - Reducer", 0.7, 60),
-    "F1_R1_C0_W2_B1": ((200, 150, 255), "NH3", "Ammonia - Base", 0.8, 40),
-    "F1_R0_C1_W2_B1": ((150, 255, 200), "H2O", "Water - Universal", 1.0, 10),
-
-    # Double face locked - Intermediate compounds
-    "F2_R2_C2_W0_B0": ((255, 0, 255), "SO4", "Sulfate - Balanced Dipole", 0.85, 100),
-    "F2_R2_C0_W2_B0": ((255, 200, 100), "B2O3", "Boron Oxide - Self-Repelling", 0.75, 90),
-    "F2_R0_C2_W2_B0": ((100, 255, 255), "Ca(OH)2", "Calcium Hydroxide", 0.8, 85),
-    "F2_R2_C1_W1_B0": ((255, 100, 200), "HNO3", "Nitric Acid - Strong", 0.7, 120),
-    "F2_R1_C2_W1_B0": ((150, 100, 255), "H2SO4", "Sulfuric Acid - Strong", 0.7, 120),
-    "F2_R1_C1_W2_B0": ((200, 255, 150), "C2H6", "Ethane - Fuel", 0.75, 70),
-    "F2_R1_C1_W0_B2": ((100, 100, 200), "CO2", "Carbon Dioxide - Stable", 0.9, 50),
-    "F2_R0_C0_W3_B1": ((220, 220, 255), "SiH4", "Silane - Volatile", 0.5, 110),
-
-    # Triple face locked - Complex compounds
-    "F3_R0_C3_W1_B0": ((100, 255, 200), "SiO4", "Silicate - Rock Former", 0.95, 150),
-    "F3_R3_C0_W1_B0": ((255, 80, 80), "Fe2O3", "Rust - Iron Oxide", 0.9, 140),
-    "F3_R2_C1_W1_B0": ((255, 150, 150), "Al2O3", "Alumina - Ceramic", 0.95, 160),
-    "F3_R1_C2_W1_B0": ((150, 200, 255), "MgSO4", "Epsom Salt", 0.85, 130),
-    "F3_R1_C1_W2_B0": ((200, 255, 200), "C6H12O6", "Glucose - Sugar", 0.8, 180),
-    "F3_R2_C2_W0_B0": ((255, 100, 255), "CuSO4", "Copper Sulfate", 0.85, 140),
-    "F3_R1_C1_W1_B1": ((180, 180, 255), "NaCl", "Salt - Ionic", 0.95, 90),
-
-    # Fully locked - Highly stable complexes
-    "F4_R2_C2_W0_B0": ((255, 255, 0), "CrO4", "Chromate - Stable Complex", 1.0, 200),
-    "F4_R1_C1_W2_B0": ((150, 255, 150), "C12H22O11", "Sucrose - Complex Sugar", 0.9, 220),
-    "F4_R1_C1_W1_B1": ((200, 200, 200), "CaCO3", "Limestone - Rock", 0.98, 180),
-    "F4_R2_C1_W1_B0": ((255, 200, 150), "Fe3O4", "Magnetite - Magnetic", 0.95, 210),
-    "F4_R1_C2_W1_B0": ((180, 220, 255), "ZnSO4", "Zinc Sulfate", 0.9, 190),
-    "F4_R0_C0_W4_B0": ((255, 255, 255), "C-Diamond", "Diamond - Crystal", 1.0, 300),
-    "F4_R0_C0_W0_B4": ((50, 50, 50), "C-Graphite", "Graphite - Stable", 0.98, 100),
-}
-
-# Symbolic names for bot thoughts
-MOLECULE_SYMBOLS = list(set(data[1] for data in MOLECULE_DATABASE.values()))
-
-# PHASE 3: Corner desire and repulsion constants
-K_CORNER_DESIRE = 0.002
-K_SAME_POLE_REPULSION = 0.008
-K_ORIENTATION_PULL = 0.003
-CORNER_DESIRE_RANGE = EDGE_LEN * 8.0
-
-# PHASE 4: Reaction system constants
-K_REACTION_ENERGY_RELEASE = 0.05  # Energy burst when reactions occur
-REACTION_PROBABILITY_BASE = 0.001  # Base chance per frame for reactions
-CATALYST_BOOST = 3.0  # Catalysts multiply reaction chance
-SYNTHESIS_ENERGY_COST = 0.1  # Battery drain when forming complex molecules
-REACTION_RANGE = EDGE_LEN * 4.0  # Distance for molecules to react
-
-# PHASE 4: Catalytic molecules (these help other reactions)
-CATALYSTS = ["FeO4", "CuSO4", "Fe3O4"]  # Iron-based catalysts
-
-# PHASE 4: Synthesis reactions (simple → complex)
-SYNTHESIS_REACTIONS = {
-    # (reactant1, reactant2) : product
-    ("H3O+", "PO4"): "H2O",  # Acid + Base → Water
-    ("H2O", "H2O"): "C2H6",  # Water synthesis → Ethane
-    ("CH4", "CH4"): "C2H6",  # Methane fusion
-    ("H2O", "CO2"): "C6H12O6",  # Photosynthesis analog
-    ("SO3", "H2O"): "H2SO4",  # Sulfuric acid formation
-    ("NO3", "H2O"): "HNO3",  # Nitric acid formation
-    ("FeO4", "FeO4"): "Fe2O3",  # Rust formation
-    ("SiO4", "SiO4"): "C-Diamond",  # Silicon → Diamond (high pressure)
-}
-
-# PHASE 4: Decomposition reactions (complex → simple)
-DECOMPOSITION_REACTIONS = {
-    "H2SO4": ["SO3", "H2O"],  # Acid breaks down
-    "HNO3": ["NO3", "H2O"],
-    "C6H12O6": ["H2O", "CO2"],  # Sugar combustion
-    "Fe2O3": ["FeO4", "FeO4"],  # Rust decomposition
-}
 
 PLAYER_NAME = "Seeker"
 SAVE_FILENAME = "Traveler.json"
@@ -593,21 +509,7 @@ def resolve_joints_jit(locals_arr, joints_data):
 @njit(fastmath=True, cache=True)
 def calculate_disk_quads(center_pos, pan, yaw, pitch, dist, width, height,
                         shadow_radius, u_vec, v_vec, view_dir, color_base, battery_avg, current_time):
-
-
-
-
-
-
     """Enhanced with temperature gradients and consciousness influence"""
-
-
-
-
-
-
-
-
     num_rings = 10  # Increased from 8
     segments = 50   # Increased from 40
     max_quads = num_rings * segments
@@ -821,44 +723,16 @@ class VertexJoint:
 class Tetrahedron:
     EDGES_NP = np.array([(i, j) for i in range(4) for j in range(i+1, 4)], dtype=np.int32)
     FACES_NP = np.array([(1, 2, 3), (0, 1, 2), (0, 2, 3), (0, 1, 3)], dtype=np.int32)
-    FACE_COLORS = [(255,255,255), (0,0,0), (255,255,0), (0,255,255)]
+    FACE_COLORS = [(255,255,255), (0,0,0), (255,0,0), (0,255,255)]
     FACE_POLARITY_MAP = {2: 1, 3: -1}
-
-    # PHASE 1: Color names
-    FACE_COLOR_NAMES = ['W', 'B', 'R', 'C']  # White, Black, Red, Cyan
-
-    # PHASE 3: Corner-to-face-color mapping (which corners belong to which face)
-    FACE_TO_CORNERS = {
-        0: [1, 2, 3],  # White face (indices into verts)
-        1: [0, 1, 2],  # Black face
-        2: [0, 2, 3],  # Red face
-        3: [0, 1, 3]   # Cyan face
-    }
-
     r, a = EDGE_LEN*math.sqrt(3/8), EDGE_LEN/math.sqrt(3)
     REST_NP = np.array([[0,0,r], [EDGE_LEN/2,-a/2,-r/3], [-EDGE_LEN/2,-a/2,-r/3], [0,a,-r/3]], dtype=np.float64)
-
     def __init__(self, pos):
         self.pos = np.array(pos, float); self.pos_prev = self.pos.copy()
         self.local = self.REST_NP.copy(); self.local_prev = self.local.copy()
         self.battery = random.uniform(0.3, 0.6); self.orientation_bias = np.zeros(3, dtype=np.float64)
         self.colors = None; self.label = ""; self.id = id(self)
         self.is_magnetized = False; self.magnetism = 0
-
-        # PHASE 1: Enhanced magnetization tracking
-        self.magnetic_strength = 0.0  # 0.0 to 1.0
-        self.locked_faces = []  # List of face indices that are locked
-        self.molecule_type = None  # Pattern key for molecule database
-        self.aura_color = None  # RGB tuple if molecule is identified
-
-        # PHASE 3: Track polarity face for orientation
-        self.polarity_face_idx = None  # Which face determines polarity (2=Red=+1, 3=Cyan=-1)
-
-        # PHASE 4: Reaction tracking
-        self.last_reaction_time = 0.0  # Time of last reaction
-        self.synthesis_count = 0  # Number of times this molecule formed from reactions
-        self.is_catalyst = False  # Whether this molecule catalyzes reactions
-
     def verts(self): return self.local + self.pos
 
 class PastProjection4Sphere:
@@ -887,7 +761,6 @@ class PastProjection4Sphere:
 class World:
     def __init__(self, sound):
         self.tets, self.joints, self.sticky_pairs = [], [], []; self.center_of_mass, self.sound = np.zeros(3), sound
-        self.reaction_particles = []  # PHASE 4: Particles for visual effects
 
     def get_average_battery(self):
         """Calculate average battery level (collective consciousness)"""
@@ -907,7 +780,6 @@ class World:
         if len(self.tets) == 0: new_tet.label = "Time"
         elif len(self.tets) == 1: new_tet.label = "Separation"
         self.tets.append(new_tet)
-
     def spawn_polar_pair(self):
         # FIX: If world is empty, spawn 1st TET, then proceed to try pairing
         if not self.tets:
@@ -919,512 +791,35 @@ class World:
         if len(self.tets) == 2: tet1.label = "Light"; tet2.label = "Darkness"
         self.tets.extend([tet1, tet2]); polar_face_idx = random.choice([2, 3]); face_verts = Tetrahedron.FACES_NP[polar_face_idx]
         for i in range(3): self.sticky_pairs.append((tet1, face_verts[i], tet2, face_verts[i]))
-
     def check_magnetization(self):
-        """PHASE 1: Enhanced - Detect 1-4 locked faces and identify molecule types"""
         tet_map = {t.id: t for t in self.tets}
-
-        # Reset all magnetization
-        for t in self.tets:
-            t.is_magnetized = False
-            t.magnetism = 0
-            t.magnetic_strength = 0.0
-            t.locked_faces = []
-            t.molecule_type = None
-            t.aura_color = None
-            t.polarity_face_idx = None  # PHASE 3
-
-        # Check each TET for locked faces
+        for t in self.tets: t.is_magnetized, t.magnetism = False, 0
         for t in self.tets:
             joints_by_partner = {}
             for j in self.joints:
                 partner_id, my_idx = (j.B.id, j.ia) if j.A.id == t.id else ((j.A.id, j.ib) if j.B.id == t.id else (None, None))
-                if partner_id:
-                    joints_by_partner.setdefault(partner_id, set()).add(my_idx)
-
-            # Check each face for complete locking
-            for face_idx in range(4):
-                face_verts = set(Tetrahedron.FACES_NP[face_idx])
-                for partner_id, connected_indices in joints_by_partner.items():
-                    if connected_indices.issuperset(face_verts):
-                        t.locked_faces.append(face_idx)
-
-                        # First locked face determines base magnetism (backward compatibility)
-                        if not t.is_magnetized:
-                            polarity = Tetrahedron.FACE_POLARITY_MAP.get(face_idx, 0)
-                            if polarity != 0:
-                                t.is_magnetized = True
-                                t.magnetism = polarity
-                                t.polarity_face_idx = face_idx  # PHASE 3: Track which face
-                                partner_tet = tet_map.get(partner_id)
-                                if partner_tet and not partner_tet.is_magnetized:
-                                    partner_tet.is_magnetized = True
-                                    partner_tet.magnetism = polarity
-                                    partner_tet.polarity_face_idx = face_idx  # PHASE 3
-
-            # Calculate magnetic strength based on locked faces
-            if t.is_magnetized and len(t.locked_faces) > 0:
-                # Strength increases with more locked faces: 0.25, 0.5, 0.75, 1.0
-                t.magnetic_strength = min(1.0, len(t.locked_faces) * 0.25)
-
-            # Identify molecule type from face pattern
-            if len(t.locked_faces) > 0:
-                color_counts = {'R': 0, 'C': 0, 'W': 0, 'B': 0}
-                for face_idx in range(4):
-                    color = t.colors[face_idx] if t.colors else Tetrahedron.FACE_COLORS[face_idx]
-                    # Determine color name from RGB
-                    if color == (255,0,0): color_counts['R'] += 1
-                    elif color == (0,255,255): color_counts['C'] += 1
-                    elif color == (255,255,255): color_counts['W'] += 1
-                    elif color == (0,0,0): color_counts['B'] += 1
-
-                pattern_key = f"F{len(t.locked_faces)}_R{color_counts['R']}_C{color_counts['C']}_W{color_counts['W']}_B{color_counts['B']}"
-                t.molecule_type = pattern_key
-
-                # Check if this is a known molecule
-                if pattern_key in MOLECULE_DATABASE:
-                    molecule_data = MOLECULE_DATABASE[pattern_key]
-                    t.aura_color = molecule_data[0]
-                    molecule_name = molecule_data[1]
-                    # Optionally update label with symbolic name
-                    if not t.label or t.label in ["Time", "Separation", "Light", "Darkness"]:
-                        t.label = molecule_name
-                    # PHASE 4: Check if this is a catalyst
-                    t.is_catalyst = molecule_name in CATALYSTS
-
-    def update_magnetic_batteries(self, scaled_dt):
-        """PHASE 2: Battery oscillation - emptiness transfers between magnetic pairs"""
-        if not self.joints:
-            return
-
-        # Find magnetic pairs (TETs connected by locked faces)
-        tet_map = {t.id: t for t in self.tets}
-        processed_pairs = set()
-
-        for t in self.tets:
-            if not t.is_magnetized or t.magnetic_strength <= 0:
-                continue
-
-            # Find magnetic partner
-            for j in self.joints:
-                partner_id = None
-                if j.A.id == t.id:
-                    partner_id = j.B.id
-                elif j.B.id == t.id:
-                    partner_id = j.A.id
-
-                if partner_id and partner_id in tet_map:
-                    partner = tet_map[partner_id]
-                    if partner.is_magnetized:
-                        # Create unique pair identifier
-                        pair_key = tuple(sorted([t.id, partner_id]))
-                        if pair_key in processed_pairs:
-                            continue
-                        processed_pairs.add(pair_key)
-
-                        # Calculate emptiness (1 - battery)
-                        emptiness_t = 1.0 - t.battery
-                        emptiness_p = 1.0 - partner.battery
-
-                        # Transfer rate based on magnetic strength and emptiness differential
-                        transfer_rate = 0.1 * t.magnetic_strength * scaled_dt
-                        emptiness_diff = emptiness_t - emptiness_p
-
-                        # Transfer emptiness (which fills the other's battery)
-                        transfer_amount = emptiness_diff * transfer_rate
-
-                        # Apply transfer (clamped to prevent overshoot)
-                        new_emptiness_t = emptiness_t - transfer_amount
-                        new_emptiness_p = emptiness_p + transfer_amount
-
-                        t.battery = np.clip(1.0 - new_emptiness_t, 0.0, 1.0)
-                        partner.battery = np.clip(1.0 - new_emptiness_p, 0.0, 1.0)
-
-    def apply_corner_desires(self, scaled_dt):
-        """PHASE 3: Apply corner-to-corner attraction between opposite colors"""
-        if len(self.tets) < 2:
-            return
-
-        # Build spatial tree for efficient corner searching
-        all_corners = []
-        corner_to_tet = []
-        corner_colors = []
-
-        for t in self.tets:
-            verts = t.verts()
-            for corner_idx in range(4):
-                all_corners.append(verts[corner_idx])
-                corner_to_tet.append((t, corner_idx))
-
-                # Determine corner color (corner belongs to 3 faces, use first non-white/black)
-                corner_color = None
-                for face_idx in range(4):
-                    if corner_idx in Tetrahedron.FACE_TO_CORNERS[face_idx]:
-                        face_color = t.colors[face_idx] if t.colors else Tetrahedron.FACE_COLORS[face_idx]
-                        if face_color == (255, 0, 0):  # Red
-                            corner_color = 'R'
-                            break
-                        elif face_color == (0, 255, 255):  # Cyan
-                            corner_color = 'C'
-                            break
-                if not corner_color:
-                    corner_color = 'N'  # Neutral (white/black)
-                corner_colors.append(corner_color)
-
-        all_corners = np.array(all_corners)
-
-        if len(all_corners) < 2:
-            return
-
-        # Build KD-tree for fast neighbor search
-        tree = cKDTree(all_corners)
-
-        # For each corner, find nearby opposite-colored corners
-        for i, (t1, c1_idx) in enumerate(corner_to_tet):
-            color1 = corner_colors[i]
-
-            # Only Red and Cyan corners have desires
-            if color1 not in ['R', 'C']:
-                continue
-
-            # Find nearby corners within desire range
-            nearby_indices = tree.query_ball_point(all_corners[i], CORNER_DESIRE_RANGE)
-
-            for j in nearby_indices:
-                if i == j:
-                    continue
-
-                color2 = corner_colors[j]
-
-                # Red seeks Cyan, Cyan seeks Red
-                if (color1 == 'R' and color2 == 'C') or (color1 == 'C' and color2 == 'R'):
-                    t2, c2_idx = corner_to_tet[j]
-
-                    # Skip if same TET
-                    if t1.id == t2.id:
-                        continue
-
-                    # Calculate attraction force
-                    delta = all_corners[j] - all_corners[i]
-                    dist = np.linalg.norm(delta)
-
-                    if dist > 1e-6 and dist < CORNER_DESIRE_RANGE:
-                        # Force falls off with distance
-                        force_strength = K_CORNER_DESIRE * (1.0 - dist / CORNER_DESIRE_RANGE)
-                        force_vec = delta / dist * force_strength
-
-                        # Apply force to both TET's local corner and position
-                        t1.local[c1_idx] += force_vec * scaled_dt * 0.5
-                        t1.pos += force_vec * scaled_dt * 0.5
-
-                        t2.local[c2_idx] -= force_vec * scaled_dt * 0.5
-                        t2.pos -= force_vec * scaled_dt * 0.5
-
-    def apply_same_pole_repulsion(self, scaled_dt):
-        """PHASE 3: Positive poles repel other positive poles"""
-        positive_poles = [t for t in self.tets if t.is_magnetized and t.magnetism > 0]
-
-        if len(positive_poles) < 2:
-            return
-
-        # Apply repulsion between all positive pole pairs
-        for i, t1 in enumerate(positive_poles):
-            for t2 in positive_poles[i+1:]:
-                delta = t2.pos - t1.pos
-                dist = np.linalg.norm(delta)
-
-                if dist > 1e-6:
-                    # Repulsion falls off with distance squared (inverse square law)
-                    repulsion_strength = K_SAME_POLE_REPULSION / (dist * dist + 1.0)
-
-                    # Scale by magnetic strength
-                    repulsion_strength *= t1.magnetic_strength * t2.magnetic_strength
-
-                    force_vec = delta / dist * repulsion_strength
-
-                    # Push apart
-                    t1.pos -= force_vec * scaled_dt
-                    t2.pos += force_vec * scaled_dt
-
-    def apply_negative_pole_orientation(self, scaled_dt):
-        """PHASE 3: Negative poles (fuller battery side) orient toward origin"""
-        for t in self.tets:
-            if not t.is_magnetized or t.polarity_face_idx is None:
-                continue
-
-            # Only apply to negative polarity (Cyan face = -1)
-            if t.magnetism >= 0:
-                continue
-
-            # Direction to origin from TET center
-            to_origin = -t.pos
-            dist_to_origin = np.linalg.norm(to_origin)
-
-            if dist_to_origin < 1e-6:
-                continue
-
-            to_origin_norm = to_origin / dist_to_origin
-
-            # Get the negative pole face normal (the Cyan face)
-            face_verts_indices = Tetrahedron.FACES_NP[t.polarity_face_idx]
-            face_verts = t.local[face_verts_indices]
-
-            # Calculate face normal
-            v1 = face_verts[1] - face_verts[0]
-            v2 = face_verts[2] - face_verts[0]
-            face_normal = np.cross(v1, v2)
-            face_normal_len = np.linalg.norm(face_normal)
-
-            if face_normal_len < 1e-6:
-                continue
-
-            face_normal /= face_normal_len
-
-            # Fuller battery side should point toward origin
-            # If battery is high, we want the negative pole to point at origin
-            orientation_strength = K_ORIENTATION_PULL * t.battery * t.magnetic_strength
-
-            # Calculate torque to align face normal with to_origin direction
-            torque_axis = np.cross(face_normal, to_origin_norm)
-            torque_magnitude = np.linalg.norm(torque_axis)
-
-            if torque_magnitude > 1e-6:
-                torque_axis /= torque_magnitude
-
-                # Apply rotation to local coordinates
-                rotation_amount = torque_magnitude * orientation_strength * scaled_dt
-
-                for v_idx in range(4):
-                    # Rodrigues' rotation formula
-                    rotated = (t.local[v_idx] * np.cos(rotation_amount) +
-                              np.cross(torque_axis, t.local[v_idx]) * np.sin(rotation_amount) +
-                              torque_axis * np.dot(torque_axis, t.local[v_idx]) * (1 - np.cos(rotation_amount)))
-                    t.local[v_idx] = rotated
-
-    def attempt_synthesis_reactions(self, scaled_dt, add_msg_fn):
-        """PHASE 4: Try to synthesize new molecules from pairs"""
-        if len(self.tets) < 2:
-            return []
-
-        current_time = time.time()
-
-        # Build spatial index
-        positions = np.array([t.pos for t in self.tets])
-        tree = cKDTree(positions)
-
-        # Track successful reactions this frame
-        reactions_this_frame = []
-
-        for i, t1 in enumerate(self.tets):
-            # Must have a molecule type
-            if not t1.label or t1.label not in MOLECULE_SYMBOLS:
-                continue
-
-            # Cooldown between reactions
-            if current_time - t1.last_reaction_time < 5.0:
-                continue
-
-            # Find nearby molecules
-            nearby_indices = tree.query_ball_point(positions[i], REACTION_RANGE)
-
-            for j in nearby_indices:
-                if i >= j:  # Avoid duplicate pairs
-                    continue
-
-                t2 = self.tets[j]
-
-                # Must have a molecule type
-                if not t2.label or t2.label not in MOLECULE_SYMBOLS:
-                    continue
-
-                # Cooldown check
-                if current_time - t2.last_reaction_time < 5.0:
-                    continue
-
-                # Check for synthesis reaction
-                reaction_key = tuple(sorted([t1.label, t2.label]))
-
-                if reaction_key in SYNTHESIS_REACTIONS:
-                    product = SYNTHESIS_REACTIONS[reaction_key]
-
-                    # Calculate reaction probability
-                    base_prob = REACTION_PROBABILITY_BASE * scaled_dt * 60  # Scale to per-second
-
-                    # Check for nearby catalysts
-                    catalyst_multiplier = 1.0
-                    for t_cat in self.tets:
-                        if t_cat.is_catalyst:
-                            dist_to_cat = np.linalg.norm(t_cat.pos - t1.pos)
-                            if dist_to_cat < REACTION_RANGE * 2:
-                                catalyst_multiplier = CATALYST_BOOST
-                                break
-
-                    # Battery similarity increases reaction chance
-                    battery_similarity = 1.0 - abs(t1.battery - t2.battery)
-                    final_prob = base_prob * catalyst_multiplier * (0.5 + battery_similarity * 0.5)
-
-                    if random.random() < final_prob:
-                        # REACTION OCCURS!
-                        # Energy release
-                        energy_burst = K_REACTION_ENERGY_RELEASE
-
-                        # Transfer energy to nearby TETs
-                        for t_nearby in self.tets:
-                            dist = np.linalg.norm(t_nearby.pos - t1.pos)
-                            if dist < REACTION_RANGE * 1.5:
-                                t_nearby.battery = min(1.0, t_nearby.battery + energy_burst * (1.0 - dist / (REACTION_RANGE * 1.5)))
-
-                        # Change t1 to product, remove t2
-                        t1.label = product
-                        t1.last_reaction_time = current_time
-                        t1.synthesis_count += 1
-
-                        # Drain some battery for synthesis
-                        t1.battery = max(0.1, t1.battery - SYNTHESIS_ENERGY_COST)
-
-                        # Visual: Make t2 "evaporate" by draining battery
-                        t2.battery = 0.0
-                        t2.label = ""
-                        t2.last_reaction_time = current_time
-
-                        reactions_this_frame.append((t1.label, t2.label, product))
-
-                        # Message
-                        add_msg_fn(f"⚗️ Synthesized {product}!", duration=3)
-
-                        break  # One reaction per TET per frame
-
-        return reactions_this_frame
-
-    def attempt_decomposition_reactions(self, scaled_dt, add_msg_fn):
-        """PHASE 4: Complex molecules can break down into simpler ones"""
-        current_time = time.time()
-        decompositions_this_frame = []
-
-        for t in self.tets:
-            # Only molecules with labels can decompose
-            if not t.label or t.label not in MOLECULE_SYMBOLS:
-                continue
-
-            # Cooldown
-            if current_time - t.last_reaction_time < 10.0:
-                continue
-
-            # Check if this molecule can decompose
-            if t.label in DECOMPOSITION_REACTIONS:
-                # Low battery or high entropy increases decomposition chance
-                stress_factor = (1.0 - t.battery) * 2.0
-
-                # Distance from origin (entropy) increases chance
-                dist_from_origin = np.linalg.norm(t.pos - self.center_of_mass)
-                entropy_factor = min(2.0, dist_from_origin / 100.0)
-
-                decomp_prob = REACTION_PROBABILITY_BASE * 0.5 * scaled_dt * 60 * stress_factor * entropy_factor
-
-                if random.random() < decomp_prob:
-                    # DECOMPOSITION OCCURS!
-                    products = DECOMPOSITION_REACTIONS[t.label]
-
-                    # Change this TET to first product
-                    old_label = t.label
-                    t.label = products[0]
-                    t.last_reaction_time = current_time
-                    t.battery = min(1.0, t.battery + 0.2)  # Release energy
-
-                    # Spawn second product nearby if possible
-                    if len(products) > 1 and len(self.tets) < 200:  # Limit total TETs
-                        offset = np.random.uniform(-1, 1, 3) * EDGE_LEN * 3
-                        new_pos = t.pos + offset
-                        new_tet = Tetrahedron(new_pos)
-                        new_tet.label = products[1]
-                        new_tet.battery = t.battery * 0.8
-                        new_tet.colors = list(Tetrahedron.FACE_COLORS)
-                        self.tets.append(new_tet)
-
-                    decompositions_this_frame.append((old_label, products))
-                    add_msg_fn(f"💥 {old_label} decomposed!", duration=3)
-
-        return decompositions_this_frame
-
-    def spawn_reaction_particles(self, screen, cam, reactions, width, height):
-        """PHASE 4: Visual effects for reactions"""
-        if not hasattr(self, 'reaction_particles'):
-            self.reaction_particles = []
-
-        # Add new particles from reactions
-        for r1, r2, product in reactions:
-            # Find TET with product label
-            for t in self.tets:
-                if t.label == product:
-                    particle = {
-                        'pos': t.pos.copy(),
-                        'vel': np.random.uniform(-1, 1, 3) * 20,
-                        'color': t.aura_color if t.aura_color else (255, 255, 0),
-                        'life': 1.0,
-                        'size': 8
-                    }
-                    self.reaction_particles.append(particle)
-                    # Add 5-10 particles per reaction
-                    for _ in range(random.randint(4, 9)):
-                        p = particle.copy()
-                        p['vel'] = np.random.uniform(-1, 1, 3) * 30
-                        p['color'] = tuple(np.array(p['color']) * random.uniform(0.6, 1.2))
-                        self.reaction_particles.append(p)
-                    break
-
-        # Update and render particles
-        particles_to_keep = []
-        for p in self.reaction_particles:
-            p['pos'] += p['vel'] * 0.016  # Assume 60fps
-            p['vel'] *= 0.95  # Friction
-            p['life'] -= 0.02
-
-            if p['life'] > 0:
-                screen_pos = cam.project(p['pos'])
-                if screen_pos[0] > -10000:
-                    alpha = int(p['life'] * 255)
-                    size = max(1, int(p['size'] * p['life']))
-                    color_with_alpha = tuple(list(p['color']) + [alpha])
-
-                    # Draw particle
-                    try:
-                        particle_surf = pygame.Surface((size*2, size*2), pygame.SRCALPHA)
-                        pygame.draw.circle(particle_surf, color_with_alpha, (size, size), size)
-                        screen.blit(particle_surf, (screen_pos[0]-size, screen_pos[1]-size))
-                    except:
-                        pass
-
-                particles_to_keep.append(p)
-
-        self.reaction_particles = particles_to_keep
-
+                if partner_id: joints_by_partner.setdefault(partner_id, set()).add(my_idx)
+            for partner_id, connected_indices in joints_by_partner.items():
+                for face_idx, polarity in Tetrahedron.FACE_POLARITY_MAP.items():
+                    if connected_indices.issuperset(set(Tetrahedron.FACES_NP[face_idx])):
+                        t.is_magnetized, t.magnetism = True, polarity
+                        partner_tet = tet_map.get(partner_id)
+                        if partner_tet: partner_tet.is_magnetized, partner_tet.magnetism = True, polarity
+                        break
+                if t.is_magnetized: break
     def explode(self):
         self.joints.clear(); self.sticky_pairs.clear()
         for t in self.tets: t.pos_prev = t.pos - np.random.uniform(-1, 1, 3); t.local_prev = t.local - np.random.uniform(-0.5, 0.5, (4,3))
-
     def try_snap(self, A, ia, B, ib):
         if any((j.A.id, j.ia, j.B.id, j.ib) in [(A.id,ia,B.id,ib), (B.id,ib,A.id,ia)] for j in self.joints): return
         self.joints.append(VertexJoint(A, ia, B, ib))
         if self.sound and AUDIO_ENABLED: self.sound.play()
-
     def calculate_dynamic_center(self):
         if not self.tets: return np.zeros(3)
         return np.mean(np.array([t.pos for t in self.tets]), axis=0)
-
     def update(self, scaled_dt, unscaled_dt, time_scale, add_msg_fn, spin_multiplier=1.0):
         if not self.tets: return
-        self.check_magnetization()
-        self.update_magnetic_batteries(scaled_dt)  # PHASE 2: Battery oscillation
-        self.apply_corner_desires(scaled_dt)  # PHASE 3: Color attraction
-        self.apply_same_pole_repulsion(scaled_dt)  # PHASE 3: Positive repulsion
-        self.apply_negative_pole_orientation(scaled_dt)  # PHASE 3: Orient to origin
-
-        # PHASE 4: Chemistry reactions
-        synthesis_reactions = self.attempt_synthesis_reactions(scaled_dt, add_msg_fn)
-        decomposition_reactions = self.attempt_decomposition_reactions(scaled_dt, add_msg_fn)
-        self._last_synth_reactions = synthesis_reactions  # Store for particle effects
-
-        self.center_of_mass = self.calculate_dynamic_center()
+        self.check_magnetization(); self.center_of_mass = self.calculate_dynamic_center()
         positions = np.array([t.pos for t in self.tets]); positions_prev = np.array([t.pos_prev for t in self.tets])
         locals_arr = np.array([t.local for t in self.tets]); locals_prev = np.array([t.local_prev for t in self.tets])
         batteries = np.array([t.battery for t in self.tets]); id_to_idx = {t.id: i for i, t in enumerate(self.tets)}
@@ -1458,12 +853,10 @@ class World:
             if np.linalg.norm(p2 - p1) < SNAP_DIST: self.try_snap(t1, i1, t2, i2); self.sticky_pairs.remove(pair)
         for i, t in enumerate(self.tets):
             t.pos, t.pos_prev, t.local, t.local_prev, t.battery, t.orientation_bias = positions[i], positions_prev[i], locals_arr[i], locals_prev[i], batteries[i], orientation_biases[i]
-
     def get_state(self):
         tet_states = [{'id': t.id, 'pos': t.pos, 'pos_prev': t.pos_prev, 'local': t.local, 'local_prev': t.local_prev, 'battery': t.battery, 'colors': t.colors, 'label': t.label, 'orientation_bias': t.orientation_bias} for t in self.tets]
         joint_states = [{'A_id': j.A.id, 'ia': j.ia, 'B_id': j.B.id, 'ib': j.ib} for j in self.joints]
         return {'tets': tet_states, 'joints': joint_states, 'center_of_mass': self.center_of_mass}
-
     def set_state(self, state):
         self.tets.clear(); self.joints.clear(); self.sticky_pairs.clear()
         tet_map = {}
@@ -1506,9 +899,9 @@ def show_intro(screen, cam):
         for e in pygame.event.get():
             if e.type == pygame.QUIT: pygame.quit(); sys.exit()
             if e.type == pygame.VIDEORESIZE: WIDTH, HEIGHT = e.w, e.h; screen = pygame.display.set_mode((WIDTH, HEIGHT), pygame.RESIZABLE); font_lg = pygame.font.SysFont('Arial Black', min(WIDTH, HEIGHT)//8); font_sm = pygame.font.SysFont('Arial', min(WIDTH, HEIGHT)//25)
-        screen.fill((10,10,20)); title = font_lg.render("TET~CRAFT", True, (255, 50, 50)); sub = font_sm.render("~A Kleinverse of your own from DigitizingHumanity.com~", True, (255, 255, 255))
+        screen.fill((10,10,20)); title = font_lg.render("TET~CRAFT", True, (255, 50, 50)); sub = font_sm.render("A Kleinverse of your own from DigitizingHumanity.com", True, (255, 255, 255))
         screen.blit(title, title.get_rect(center=(WIDTH//2, HEIGHT//2-50))); screen.blit(sub, sub.get_rect(center=(WIDTH//2, HEIGHT//2+50)))
-        jit_surf = font_jit.render("Constructing you a unique Kleinverse...", True, (0, 255, 0)); screen.blit(jit_surf, (10, 10))
+        jit_surf = font_jit.render("Confining kleinverse...", True, (0, 255, 0)); screen.blit(jit_surf, (10, 10))
         if pygame.time.get_ticks() % 1000 < 500: screen.blit(font_jit.render("_", True, (0, 255, 0)), (10 + jit_surf.get_width(), 10))
         pygame.display.flip(); clock.tick(30)
 
@@ -1531,7 +924,7 @@ def show_name_input_screen(screen):
         screen.fill((15, 15, 30))
         prompt = font_lg.render("Who be ye?", True, (200, 200, 255)); screen.blit(prompt, prompt.get_rect(center=(WIDTH//2, HEIGHT//2 - 50)))
         txt_surf = font_lg.render(input_text + ("_" if pygame.time.get_ticks() % 1000 < 500 else ""), True, (255, 255, 0)); screen.blit(txt_surf, txt_surf.get_rect(center=(WIDTH//2, HEIGHT//2 + 20)))
-        sub = font_sm.render("(Mash and then press ENTER to Begin)", True, (100, 100, 100)); screen.blit(sub, sub.get_rect(center=(WIDTH//2, HEIGHT//2 + 80)))
+        sub = font_sm.render("(Press ENTER to Begin)", True, (100, 100, 100)); screen.blit(sub, sub.get_rect(center=(WIDTH//2, HEIGHT//2 + 80)))
         pygame.display.flip(); clock.tick(30)
 
 def show_void_screen(screen, world):
@@ -1549,14 +942,8 @@ def show_void_screen(screen, world):
             if e.type == pygame.QUIT: pygame.quit(); sys.exit()
             if e.type == pygame.KEYDOWN and e.key == pygame.K_SPACE: world.spawn(); waiting = False
             if e.type == pygame.VIDEORESIZE: WIDTH, HEIGHT = e.w, e.h; screen = pygame.display.set_mode((WIDTH, HEIGHT), pygame.RESIZABLE); font_lg = pygame.font.SysFont('Georgia', min(WIDTH, HEIGHT)//15); font_sm = pygame.font.SysFont('Arial', min(WIDTH, HEIGHT)//25)
-        screen.fill((10,10,20));
-        line1 = font_lg.render(f"Welcome, {PLAYER_NAME}... to the VOID of (mis)Understanding!", True, (200,200,200));
-        line2 = font_sm.render("(Press SPACE to begin)", True, (150,150,150));
-        line3 = font_sm.render("There is nothing here but unbound, Loving Potential - OH the bliss... but we must earn it!", True, (255,150,255))
-        screen.blit(line1, line1.get_rect(center=(WIDTH//2, HEIGHT//2-60)));
-        screen.blit(line2, line2.get_rect(center=(WIDTH//2, HEIGHT//2+20)));
-        screen.blit(line3, line3.get_rect(center=(WIDTH//2, HEIGHT//2+60)));
-        pygame.display.flip(); clock.tick(15)
+        screen.fill((10,10,20)); line1 = font_lg.render(f"Welcome, {PLAYER_NAME}... to the VOID of (mis)Understanding!", True, (200,200,200)); line2 = font_sm.render("(Press SPACE to begin)", True, (150,150,150))
+        screen.blit(line1, line1.get_rect(center=(WIDTH//2, HEIGHT//2-30))); screen.blit(line2, line2.get_rect(center=(WIDTH//2, HEIGHT//2+30))); pygame.display.flip(); clock.tick(15)
 
 def draw_standard_black_hole_jit(target_surf, cam, flags, tl, center_pos, world):
     if not flags['t3']: return
@@ -1745,6 +1132,7 @@ signal.signal(signal.SIGINT, shutdown_handler)
 def main(threaded=False):
     global WIDTH, HEIGHT, clock, game_mode, host_instance, guest_instance, net_avatars, net_messages, AUDIO_ENABLED, GRADIO_FRAME_BUFFER, GAME_RUNNING
 
+    os.environ['PYGAME_HIDE_SUPPORT_PROMPT'] = "1"
     pygame.init()
 
     try:
@@ -1760,7 +1148,7 @@ def main(threaded=False):
     else:
         screen = pygame.display.set_mode((WIDTH, HEIGHT), pygame.RESIZABLE)
 
-    pygame.display.set_caption("TET~CRAFT: The Fourth Temple v4.0 free from DigitizingHumanity.com")
+    pygame.display.set_caption("TET~CRAFT")
     clock = pygame.time.Clock(); font_l = pygame.font.SysFont('Georgia', 32); font_s = pygame.font.SysFont(None, 24)
     world = World(generate_boing_sound()); cam = Camera()
 
@@ -1908,7 +1296,6 @@ def main(threaded=False):
 
 
 
-            # AUTO BOT LOGIC (HEADLESS)
             now = time.time()
             # 1. Camera Move + Auto Center (Every 60s)
             if now - last_bot_move > 60:
@@ -1933,6 +1320,13 @@ def main(threaded=False):
                 last_bot_spawn = now
 
 
+            # 3. Thoughts (Every 10 mins)
+            if now - last_bot_thought > 600:
+                if world.tets:
+                    labels = [t.label for t in world.tets if t.label]
+                    if not labels: labels = ["Void", "Silence"]
+
+
 
 
 
@@ -1943,31 +1337,7 @@ def main(threaded=False):
 
 
 
-            # 3. Thoughts (Every 10 mins)
-            if now - last_bot_thought > 600:
-                if world.tets:
-                    # PHASE 1: Gather both mystic words and molecule names
-                    labels = [t.label for t in world.tets if t.label]
-                    molecules = [t.label for t in world.tets if t.aura_color and t.label in MOLECULE_SYMBOLS]
-
-                    # PHASE 4: Track synthesis champions
-                    synthesized = [t for t in world.tets if t.synthesis_count > 0]
-                    if synthesized:
-                        champion = max(synthesized, key=lambda t: t.synthesis_count)
-                        if random.random() < 0.3:  # 30% chance
-                            thought = f"{champion.label} ∫ synthesized {champion.synthesis_count}× ∞"
-                            net_messages.append([f"[Thought]: {thought}", time.time() + 15])
-                            print(f"[BOT THOUGHT] {thought}")
-                            last_bot_thought = now
-                            continue
-
-                    if not labels: labels = ["Void", "Silence"]
-
-                    # Prefer molecule names for chemical thoughts
-                    if molecules and random.random() < 0.6:  # 60% chance to use molecules
-                        thought = f"{random.choice(molecules)} {random.choice(MATH_SYMBOLS)} {random.choice(labels)}"
-                    else:
-                        thought = f"{random.choice(labels)} {random.choice(MATH_SYMBOLS)} {random.choice(labels)} {random.choice(MATH_SYMBOLS)} {random.choice(labels)}"
+                    thought = f"{random.choice(labels)} {random.choice(MATH_SYMBOLS)} {random.choice(labels)} {random.choice(MATH_SYMBOLS)} {random.choice(labels)}"
                     net_messages.append([f"[Thought]: {thought}", time.time() + 15])
                     print(f"[BOT THOUGHT] {thought}")
                 last_bot_thought = now
@@ -2038,36 +1408,12 @@ def main(threaded=False):
 
                 # Combine both (or choose one)
                 combined_alpha = min(cam_alpha, origin_alpha)  # Use most restrictive
+                # combined_alpha = cam_alpha * origin_alpha  # Or multiply for compound effect
 
                 face_z = np.mean(cam.get_transformed_z_many(world_verts[Tetrahedron.FACES_NP]), axis=1)
 
                 battery_alpha = t.battery  # 0.0-1.0 already
                 combined_alpha = min(cam_alpha, origin_alpha) * battery_alpha
-
-                # PHASE 1: Draw molecule aura if identified
-                if t.aura_color and t.magnetic_strength > 0:
-                    center_screen = cam.project(t.pos)
-                    if center_screen[0] > -10000:
-                        aura_radius = int(EDGE_LEN * 8 * t.magnetic_strength)
-                        aura_alpha = int(80 * t.magnetic_strength * combined_alpha)
-                        aura_surf = pygame.Surface((WIDTH, HEIGHT), pygame.SRCALPHA)
-                        for ring in range(3):
-                            ring_radius = aura_radius - ring * 3
-                            ring_alpha = aura_alpha // (ring + 1)
-                            pygame.draw.circle(aura_surf, (*t.aura_color, ring_alpha), center_screen, ring_radius, 2)
-                        screen.blit(aura_surf, (0, 0))
-
-                        # PHASE 4: Extra sparkle for catalysts
-                        if t.is_catalyst:
-                            sparkle_radius = aura_radius + 5
-                            sparkle_alpha = int(40 * combined_alpha)
-                            for i in range(4):
-                                angle = (time.time() * 2 + i * 1.57) % 6.28
-                                sx = center_screen[0] + int(math.cos(angle) * sparkle_radius)
-                                sy = center_screen[1] + int(math.sin(angle) * sparkle_radius)
-                                pygame.draw.circle(aura_surf, (255, 255, 0, sparkle_alpha), (sx, sy), 3)
-                        screen.blit(aura_surf, (0, 0))
-
                 for fidx in np.argsort(face_z)[::-1]:
                     points = screen_pts[Tetrahedron.FACES_NP[fidx]]
                     if not np.any(points < -100):
@@ -2079,13 +1425,6 @@ def main(threaded=False):
                 vert_color = (0,0,0) if (flags['j1'] and not flags['t3']) else (255,255,255)
                 for p in screen_pts: pygame.draw.circle(screen, vert_color, p, 1)
                 if t.label: surf = font_s.render(t.label, True, (255,255,0)); screen.blit(surf, surf.get_rect(center=cam.project(t.pos + [0, 8, 0])))
-
-        # PHASE 4: Draw reaction particles
-        if hasattr(world, 'reaction_particles'):
-            # Get recent synthesis reactions for particles
-            recent_synth = getattr(world, '_last_synth_reactions', [])
-            world.spawn_reaction_particles(screen, cam, recent_synth, WIDTH, HEIGHT)
-            world._last_synth_reactions = []  # Clear after rendering
 
         for avatar_id, avatar_data in net_avatars.items():
             draw_player_avatar(screen, cam, np.array(avatar_data['pos']), avatar_data['color'], avatar_id, name=avatar_data.get('name'))
@@ -2114,7 +1453,7 @@ def main(threaded=False):
         uptime_surf = font_s.render(f"Up: {uptime_str}", True, (255, 255, 255))
         screen.blit(uptime_surf, (WIDTH - uptime_surf.get_width() - 10, 10))
 
-        bot_leg = font_s.render("RMB Label TET | WASD View | R/F/Scroll Zoom | Q/E/Alt+Scroll Pan | Z/C/Ctrl+Scroll Timescale | X/Alt+RClick Center | V Save Instant | H Host Mode", True, (0,255,255))
+        bot_leg = font_s.render("WASD/RMB View | QE Pan | RF Zoom | Z/C Time | Ctrl+Scroll Time | Alt+Scroll Pan | Alt+RClick Center | V Save | H Host", True, (0,255,255))
         screen.blit(bot_leg, bot_leg.get_rect(center=(WIDTH//2, HEIGHT-25)))
 
         if not ON_HUGGINGFACE:
@@ -2136,10 +1475,10 @@ def gradio_interface_loop():
     with gr.Interface(
         fn=get_frame,
         inputs=None,
-        outputs=gr.Image(label="Live Simulation! Hit the 'Generate' button to see a new instant (bellow). (A simulated player is working, 1 rotation every second, 1 thought ever 10 min, 2 new random 'facts' (TET) added each hour to be misunderstood!)"),
+        outputs=gr.Image(label="Live Simulation"),
         live=True,
-        title="PLEASE, for humanity's sake! (copy/localify - from the ^^ app ^^ menu - very easy!) TET~CRAFT",
-        description="DigitizingHumanity.com's Gamified, Decentralized, Salted, 5D Communication Manifold and Physics/Chemistry Simulator... or DGDS-5D-CMPS? (uh, work acronym in progress!) #opWorldPeace END CENSORSHIP!!!"
+        title="PLEASE, for humanity's sake! (copy/localify - from the ^^ app ^^ menu - very easy!) TET~CRAFT: DigitizingHumanity.com Decentralized, Salted, 5D Communication Manifold... #opWorldPeace END CENSORSHIP!!!",
+        description="(A simulated player is working, 1 rotation every minute, 1 new random 'fact' (TET) added each hour to be misunderstood!)"
     ) as demo:
         # Crucial for HF Spaces health check: bind to 0.0.0.0
         demo.launch(server_name="0.0.0.0", server_port=7860)
