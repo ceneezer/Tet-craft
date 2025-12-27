@@ -2210,6 +2210,20 @@ def main(threaded=False):
             except ValueError: print(f"Invalid coordinates for -o: {args[i+1]}")
         i += 1
 
+
+    if ON_HUGGINGFACE and cli_load_file is None:
+        # Try to find the specific file
+        if os.path.exists("nothing.json"):
+            cli_load_file = "nothing.json"
+            print("### HF Mode: Found nothing.json - Auto-loading... ###")
+        else:
+            # If not found, do nothing (cli_load_file stays None, standard Void logic triggers)
+            print("### HF Mode: nothing.json not found - Starting fresh in Void. ###")
+    # +++++++++++++++++++++++++
+
+
+
+
     global WIDTH, HEIGHT, clock, game_mode, host_instance, guest_instance, net_avatars, net_messages, AUDIO_ENABLED, GRADIO_FRAME_BUFFER, GAME_RUNNING
 
     pygame.init()
