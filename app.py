@@ -176,6 +176,8 @@ import time
 import datetime
 import atexit
 import signal
+import queue
+import select
 
 # Suppress runtime warnings
 warnings.filterwarnings("ignore", category=RuntimeWarning)
@@ -260,12 +262,12 @@ ENERGY_EQUILIBRIUM_RATE = 0.05
 MYSTIC_WORDS = [
     "Completion", "Unconditional", "Consciousness", "Empty", "Choice", "Seek", "Grow", "Decay",
     "Negate", "Mystery", "Cause", "Change", "Life", "Passage",
-    "Perspective", "Act", "Understand", "We", "Within", "Balance", "Cooperation",
-    "Pattern", "Community", "Disrupt", "Matter", "Unconscious", "Explore", "Then", "Temporary",
+    "Perspective", "Act", "Understand", "We", "Within", "Balance", "Cooperate",
+    "Pattern", "Community", "Disrupt", "Matter", "Will", "Explore", "Then", "Temporary",
     "Question", "Answer", "Separation"
 ]
 
-#SYMBOLS = {
+#MATH_SYMBOLS = { # Idea relations
 #        'correlates': '=',      # Joints (permanent bonds)
 #        'desires': '*',     # Sticky pairs (seeking connection)
 #        'approaches': '+',  # New: temporary influence
@@ -825,13 +827,13 @@ class Tetrahedron:
     FACE_POLARITY_MAP = {2: 1, 3: -1}
 
     # PHASE 1: Color names
-    FACE_COLOR_NAMES = ['W', 'B', 'R', 'C']  # White, Black, Red, Cyan
+    FACE_COLOR_NAMES = ['W', 'B', 'R', 'C']  # White, Black, Yellow, Cyan
 
     # PHASE 3: Corner-to-face-color mapping (which corners belong to which face)
     FACE_TO_CORNERS = {
         0: [1, 2, 3],  # White face (indices into verts)
         1: [0, 1, 2],  # Black face
-        2: [0, 2, 3],  # Red face
+        2: [0, 2, 3],  # Yellow face
         3: [0, 1, 3]   # Cyan face
     }
 
@@ -858,6 +860,9 @@ class Tetrahedron:
         self.last_reaction_time = 0.0  # Time of last reaction
         self.synthesis_count = 0  # Number of times this molecule formed from reactions
         self.is_catalyst = False  # Whether this molecule catalyzes reactions
+
+        # Make sure locked_faces is initialized
+        self.locked_faces = []  # List of face indices that are locked
 
     def verts(self): return self.local + self.pos
 
@@ -917,6 +922,23 @@ class World:
         parent_tet = random.choice(self.tets); pos1 = parent_tet.pos + norm(np.random.rand(3)) * EDGE_LEN * 5
         pos2 = pos1 + norm(np.random.rand(3)) * EDGE_LEN * 3; tet1, tet2 = Tetrahedron(pos1), Tetrahedron(pos2)
         if len(self.tets) == 2: tet1.label = "Light"; tet2.label = "Darkness"
+        if len(self.tets) == 4: tet1.label = "Answer"; tet2.label = "Question"
+        if len(self.tets) == 6: tet1.label = "Then"; tet2.label = "Understand"
+        if len(self.tets) == 8: tet1.label = "Balance"; tet2.label = "Temporary"
+        if len(self.tets) == 10: tet1.label = "Explore"; tet2.label = "Disrupt"
+        if len(self.tets) == 12: tet1.label = "Matter"; tet2.label = "Will"
+        if len(self.tets) == 14: tet1.label = "Pattern"; tet2.label = "Understand"
+        if len(self.tets) == 16: tet1.label = "Community"; tet2.label = "Within"
+        if len(self.tets) == 16: tet1.label = "We"; tet2.label = "Cause"
+        if len(self.tets) == 16: tet1.label = "Life"; tet2.label = "Consciousness"
+        if len(self.tets) == 16: tet1.label = "Grow"; tet2.label = "Cooperate"
+        if len(self.tets) == 16: tet1.label = "Seek"; tet2.label = "Perspective"
+        if len(self.tets) == 16: tet1.label = "Act"; tet2.label = "Completion"
+        if len(self.tets) == 16: tet1.label = "Change"; tet2.label = "Passage"
+        if len(self.tets) == 16: tet1.label = "Completion"; tet2.label = "Mystery"
+        if len(self.tets) == 16: tet1.label = "Negate"; tet2.label = "Decay"
+        if len(self.tets) == 16: tet1.label = "Choice"; tet2.label = "Unconditional"
+
         self.tets.extend([tet1, tet2]); polar_face_idx = random.choice([2, 3]); face_verts = Tetrahedron.FACES_NP[polar_face_idx]
         for i in range(3): self.sticky_pairs.append((tet1, face_verts[i], tet2, face_verts[i]))
 
@@ -1351,26 +1373,42 @@ class World:
         if not hasattr(self, 'reaction_particles'):
             self.reaction_particles = []
 
-        # Add new particles from reactions
-        for r1, r2, product in reactions:
-            # Find TET with product label
-            for t in self.tets:
-                if t.label == product:
-                    particle = {
-                        'pos': t.pos.copy(),
-                        'vel': np.random.uniform(-1, 1, 3) * 20,
-                        'color': t.aura_color if t.aura_color else (255, 255, 0),
-                        'life': 1.0,
-                        'size': 8
-                    }
-                    self.reaction_particles.append(particle)
-                    # Add 5-10 particles per reaction
-                    for _ in range(random.randint(4, 9)):
-                        p = particle.copy()
-                        p['vel'] = np.random.uniform(-1, 1, 3) * 30
-                        p['color'] = tuple(np.array(p['color']) * random.uniform(0.6, 1.2))
-                        self.reaction_particles.append(p)
-                    break
+        for reaction in reactions:
+            # Handle both synthesis (3-tuple) and decomposition (2-tuple) reactions
+            if len(reaction) == 3:  # Synthesis: (r1, r2, product)
+                r1, r2, product = reaction
+                # Find TET with product label
+                for t in self.tets:
+                    if t.label == product:
+                        particle = {
+                            'pos': t.pos.copy(),
+                            'vel': np.random.uniform(-1, 1, 3) * 20,
+                            'color': t.aura_color if t.aura_color else (255, 255, 0),
+                            'life': 1.0,
+                            'size': 8
+                        }
+                        self.reaction_particles.append(particle)
+                        # Add 5-10 particles per reaction
+                        for _ in range(random.randint(4, 9)):
+                            p = particle.copy()
+                            p['vel'] = np.random.uniform(-1, 1, 3) * 30
+                            p['color'] = tuple(np.array(p['color']) * random.uniform(0.6, 1.2))
+                            self.reaction_particles.append(p)
+                        break
+            elif len(reaction) == 2:  # Decomposition: (old_label, products)
+                old_label, products = reaction
+                # Find TET with old label
+                for t in self.tets:
+                    if t.label == products[0]:
+                        particle = {
+                            'pos': t.pos.copy(),
+                            'vel': np.random.uniform(-1, 1, 3) * 15,
+                            'color': (255, 100, 0),  # Orange for decomposition
+                            'life': 1.0,
+                            'size': 6
+                        }
+                        self.reaction_particles.append(particle)
+                        break
 
         # Update and render particles
         particles_to_keep = []
@@ -1470,8 +1508,27 @@ class World:
         for ts in state.get('tets', []):
             try:
                 t = Tetrahedron(ts['pos']); t.id = ts['id']; t.pos_prev = np.array(ts['pos_prev']); t.local = np.array(ts['local'])
-                t.local_prev = np.array(ts['local_prev']); t.battery = ts['battery']; t.colors = ts['colors']
-                t.label = ts.get('label', ""); t.orientation_bias = np.array(ts.get('orientation_bias', [0,0,0]))
+                t.local_prev = np.array(ts['local_prev']); t.battery = ts['battery']
+                # FIX: Convert colors from JSON list back to tuples
+                if 'colors' in ts and ts['colors']:
+                    t.colors = [tuple(c) for c in ts['colors']]
+                else:
+                    t.colors = None
+                t.label = ts.get('label', "")
+                t.orientation_bias = np.array(ts.get('orientation_bias', [0,0,0]))
+
+                # FIX: Reset magnetization tracking attributes
+                t.is_magnetized = False
+                t.magnetism = 0
+                t.magnetic_strength = 0.0
+                t.locked_faces = []
+                t.molecule_type = None
+                t.aura_color = None
+                t.polarity_face_idx = None
+                t.last_reaction_time = 0.0
+                t.synthesis_count = 0
+                t.is_catalyst = False
+
                 self.tets.append(t); tet_map[t.id] = t
             except (KeyError, TypeError, ValueError): continue
         for js in state.get('joints', []):
@@ -1625,105 +1682,406 @@ def recv_msg(sock):
             data += packet
         return json.loads(data.decode('utf-8'))
     except (ConnectionResetError, json.JSONDecodeError, ValueError, OSError): return None
+
 class Host:
     def __init__(self, world, add_msg_fn, sound, port=None):
-        self.world, self.add_msg, self.clients, self.lock, self.server, self.port, self.running = world, add_msg_fn, {}, threading.Lock(), socket.socket(socket.AF_INET, socket.SOCK_STREAM), 0, True
-        self.sound = sound; self.blacklist = set()
+        self.world = world
+        self.add_msg = add_msg_fn
+        self.clients = {}
+        self.lock = threading.RLock()
+        self.server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        self.port = 0
+        self.running = True
+        self.sound = sound
+        self.blacklist = set()
+        self.message_queue = queue.Queue()  # Queue for outgoing messages
+
+        # Load blacklist
         try:
-            with open("blacklist.cfg", "r") as f: self.blacklist = {line.strip() for line in f if line.strip()}
-            if self.blacklist: print(f"### Blacklist loaded with {len(self.blacklist)} entries.")
-        except FileNotFoundError: print("### blacklist.cfg not found.")
+            with open("blacklist.cfg", "r") as f:
+                self.blacklist = {line.strip() for line in f if line.strip()}
+            if self.blacklist:
+                print(f"### Blacklist loaded with {len(self.blacklist)} entries.")
+        except FileNotFoundError:
+            print("### blacklist.cfg not found.")
+
+        # Set socket options
+        self.server.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+
+        # Find available port
         for p in ([port] if port else PORT_RANGE):
-            try: self.server.bind(('', p)); self.port = p; break
-            except OSError: continue
-        if self.port == 0: self.server.bind(('', 0)); self.port = self.server.getsockname()[1]
-        threading.Thread(target=self.discovery_thread, daemon=True).start(); threading.Thread(target=self.start, daemon=True).start()
+            try:
+                self.server.bind(('', p))
+                self.port = p
+                break
+            except OSError:
+                continue
+        if self.port == 0:
+            self.server.bind(('', 0))
+            self.port = self.server.getsockname()[1]
+
+        # Start threads
+        threading.Thread(target=self.discovery_thread, daemon=True).start()
+        threading.Thread(target=self.accept_thread, daemon=True).start()
+        threading.Thread(target=self.send_thread, daemon=True).start()
+
+
+    def send_thread(self):
+        """Separate thread for sending data to clients - NEVER blocks"""
+        while self.running:
+            with self.lock:
+                clients_to_check = list(self.clients.items())
+
+            for sock, client_data in clients_to_check:
+                try:
+                    # Process write queue with non-blocking sends
+                    messages_to_retry = []
+
+                    while True:
+                        try:
+                            msg = client_data['write_queue'].get_nowait()
+                        except queue.Empty:
+                            break
+
+                        try:
+                            # Use non-blocking send
+                            sent = sock.send(msg)
+                            if sent < len(msg):
+                                # Partial send - queue remainder
+                                messages_to_retry.append(msg[sent:])
+                        except BlockingIOError:
+                            # Socket buffer full - retry later
+                            messages_to_retry.append(msg)
+                        except (ConnectionResetError, BrokenPipeError, OSError) as e:
+                            # Connection dead - mark for cleanup
+                            print(f"Client write error: {e}")
+                            self.mark_for_cleanup(sock)
+                            break
+
+                    # Re-queue messages that need retry (at front of queue)
+                    for msg in reversed(messages_to_retry):
+                        try:
+                            # If queue full, drop oldest messages
+                            if client_data['write_queue'].full():
+                                try:
+                                    client_data['write_queue'].get_nowait()
+                                except queue.Empty:
+                                    pass
+                            client_data['write_queue'].put_nowait(msg)
+                        except queue.Full:
+                            # Client too slow - will be cleaned up next iteration
+                            pass
+
+                except Exception as e:
+                    print(f"Send thread error: {e}")
+
+            time.sleep(0.001)  # Small sleep to prevent CPU spinning
+
     def discovery_thread(self):
-        udp_sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM); udp_sock.bind(('', DISCOVERY_PORT))
+        udp_sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        udp_sock.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
+        udp_sock.bind(('', DISCOVERY_PORT))
+        udp_sock.settimeout(0.5)  # Non-blocking with timeout
+
         while self.running:
             try:
                 data, addr = udp_sock.recvfrom(1024)
-                if data == b"DISCOVER_TETCRAFT_HOST": udp_sock.sendto(f"TETCRAFT_HOST_HERE:{self.port}".encode('utf-8'), addr)
-            except OSError: break
-    def start(self):
-        self.server.listen(); print(f"### HOSTING on {socket.gethostbyname(socket.gethostname())}:{self.port} ###")
+                if data == b"DISCOVER_TETCRAFT_HOST":
+                    udp_sock.sendto(f"TETCRAFT_HOST_HERE:{self.port}".encode('utf-8'), addr)
+            except socket.timeout:
+                continue
+            except OSError:
+                break
+
+    def accept_thread(self):
+        """Separate thread for accepting connections"""
+        self.server.listen(5)
+        self.server.settimeout(0.5)  # Non-blocking accept
+        print(f"### HOSTING on port {self.port} ###")
+
         while self.running:
             try:
                 client_sock, addr = self.server.accept()
-                if addr[0] in self.blacklist: print(f"### Rejected blacklisted IP: {addr[0]}"); client_sock.close(); continue
+                if addr[0] in self.blacklist:
+                    print(f"### Rejected blacklisted IP: {addr[0]}")
+                    client_sock.close()
+                    continue
+
+                # Set socket to non-blocking
+                client_sock.setblocking(False)
+
                 client_id = f"guest_{addr[0]}:{addr[1]}"
                 with self.lock:
-                    self.clients[client_sock] = {'id': client_id, 'addr': addr, 'name': 'Unknown'}
-                    net_avatars[client_id] = {'pos': [0,0,0], 'color': [random.randint(50,200) for _ in range(3)], 'name': 'Unknown'}
+                    self.clients[client_sock] = {
+                        'id': client_id,
+                        'addr': addr,
+                        'name': 'Unknown',
+                        'read_buffer': b'',
+                        'write_queue': queue.Queue(maxsize=100)  # Per-client write queue
+                    }
+                    net_avatars[client_id] = {
+                        'pos': [0, 0, 0],
+                        'color': [random.randint(50, 200) for _ in range(3)],
+                        'name': 'Unknown'
+                    }
+
                 threading.Thread(target=self.handle_client, args=(client_sock, client_id), daemon=True).start()
-            except OSError: break
+
+            except socket.timeout:
+                continue
+            except OSError:
+                break
+
     def handle_client(self, sock, client_id):
+        """Handle client in separate thread - only for reading"""
         while self.running:
-            msg = recv_msg(sock)
-            if msg is None: break
-            if msg['type'] == 'identify':
+            try:
+                # Non-blocking read
+                ready_to_read, _, _ = select.select([sock], [], [], 0.1)
+                if not ready_to_read:
+                    time.sleep(0.01)
+                    continue
+
+                data = sock.recv(4096)
+                if not data:
+                    break
+
+                # Process received data
                 with self.lock:
-                    if client_id in net_avatars:
-                        net_avatars[client_id]['name'] = msg['name']
-                        self.clients[sock]['name'] = msg['name']
-                        self.add_msg(f"{msg['name']} joined.")
-            if msg['type'] == 'cam_update':
-                with self.lock:
-                    if client_id in net_avatars: net_avatars[client_id]['pos'] = np.array(msg['data']['pan'])
-            elif msg['type'] == 'chat':
-                if self.sound and AUDIO_ENABLED: self.sound.play()
-                sender_name = self.clients[sock].get('name', client_id)
-                self.add_msg(f"<{sender_name}>: {msg['data']}")
-            elif msg['type'] == 'set_label':
-                with self.lock:
-                    for t in self.world.tets:
-                        if t.id == msg['id']: t.label = msg['label']; break
-        with self.lock: self.clients.pop(sock, None); net_avatars.pop(client_id, None);
-        try: sock.shutdown(socket.SHUT_RDWR); sock.close()
-        except OSError: pass
-    def broadcast_state(self):
-        state = self.world.get_state(); out_avatars = net_avatars.copy(); out_avatars['host'] = {'name': PLAYER_NAME}
-        full_state = {'type': 'world_state', 'data': {'world': state, 'avatars': out_avatars}}
+                    if sock not in self.clients:
+                        break
+
+                    client_data = self.clients[sock]
+                    client_data['read_buffer'] += data
+
+                    # Process complete messages
+                    while len(client_data['read_buffer']) >= 4:
+                        msg_len = int.from_bytes(client_data['read_buffer'][:4], 'big')
+                        if len(client_data['read_buffer']) < 4 + msg_len:
+                            break
+
+                        msg_json = client_data['read_buffer'][4:4 + msg_len]
+                        client_data['read_buffer'] = client_data['read_buffer'][4 + msg_len:]
+
+                        try:
+                            msg = json.loads(msg_json.decode('utf-8'))
+                            self.process_message(sock, client_id, client_data, msg)
+                        except (json.JSONDecodeError, UnicodeDecodeError):
+                            print(f"Malformed message from {client_id}")
+
+            except (socket.timeout, BlockingIOError):
+                continue
+            except (ConnectionResetError, BrokenPipeError, OSError):
+                break
+
+        # Cleanup on disconnect
         with self.lock:
-            for sock in list(self.clients.keys()): send_msg(sock, full_state)
+            if sock in self.clients:
+                client_name = self.clients[sock]['name']
+                self.clients.pop(sock, None)
+                net_avatars.pop(client_id, None)
+                self.add_msg(f"{client_name} disconnected.")
+
+        try:
+            sock.close()
+        except OSError:
+            pass
+
+    def process_message(self, sock, client_id, client_data, msg):
+        """Process incoming messages - runs in client thread"""
+        if msg['type'] == 'identify':
+            client_data['name'] = msg['name']
+            net_avatars[client_id]['name'] = msg['name']
+            self.add_msg(f"{msg['name']} joined.")
+
+            # Broadcast welcome
+            welcome = {'type': 'chat', 'data': f"{msg['name']} joined the kleinverse."}
+            self.broadcast_message(welcome, exclude=sock)
+
+        elif msg['type'] == 'cam_update':
+            if client_id in net_avatars:
+                net_avatars[client_id]['pos'] = np.array(msg['data']['pan'])
+
+        elif msg['type'] == 'chat':
+            if self.sound and AUDIO_ENABLED:
+                self.sound.play()
+
+            sender_name = client_data.get('name', client_id)
+            if isinstance(msg['data'], str) and msg['data'].startswith('<'):
+                message = msg['data']
+            else:
+                message = f"<{sender_name}>: {msg['data']}"
+
+            self.add_msg(message)
+
+            # Broadcast to other clients
+            broadcast_msg = {'type': 'chat', 'data': message}
+            self.broadcast_message(broadcast_msg, exclude=sock)
+
+        elif msg['type'] == 'set_label':
+            # Update world state in main thread via queue
+            self.message_queue.put(('set_label', msg['id'], msg['label']))
+
+    def broadcast_message(self, msg_dict, exclude=None):
+        """Queue message for broadcast - non-blocking"""
+        try:
+            msg_json = json.dumps(msg_dict, cls=NumpyEncoder).encode('utf-8')
+            msg_len = len(msg_json)
+            full_msg = msg_len.to_bytes(4, 'big') + msg_json
+
+            with self.lock:
+                for sock, client_data in list(self.clients.items()):
+                    if sock == exclude:
+                        continue
+
+                    try:
+                        # Put in per-client queue (non-blocking)
+                        client_data['write_queue'].put_nowait(full_msg)
+                    except queue.Full:
+                        # Drop message if queue full (client too slow)
+                        print(f"Dropping message for slow client {client_data['name']}")
+                        # Mark slow client for disconnect
+                        self.mark_for_cleanup(sock)
+
+        except Exception as e:
+            print(f"Error in broadcast_message: {e}")
+
+    def broadcast_state(self):
+        """Non-blocking state broadcast using write queues - NEVER blocks main thread"""
+        try:
+            # Simple protection: skip if too many TETs (state too large)
+            if len(self.world.tets) > 500:
+                print("Warning: Too many TETs, skipping state broadcast to prevent lag")
+                return
+
+            state = self.world.get_state()
+            out_avatars = net_avatars.copy()
+            out_avatars['host'] = {
+                'name': PLAYER_NAME,
+                'pos': [0.0, 0.0, 0.0],    # Fix: Added default position
+                'color': [200, 200, 255]   # Fix: Added default color
+            }
+            full_state = {'type': 'world_state', 'data': {'world': state, 'avatars': out_avatars}}
+
+            # Use broadcast_message which uses the non-blocking queue system
+            self.broadcast_message(full_state)
+        except Exception as e:
+            print(f"Error preparing broadcast: {e}")
+
+    def mark_for_cleanup(self, sock):
+        """Mark socket for cleanup (handled in main thread)"""
+        self.message_queue.put(('cleanup', sock))
+
     def stop(self):
-        self.running = False; self.server.close()
+        """Clean shutdown"""
+        self.running = False
+
         with self.lock:
             for sock in self.clients:
-                try: sock.shutdown(socket.SHUT_RDWR); sock.close()
-                except OSError: pass
+                try:
+                    sock.close()
+                except OSError:
+                    pass
+            self.clients.clear()
+
+        try:
+            self.server.close()
+        except OSError:
+            pass
+
 class Guest:
     def __init__(self, host_ip, port, world, cam, add_msg_fn, sound):
-        self.world, self.cam, self.add_msg, self.sock, self.host_id, self.running, self.latest_world_state = world, cam, add_msg_fn, socket.socket(socket.AF_INET, socket.SOCK_STREAM), f"host_{host_ip}:{port}", True, None
-        self.sound = sound
-        self.sock.connect((host_ip, port))
-        send_msg(self.sock, {'type': 'identify', 'name': PLAYER_NAME})
-        threading.Thread(target=self.listen, daemon=True).start()
+        self.world, self.cam, self.add_msg, self.sock = world, cam, add_msg_fn, socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        self.host_id = f"host_{host_ip}:{port}"
+        self.running = True
+        self.world_state_queue = queue.Queue(maxsize=1)
+        self.latest_avatars = {}
+
+        # Set socket to non-blocking
+        self.sock.settimeout(2.0)  # 2 second timeout
+
+        try:
+            self.sock.connect((host_ip, port))
+            self.sock.setblocking(False)  # Non-blocking after connect
+            send_msg(self.sock, {'type': 'identify', 'name': PLAYER_NAME})
+            threading.Thread(target=self.listen, daemon=True).start()
+        except Exception as e:
+            add_msg_fn(f"Connection failed: {e}")
+            self.running = False
+
     def listen(self):
-        global net_avatars
         while self.running:
-            msg = recv_msg(self.sock)
-            if msg is None: self.add_msg("Disconnected from host."); self.running = False; break
-            if msg['type'] == 'world_state':
-                self.latest_world_state = msg['data']['world']
-                new_avatars = {}
-                host_name = "Host"
-                if 'avatars' in msg['data'] and 'host' in msg['data']['avatars']: host_name = msg['data']['avatars']['host'].get('name', 'Host')
-                new_avatars[self.host_id] = {'pos': self.latest_world_state.get('center_of_mass', [0,0,0]), 'color': (50, 50, 255), 'name': host_name}
-                if 'avatars' in msg['data']:
-                    for av_id, av_data in msg['data']['avatars'].items():
-                        if av_id != 'host': new_avatars[av_id] = av_data
-                net_avatars = new_avatars
-            elif msg['type'] == 'chat':
-                if self.sound and AUDIO_ENABLED: self.sound.play()
-                self.add_msg(f"<HOST>: {msg['data']}")
-    def send_cam_update(self): send_msg(self.sock, {'type': 'cam_update', 'data': self.cam.get_state()})
-    def send_chat(self, text): send_msg(self.sock, {'type': 'chat', 'data': text})
-    def send_label(self, tet_id, label): send_msg(self.sock, {'type': 'set_label', 'id': tet_id, 'label': label})
+            try:
+                # Use select to check if data is available
+                ready_to_read, _, _ = select.select([self.sock], [], [], 0.1)
+                if not ready_to_read:
+                    time.sleep(0.001)  # Small sleep to prevent CPU spinning
+                    continue
+
+                msg = recv_msg(self.sock)
+                if msg is None:
+                    self.add_msg("Disconnected from host.")
+                    self.running = False
+                    break
+
+                if msg['type'] == 'world_state':
+                    try:
+                        self.world_state_queue.put_nowait(msg['data']['world'])
+                    except queue.Full:
+                        # Discard old state if queue is full
+                        try:
+                            self.world_state_queue.get_nowait()
+                            self.world_state_queue.put_nowait(msg['data']['world'])
+                        except queue.Empty:
+                            pass
+
+                    # Update avatars
+                    if 'avatars' in msg['data']:
+                        self.latest_avatars = msg['data']['avatars'].copy()
+
+                elif msg['type'] == 'chat':
+                    if isinstance(msg['data'], str):
+                        self.add_msg(msg['data'])
+                    else:
+                        self.add_msg(f"<Host>: {msg['data']}")
+
+            except (socket.timeout, BlockingIOError):
+                continue
+            except Exception as e:
+                print(f"Guest listen error: {e}")
+                time.sleep(0.1)
+
+    def get_latest_world_state(self):
+        try:
+            return self.world_state_queue.get_nowait()
+        except queue.Empty:
+            return None
+
+    def send_cam_update(self):
+        try:
+            send_msg(self.sock, {'type': 'cam_update', 'data': self.cam.get_state()})
+        except Exception:
+            pass
+
+    def send_chat(self, text):
+        try:
+            send_msg(self.sock, {'type': 'chat', 'data': f"<{PLAYER_NAME}>: {text}"})
+        except Exception:
+            pass
+
+    def send_label(self, tet_id, label):
+        try:
+            send_msg(self.sock, {'type': 'set_label', 'id': tet_id, 'label': label})
+        except Exception:
+            pass
+
     def stop(self):
         self.running = False
-        try: self.sock.shutdown(socket.SHUT_RDWR); self.sock.close()
-        except OSError: pass
+        try:
+            self.sock.shutdown(socket.SHUT_RDWR)
+            self.sock.close()
+        except OSError:
+            pass
 
 def stop_all_networking():
     global host_instance, guest_instance
@@ -1743,6 +2101,30 @@ signal.signal(signal.SIGTERM, shutdown_handler)
 signal.signal(signal.SIGINT, shutdown_handler)
 
 def main(threaded=False):
+    print("\n\nIf needed create and fill with 1 IP per line blacklist.cfg\n\nCLI Options:\n  -connect <ip>:<port> (Initiate guest mode)\n  -listen <port> (Initiate host mode port)\n  -file <filename> (Load saved instant [json])\n  -t <scale> -z <zoom> -o <x,y,z>\n\nTET~CRAFT Initializing...\n\n")
+    cli_connect_addr, cli_listen_port, cli_load_file = None, None, None
+    cli_time_scale, cli_zoom_factor, cli_cam_pan = None, None, None
+    args = sys.argv[1:]; i = 0
+    while i < len(args):
+        if args[i] == '-connect' and i + 1 < len(args): cli_connect_addr = args[i+1]; i += 1
+        elif args[i] == '-listen':
+            cli_listen_port = DEFAULT_PORT
+            if i + 1 < len(args) and args[i+1].isdigit(): cli_listen_port = int(args[i+1]); i += 1
+        elif args[i] == '-file' and i + 1 < len(args): cli_load_file = args[i+1]; i += 1
+        elif args[i] == '-t' and i + 1 < len(args):
+            try: cli_time_scale = float(args[i+1]); i += 1
+            except ValueError: print(f"Invalid value for -t: {args[i+1]}")
+        elif args[i] == '-z' and i + 1 < len(args):
+            try: cli_zoom_factor = float(args[i+1]); i += 1
+            except ValueError: print(f"Invalid value for -z: {args[i+1]}")
+        elif args[i] == '-o' and i + 1 < len(args):
+            try:
+                coords = [float(c) for c in args[i+1].split(',')]
+                if len(coords) == 3: cli_cam_pan = coords; i += 1
+                else: print(f"Invalid format for -o: must be x,y,z. Got: {args[i+1]}")
+            except ValueError: print(f"Invalid coordinates for -o: {args[i+1]}")
+        i += 1
+
     global WIDTH, HEIGHT, clock, game_mode, host_instance, guest_instance, net_avatars, net_messages, AUDIO_ENABLED, GRADIO_FRAME_BUFFER, GAME_RUNNING
 
     pygame.init()
@@ -1760,7 +2142,7 @@ def main(threaded=False):
     else:
         screen = pygame.display.set_mode((WIDTH, HEIGHT), pygame.RESIZABLE)
 
-    pygame.display.set_caption("TET~CRAFT: The Fourth Temple v4.0 free from DigitizingHumanity.com")
+    pygame.display.set_caption("TET~CRAFT v4 The Fourth Temple - free from DigitizingHumanity.com")
     clock = pygame.time.Clock(); font_l = pygame.font.SysFont('Georgia', 32); font_s = pygame.font.SysFont(None, 24)
     world = World(generate_boing_sound()); cam = Camera()
 
@@ -1780,13 +2162,98 @@ def main(threaded=False):
     last_bot_spawn = time.time() - 3590
     last_bot_thought = time.time()
 
+    if cli_time_scale is not None: time_scale = cli_time_scale
+    if cli_zoom_factor is not None: cam.dist = DEFAULT_CAM_DIST / max(0.01, cli_zoom_factor)
+    if cli_cam_pan is not None: cam.pan = (np.array(cli_cam_pan) - 0.5) * 2.0 * FIELD_SCALE
+
+    def stop_guest_mode():
+        global guest_instance, game_mode
+        if guest_instance:
+            guest_instance.stop()
+            guest_instance = None
+            game_mode = 'single_player'
+            net_avatars.clear()
+            add_timed_message("Disconnected from host.", duration=3)
+            return True
+        return False
+    def add_timed_message(text, y_offset=0, duration=4): msgs.append([text, y_offset, pygame.time.get_ticks() + duration * 1000])
+    def add_network_message(text): net_messages.append([text, time.time() + 8])
+    def reset_simulation(show_message=True):
+        nonlocal flags, time_scale, world, cam, dragging, rotating, locked_sticky_target, sticky_unlock_timer, animation_state
+        global game_mode, host_instance, guest_instance, net_avatars, net_messages
+
+        # Stop networking
+        if host_instance:
+            host_instance.stop()
+            host_instance = None
+        if guest_instance:
+            stop_guest_mode()  # Use the function instead of direct access
+
+        # Clear world state
+        world.tets.clear(); world.joints.clear(); world.sticky_pairs.clear(); past_projection.points.clear()
+        net_avatars.clear(); net_messages.clear(); flags = {k: False for k in flags}
+
+        # Reset camera and other states
+        cam.__init__(); time_scale = 1.0; game_mode = 'single_player'; dragging, rotating = None, False
+        locked_sticky_target, sticky_unlock_timer = None, None; animation_state = 'IDLE'
+    def save_world_to_file():
+        if not world.tets: add_timed_message("Cannot save an empty kleinverse.", duration=3); return
+        try:
+            with open(SAVE_FILENAME, 'w') as f: json.dump(world.get_state(), f, cls=NumpyEncoder, indent=2)
+            add_timed_message(f"Saved Instant to {SAVE_FILENAME}", duration=3)
+        except IOError as e: add_timed_message(f"Error saving file: {e}", duration=4)
+    def connect_as_guest(host_ip, port):
+        global guest_instance, game_mode
+        try:
+            save_world_to_file(); guest_instance, game_mode = Guest(host_ip, int(port), world, cam, add_network_message, ping_sound), 'guest'
+            add_timed_message(f"Connected to {host_ip}:{port}", duration=3); world.tets.clear(); world.joints.clear(); world.sticky_pairs.clear(); return True
+        except Exception as e: add_timed_message(f"Failed to connect: {e}", duration=4); return False
+    def discover_and_join():
+        global guest_instance, game_mode
+        if game_mode != 'single_player': return
+        host_addr = None
+        try:
+            with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as sock:
+                sock.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1); sock.settimeout(1.0)
+                sock.sendto(b"DISCOVER_TETCRAFT_HOST", ('<broadcast>', DISCOVERY_PORT))
+                data, addr = sock.recvfrom(1024)
+                if data.startswith(b"TETCRAFT_HOST_HERE:"): host_addr = (addr[0], int(data.split(b':')[1]))
+        except socket.timeout: pass
+        if host_addr: connect_as_guest(host_addr[0], host_addr[1])
+        else:
+            user_input = get_user_input(screen, "Enter Host IP:Port (e.g., 192.168.1.5:65420):")
+            if user_input:
+                parts = user_input.split(':'); ip = parts[0]; port = int(parts[1]) if len(parts) > 1 else DEFAULT_PORT
+                connect_as_guest(ip, port)
+
+    def initiate_host_mode(port=None):
+        global host_instance, game_mode
+        if game_mode == 'single_player':
+            host_instance, game_mode = Host(world, add_network_message, ping_sound, port), 'host'
+            add_timed_message(f"Hosting on port {host_instance.port}", duration=3)
+        elif game_mode == 'host':
+            # Second H press stops hosting
+            if stop_host_mode():
+                add_timed_message("Host mode stopped. All clients disconnected.", duration=3)
+
+    def stop_host_mode():
+        global host_instance, game_mode
+        if host_instance:
+            host_instance.stop()
+            host_instance = None
+            game_mode = 'single_player'
+            return True
+        return False
+
     loaded_from_save = False
-    if not loaded_from_save and os.path.exists(SAVE_FILENAME):
-         try:
-            with open(SAVE_FILENAME, 'r', encoding='utf-8-sig') as f: world.set_state(json.load(f))
-            loaded_from_save = True
-         except: pass
-    if not loaded_from_save: show_void_screen(screen, world)
+    if cli_connect_addr: connect_as_guest(*(cli_connect_addr.split(':') if ':' in cli_connect_addr else (cli_connect_addr, DEFAULT_PORT)))
+    elif cli_listen_port: initiate_host_mode(cli_listen_port)
+    elif cli_load_file and os.path.exists(cli_load_file):
+        try:
+            with open(cli_load_file, 'r', encoding='utf-8-sig') as f: world.set_state(json.load(f))
+            add_timed_message(f"Loaded {cli_load_file}"); loaded_from_save = True
+        except Exception as e: print(f"Error loading '{cli_load_file}': {e}")
+    if not (loaded_from_save or cli_connect_addr or cli_listen_port): show_void_screen(screen, world)
 
     if ON_HUGGINGFACE:
         host_instance = Host(world, lambda x: net_messages.append([x, time.time()+8]), ping_sound, DEFAULT_PORT)
@@ -1821,6 +2288,9 @@ def main(threaded=False):
 
         # Event Handling
         if not ON_HUGGINGFACE:
+            loaded_from_save = False
+            last_world_hash = ""  # ADD THIS LINE
+            if cli_connect_addr: connect_as_guest(*(cli_connect_addr.split(':') if ':' in cli_connect_addr else (cli_connect_addr, DEFAULT_PORT)))
             for e in pygame.event.get():
                 if e.type == pygame.QUIT: GAME_RUNNING = False
                 if e.type == pygame.VIDEORESIZE: WIDTH, HEIGHT = e.w, e.h; screen = pygame.display.set_mode((WIDTH, HEIGHT), pygame.RESIZABLE); disk_surf = None
@@ -1837,6 +2307,158 @@ def main(threaded=False):
                     if e.key == pygame.K_x: cam.pan = world.center_of_mass.copy()
                     if e.key == pygame.K_c: time_scale = min(10.0, time_scale + 0.5)
                     if e.key == pygame.K_z: time_scale = max(0.1, time_scale - 0.5)
+                    # FIX: Add Tab key for client mode
+                    if e.key == pygame.K_TAB and is_interactive and game_mode == 'single_player':
+                        discover_and_join()
+                    elif game_mode == 'guest':
+                        stop_guest_mode()
+                        add_timed_message("Disconnected from host.", duration=3)
+                    # FIX: Improved H key - press once to host, press again to exit host mode
+                    if e.key == pygame.K_h and is_interactive:
+                        if game_mode == 'single_player':
+                            initiate_host_mode()
+                        elif game_mode == 'host':
+                            reset_simulation(show_message=True)
+
+                # Client mode: Only allow camera interaction, no TET manipulation
+                if game_mode == 'guest':
+                    if guest_instance:
+                        world_state = guest_instance.get_latest_world_state()
+                        if world_state:
+                            # Only update if world state has changed significantly
+                            last_world_hash = safe_world_update(world, world_state, last_world_hash)
+#                            world.set_state(world_state)
+
+                        # Update avatars from guest instance
+                        net_avatars = guest_instance.latest_avatars.copy()
+
+                        # Send camera update periodically (less frequent)
+                        if frame_count % 30 == 0:  # Every 0.5 seconds at 60fps
+                            guest_instance.send_cam_update()
+
+                    if e.type == pygame.MOUSEBUTTONDOWN and e.button == 3:
+                        # Check if clicking on an avatar (host)
+                        clicked_avatar = None
+                        for avatar_id, avatar_data in net_avatars.items():
+                            avatar_screen_pos = cam.project(np.array(avatar_data['pos']))
+                            if avatar_screen_pos[0] > -10000:
+                                dist = math.sqrt((avatar_screen_pos[0] - mx)**2 + (avatar_screen_pos[1] - my)**2)
+                                if dist < 30:  # Click radius
+                                    clicked_avatar = (avatar_id, avatar_data)
+                                    break
+
+                        if clicked_avatar and not alt_held:
+                            # Send message to host
+                            recipient_id, recipient_data = clicked_avatar
+                            recipient_name = recipient_data.get('name', recipient_id)
+                            message = get_user_input(screen, f"Message to {recipient_name}:", "")
+                            if message:
+                                guest_instance.send_chat(f"<{PLAYER_NAME}>: {message}")
+                                add_network_message(f"<You to {recipient_name}>: {message}")
+                        else:
+                            # Camera orbit for guest
+                            if not alt_held:
+                                rotating, last_mouse = True, e.pos
+
+                    if e.type == pygame.MOUSEBUTTONUP and e.button == 3:
+                        rotating = False
+
+                    if e.type == pygame.MOUSEWHEEL:
+                        if ctrl_held:
+                            factor = 1.1 if e.y > 0 else 0.9
+                            time_scale = np.clip(time_scale * factor, 0.1, 10.0)
+                            msgs.append([f"Time Scale: {time_scale:.1f}x", 0, pygame.time.get_ticks() + 1000])
+                        elif alt_held:
+                            pan_dir = np.array([math.cos(cam.yaw), 0, -math.sin(cam.yaw)])
+                            cam.pan += pan_dir * (e.y * 20.0 * unscaled_dt)
+                        else:
+                            cam.zoom(ZOOM_SPEED if e.y < 0 else 1/ZOOM_SPEED)
+
+                # Host and single-player mode: Full interaction
+                elif is_interactive:
+                    if e.type == pygame.MOUSEBUTTONDOWN:
+                        if e.button == 1 and hovered_vertex:
+                            start_tet, start_idx = hovered_vertex
+                            world.sticky_pairs = [p for p in world.sticky_pairs if not ((p[0].id == start_tet.id and p[1] == start_idx) or (p[2].id == start_tet.id and p[3] == start_idx))]
+                            dragging = (hovered_vertex[0], hovered_vertex[1], cam.get_transformed_z(hovered_vertex[0].verts()[hovered_vertex[1]]))
+                            locked_sticky_target = None
+                        if e.button == 3:
+                            if alt_held:
+                                cam.pan = world.center_of_mass.copy()
+                            else:
+                                # Check if clicking on an avatar
+                                clicked_avatar = None
+                                for avatar_id, avatar_data in net_avatars.items():
+                                    avatar_screen_pos = cam.project(np.array(avatar_data['pos']))
+                                    if avatar_screen_pos[0] > -10000:
+                                        dist = math.sqrt((avatar_screen_pos[0] - mx)**2 + (avatar_screen_pos[1] - my)**2)
+                                        if dist < 30:  # Click radius
+                                            clicked_avatar = (avatar_id, avatar_data)
+                                            break
+
+                                if clicked_avatar:
+                                    # Send message to this avatar
+                                    recipient_id, recipient_data = clicked_avatar
+                                    recipient_name = recipient_data.get('name', recipient_id)
+                                    message = get_user_input(screen, f"Message to {recipient_name}:", "")
+                                    if message:
+                                        if game_mode == 'host':
+                                            # Host sends to specific client
+                                            for sock, client_data in host_instance.clients.items():
+                                                if client_data['id'] == recipient_id:
+                                                    send_msg(sock, {'type': 'chat', 'data': f"<{PLAYER_NAME}>: {message}"})
+                                                    add_network_message(f"<You to {recipient_name}>: {message}")
+                                                    break
+                                else:
+                                    rotating, last_mouse = True, e.pos
+
+                    if e.type == pygame.MOUSEBUTTONUP:
+                        if e.button == 1 and dragging and locked_sticky_target:
+                            t1, i1 = dragging[0], dragging[1]; t2, i2 = locked_sticky_target[0], locked_sticky_target[1]
+                            current_binds = 0
+                            for j in world.joints:
+                                if (j.A.id == t1.id and j.ia == i1) or (j.B.id == t1.id and j.ib == i1): current_binds += 1
+                            if current_binds < 8: world.sticky_pairs.append((t1, i1, t2, i2))
+                        if e.button == 1: dragging, locked_sticky_target = None, None
+                        if e.button == 3: rotating = False
+
+                    if e.type == pygame.MOUSEWHEEL:
+                        if ctrl_held:
+                            factor = 1.1 if e.y > 0 else 0.9
+                            time_scale = np.clip(time_scale * factor, 0.1, 10.0)
+                            msgs.append([f"Time Scale: {time_scale:.1f}x", 0, pygame.time.get_ticks() + 1000])
+                        elif alt_held:
+                            pan_dir = np.array([math.cos(cam.yaw), 0, -math.sin(cam.yaw)])
+                            cam.pan += pan_dir * (e.y * 20.0 * unscaled_dt)
+                        else:
+                            cam.zoom(ZOOM_SPEED if e.y < 0 else 1/ZOOM_SPEED)
+
+            # Keyboard controls (for all modes)
+            keys = pygame.key.get_pressed()
+            # Restore hold-to-scale behavior for Z/C
+            if keys[pygame.K_c]: time_scale = min(10.0, time_scale + 2.0 * unscaled_dt)
+            if keys[pygame.K_z]: time_scale = max(0.1, time_scale - 2.0 * unscaled_dt)
+
+            # Camera controls (for all modes)
+            cam.pitch += ORBIT_SPEED * unscaled_dt * (int(keys[pygame.K_w]) - int(keys[pygame.K_s]))
+            cam.yaw += ORBIT_SPEED * unscaled_dt * (int(keys[pygame.K_d]) - int(keys[pygame.K_a]))
+            if keys[pygame.K_r]: cam.zoom(1/ZOOM_SPEED)
+            if keys[pygame.K_f]: cam.zoom(ZOOM_SPEED)
+            cam.pan += np.array([math.cos(cam.yaw), 0, -math.sin(cam.yaw)]) * (int(keys[pygame.K_q]) - int(keys[pygame.K_e])) * PAN_SPEED * unscaled_dt * (cam.dist / DEFAULT_CAM_DIST)
+
+            if rotating: mx, my = pygame.mouse.get_pos(); cam.yaw += (mx - last_mouse[0]) * 0.005; cam.pitch = np.clip(cam.pitch - (my - last_mouse[1]) * 0.005, -1.57, 1.57); last_mouse = (mx, my)
+
+            # Only allow dragging in single-player or host mode (not guest)
+            if game_mode != 'guest' and dragging:
+                t_drag, i_drag, dd = dragging; m3d = cam.unproject(pygame.mouse.get_pos(), dd); delta = m3d - t_drag.verts()[i_drag]
+                t_drag.local[i_drag] += delta * MOUSE_PULL_STRENGTH * (DEFAULT_CAM_DIST / cam.dist); t_drag.pos += delta * BODY_PULL_STRENGTH * (DEFAULT_CAM_DIST / cam.dist)
+                avs = curr_verts_screen; best_dist_sq = SELECTION_RADIUS**2; current_hover_target = None
+                for tidx, tt in enumerate(world.tets):
+                    if tt.id == t_drag.id: continue
+                    for vidx in range(4):
+                        idx_flat = tidx * 4 + vidx; pt = avs[idx_flat]; d_sq = np.sum((pt - mouse_arr)**2)
+                        if d_sq < best_dist_sq: best_dist_sq = d_sq; current_hover_target = (tt, vidx)
+                locked_sticky_target = current_hover_target
 
                 if e.type == pygame.MOUSEBUTTONDOWN and is_interactive:
                     if e.button == 1 and hovered_vertex:
@@ -1845,8 +2467,45 @@ def main(threaded=False):
                         dragging = (hovered_vertex[0], hovered_vertex[1], cam.get_transformed_z(hovered_vertex[0].verts()[hovered_vertex[1]]))
                         locked_sticky_target = None
                     if e.button == 3:
-                        if alt_held: cam.pan = world.center_of_mass.copy()
-                        else: rotating, last_mouse = True, e.pos
+                        if alt_held:
+                            cam.pan = world.center_of_mass.copy()
+                        else:
+                            # Check if clicking on an avatar
+                            clicked_avatar = None
+                            for avatar_id, avatar_data in net_avatars.items():
+                                # Skip own avatar
+                                if game_mode == 'guest' and avatar_id == 'host':
+                                    continue
+                                if game_mode == 'host' and avatar_id == f'host_{socket.gethostbyname(socket.gethostname())}:{host_instance.port if host_instance else DEFAULT_PORT}':
+                                    continue
+
+                                avatar_screen_pos = cam.project(np.array(avatar_data['pos']))
+                                if avatar_screen_pos[0] > -10000:
+                                    dist = math.sqrt((avatar_screen_pos[0] - mx)**2 + (avatar_screen_pos[1] - my)**2)
+                                    if dist < 30:  # Click radius
+                                        clicked_avatar = (avatar_id, avatar_data)
+                                        break
+
+                            if clicked_avatar:
+                                # Send message to this avatar
+                                recipient_id, recipient_data = clicked_avatar
+                                recipient_name = recipient_data.get('name', recipient_id)
+                                message = get_user_input(screen, f"Message to {recipient_name}:", "")
+                                if message:
+                                    if game_mode == 'host':
+                                        # Host sends to specific client
+                                        for sock, client_data in host_instance.clients.items():
+                                            if client_data['id'] == recipient_id:
+                                                send_msg(sock, {'type': 'chat', 'data': f"<{PLAYER_NAME}>: {message}"})
+                                                add_network_message(f"<You to {recipient_name}>: {message}")
+                                                break
+                                    elif game_mode == 'guest':
+                                        # Guest sends to host
+                                        guest_instance.send_chat(f"<{PLAYER_NAME}>: {message}")
+                                        add_network_message(f"<You to {recipient_name}>: {message}")
+                            else:
+                                # No avatar clicked, do camera orbit
+                                rotating, last_mouse = True, e.pos
 
                 if e.type == pygame.MOUSEBUTTONUP:
                     if e.button == 1 and dragging and locked_sticky_target:
@@ -1908,6 +2567,8 @@ def main(threaded=False):
 
 
 
+
+
             # AUTO BOT LOGIC (HEADLESS)
             now = time.time()
             # 1. Camera Move + Auto Center (Every 60s)
@@ -1938,6 +2599,15 @@ def main(threaded=False):
 
 # Integrate thought math here!!!
 
+#SYMBOLS = {
+#        'correlates': '=',      # Joints (permanent bonds)
+#        'desires': '*',     # Sticky pairs (seeking connection)
+#        'approaches': '+',  # New: temporary influence
+#        'negates': '¬',     # Opposite polarities with 3 corners joined
+#        'cycles': '○',      # Closed loops of joints
+#        'integrates': '∫',  # Complex structures
+#        'diverges': '∂',    # Partial connections, degrees of uncycled seperation
+#    }
 
 
 
@@ -1971,11 +2641,63 @@ def main(threaded=False):
                     net_messages.append([f"[Thought]: {thought}", time.time() + 15])
                     print(f"[BOT THOUGHT] {thought}")
                 last_bot_thought = now
-
             pygame.event.pump()
 
+        if game_mode == 'host' and host_instance:
+            # Process queued operations from client threads
+            while not host_instance.message_queue.empty():
+                try:
+                    msg_type, *args = host_instance.message_queue.get_nowait()
+                    if msg_type == 'set_label':
+                        tet_id, label = args
+                        for t in world.tets:
+                            if t.id == tet_id:
+                                t.label = label
+                                break
+                    elif msg_type == 'cleanup':
+                        sock = args[0]
+                        with host_instance.lock:
+                            if sock in host_instance.clients:
+                                client_id = host_instance.clients[sock]['id']
+                                host_instance.clients.pop(sock, None)
+                                net_avatars.pop(client_id, None)
+                                try:
+                                    sock.close()
+                                except OSError:
+                                    pass
+                except queue.Empty:
+                    break
+
+            # Broadcast world state periodically (non-blocking)
+            broadcast_interval = 2 + len(host_instance.clients)  # Every 2-10 frames depending on clients
+            if frame_count % broadcast_interval == 0:
+                host_instance.broadcast_state()
+
         # Physics
-        if game_mode == 'host' and host_instance and frame_count % 2 == 0: host_instance.broadcast_state()
+        if game_mode != 'guest':
+            if game_mode == 'host' and host_instance and frame_count % 2 == 0:
+                host_instance.broadcast_state()
+
+            # ENHANCED: Calculate singularity spin based on zoom level
+            zoom_factor = DEFAULT_CAM_DIST / cam.dist
+            spin_multiplier = np.clip(1/np.log(zoom_factor + 1) + 1, 0.1, 2.0)
+
+            world.update(scaled_dt, unscaled_dt, time_scale, lambda t: msgs.append([t, 0, pygame.time.get_ticks()+2000]), spin_multiplier)
+
+            if len(world.tets) == 1 and not flags['t0']: flags['t0'] = True
+            if len(world.tets) >= 2 and not flags['t2']: flags['t2'] = True; world.sticky_pairs.extend([(world.tets[0], v, world.tets[1], v) for v in range(4)])
+            if len(world.tets) >= 2 and world.joints and not flags['j1']: flags['j1'] = True
+            if len(world.tets) >= 3 and flags['j1'] and not flags['t3']: flags['t3'] = True
+        else:
+            # Guest mode: Update camera position to host
+            if guest_instance and frame_count % 10 == 0:
+                guest_instance.send_cam_update()
+
+            # Guest mode: Sync world from host
+            if guest_instance:
+                world_state = guest_instance.get_latest_world_state()
+                if world_state is not None:
+                    world.set_state(world_state)
 
         # ENHANCED: Calculate singularity spin based on zoom level
         # Zoomed in = faster spin, zoomed out = slower spin
@@ -2100,27 +2822,32 @@ def main(threaded=False):
         for i, (txt, et) in enumerate(list(net_messages)):
             s = font_s.render(txt, True, (255,200,100)); s.set_alpha(max(0, min(255, (et - time.time()) * 100))); screen.blit(s, (10, 40+i*25))
 
-        screen.blit(font_s.render(f"FPS: {int(fps)}", True, (255, 255, 0)), (10, 10))
-        zf = DEFAULT_CAM_DIST / cam.dist; zoom_text = f"{zf:.1f}x" if zf > 10 else f"{zf:.4f}x" if zf < 0.1 else f"{zf:.2f}x"
-
         # Uptime Calculation
         uptime_sec = int(time.time() - START_TIME)
         uptime_str = str(datetime.timedelta(seconds=uptime_sec))
 
+        zf = DEFAULT_CAM_DIST / cam.dist; zoom_text = f"{zf:.1f}x" if zf > 10 else f"{zf:.4f}x" if zf < 0.1 else f"{zf:.2f}x"
         status_text = f"Mode: {game_mode.replace('_',' ').title()} | TETs: {len(world.tets)} | Unions: {len(world.joints)} | Desires: {len(world.sticky_pairs)} | Zoom: {zoom_text} | Time: {time_scale:.1f}x"
         top_leg = font_s.render(status_text, True, (0,255,255))
         screen.blit(top_leg, top_leg.get_rect(center=(WIDTH//2, 20)))
 
-        uptime_surf = font_s.render(f"Up: {uptime_str}", True, (255, 255, 255))
-        screen.blit(uptime_surf, (WIDTH - uptime_surf.get_width() - 10, 10))
-
-        bot_leg = font_s.render("RMB Label TET | WASD View | R/F/Scroll Zoom | Q/E/Alt+Scroll Pan | Z/C/Ctrl+Scroll Timescale | X/Alt+RClick Center | V Save Instant | H Host Mode", True, (0,255,255))
-        screen.blit(bot_leg, bot_leg.get_rect(center=(WIDTH//2, HEIGHT-25)))
-
         if not ON_HUGGINGFACE:
+            screen.blit(font_s.render(f"FPS: {int(fps)}", True, (255, 255, 0)), (10, 10))
+            uptime_surf = font_s.render(f"Up: {uptime_str}", True, (255, 255, 255))
+            screen.blit(uptime_surf, (WIDTH - uptime_surf.get_width() - 10, 10))
+            bot_leg1 = font_s.render("RMB Label | LMB Pull/Join TETs | WASD/RMB Orbit | X/Alt+RMB Center | V Save Instant", True, (0,255,255))
+            bot_leg2 = font_s.render("H Host Mode | TAB Client Mode | R/F/Scroll Zoom | Q/E/Alt+Scroll Pan | Z/C/Ctrl+Scroll Timescale", True, (0,255,255))
+            screen.blit(bot_leg1, bot_leg1.get_rect(center=(WIDTH//2, HEIGHT-35)))
+            screen.blit(bot_leg2, bot_leg2.get_rect(center=(WIDTH//2, HEIGHT-15)))
             pygame.display.flip()
 
         if ON_HUGGINGFACE and GRADIO_AVAILABLE:
+            # Show FPS and uptime at the bottom for HF
+            fps_surf = font_s.render(f"FPS: {int(fps)}", True, (255, 255, 0))
+            screen.blit(fps_surf, (10, HEIGHT - 20))
+            uptime_surf = font_s.render(f"Up: {uptime_str}", True, (255, 255, 255))
+            screen.blit(uptime_surf, (WIDTH - uptime_surf.get_width() - 10, HEIGHT - 20))
+
             try:
                 array = pygame.surfarray.array3d(screen)
                 GRADIO_FRAME_BUFFER = np.transpose(array, (1, 0, 2))
@@ -2128,6 +2855,52 @@ def main(threaded=False):
 
     stop_all_networking()
     pygame.quit()
+
+def safe_world_update(world, new_state, last_hash=""):
+    """Safely update world state with change detection"""
+    try:
+        # Convert state to string for simple change detection
+        import hashlib
+        state_str = json.dumps(new_state, sort_keys=True, cls=NumpyEncoder)
+        current_hash = hashlib.md5(state_str.encode()).hexdigest()
+
+        if current_hash != last_hash:
+            world.set_state(new_state)
+
+        return current_hash
+    except Exception as e:
+        print(f"World update error: {e}")
+        return last_hash
+
+def connect_as_guest(host_ip, port):
+    global guest_instance, game_mode
+    try:
+        # Add timeout
+        timeout = 5
+        save_world_to_file()
+
+        # Show connecting message
+        add_timed_message(f"Connecting to {host_ip}:{port}...", duration=2)
+
+        guest_instance = Guest(host_ip, int(port), world, cam, add_network_message, ping_sound)
+
+        # Wait a moment for connection to establish
+        time.sleep(0.5)
+
+        if guest_instance.running:
+            game_mode = 'guest'
+            world.tets.clear()
+            world.joints.clear()
+            world.sticky_pairs.clear()
+            add_timed_message(f"Connected to {host_ip}:{port}", duration=3)
+            return True
+        else:
+            add_timed_message(f"Failed to connect", duration=3)
+            return False
+
+    except Exception as e:
+        add_timed_message(f"Failed to connect: {e}", duration=4)
+        return False
 
 def gradio_interface_loop():
     def get_frame():
