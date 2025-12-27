@@ -2586,6 +2586,17 @@ def main(threaded=False):
                                 rotating, last_mouse = True, e.pos
 
                     if e.type == pygame.MOUSEBUTTONUP and e.button == 3:
+                        if hovered_vertex:
+                            target_tet = hovered_vertex[0]
+                            # Pause game and get input
+                            new_label = get_user_input(screen, f"Rename '{target_tet.label}':", target_tet.label)
+                            if new_label:
+                                target_tet.label = new_label
+                                # If we are a Guest, tell the Host we changed a label
+                                if game_mode == 'guest' and guest_instance:
+                                    guest_instance.send_label(target_tet.id, new_label)
+                                # If we are Host, the change is already local,
+                                # and will be broadcast in the next world state update.
                         rotating = False
 
                     if e.type == pygame.MOUSEWHEEL:
@@ -2611,18 +2622,6 @@ def main(threaded=False):
                             if alt_held:
                                 cam.pan = world.center_of_mass.copy()
                             else:
-                                if hovered_vertex:
-                                    target_tet = hovered_vertex[0]
-                                    # Pause game and get input
-                                    new_label = get_user_input(screen, f"Rename '{target_tet.label}':", target_tet.label)
-                                    if new_label:
-                                        target_tet.label = new_label
-                                        # If we are a Guest, tell the Host we changed a label
-                                        if game_mode == 'guest' and guest_instance:
-                                            guest_instance.send_label(target_tet.id, new_label)
-                                        # If we are Host, the change is already local,
-                                        # and will be broadcast in the next world state update.
-
                                 # Check if clicking on an avatar
                                 clicked_avatar = None
                                 for avatar_id, avatar_data in net_avatars.items():

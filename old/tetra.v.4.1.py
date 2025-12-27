@@ -2427,7 +2427,6 @@ def main(threaded=False):
 
     while GAME_RUNNING:
         unscaled_dt = min(0.1, clock.tick(FPS) / 1000.0)
-        now = time.time()
         scaled_dt, frame_count, fps = unscaled_dt * time_scale, frame_count + 1, clock.get_fps()
         if 0 < fps < 45 and time_scale > 1.0: time_scale = max(1.0, time_scale * 0.99)
 
@@ -2452,64 +2451,6 @@ def main(threaded=False):
 
         if is_interactive and hovered_vertex and not dragging:
             h_tet = hovered_vertex[0]; h_tet.pos_prev[:] = h_tet.pos[:]; h_tet.local_prev[:] = h_tet.local[:]
-
-        # 3. Thoughts (moved from inside bot vision section, hugging face only)
-        if now - last_bot_thought > 61.0:
-            if len(world.tets) > 1:
-                # A. Pick a primary subject (TET)
-                t1 = random.choice(world.tets)
-                label1 = t1.label if t1.label else "Unknown"
-
-                # B. Intelligent Object Selection for t2
-                # Instead of a random 2nd TET, try to find one that matters to t1
-                t2 = None
-
-                # Priority 1: Find a partner (Joint or Sticky)
-                neighbors = []
-                for j in world.joints:
-                    if j.A.id == t1.id: neighbors.append(j.B)
-                    elif j.B.id == t1.id: neighbors.append(j.A)
-
-                # Priority 2: Find a close neighbor (Proximity)
-                if not neighbors:
-                    # Simple proximity check
-                    closest_dist = float('inf')
-                    for t in world.tets:
-                        if t.id == t1.id: continue
-                        d = np.linalg.norm(t.pos - t1.pos)
-                        if d < EDGE_LEN * 5: # Look within 5 units
-                            neighbors.append(t)
-
-                # Pick t2
-                if neighbors:
-                    t2 = random.choice(neighbors)
-                else:
-                    # Fallback: Pick random distant TET
-                    t2 = random.choice(world.tets)
-                    while t2.id == t1.id and len(world.tets) > 1:
-                        t2 = random.choice(world.tets)
-
-                label2 = t2.label if t2.label else "Void"
-
-                # C. Get the Cohesive Symbol
-                symbol = get_thought_symbol(t1, t2, world)
-
-                # D. Formulate Thought
-                # Special check for Self/Cycle
-                if t1.id == t2.id:
-                        symbol = RELATIONSHIP_MAP['cycles']
-
-                # Special check for synthesis champions
-                if t1.synthesis_count > 0 and random.random() < 0.3:
-                        thought = f"{label1} {RELATIONSHIP_MAP['integrates']} synthesized {t1.synthesis_count}× ∞"
-                else:
-                        thought = f"{label1} {symbol} {label2}"
-
-                net_messages.append([f"[Thought]: {thought}", time.time() + 15])
-                print(f"[BOT THOUGHT] {thought}")
-            last_bot_thought = now
-        pygame.event.pump()
-
 
         # Event Handling
         if not ON_HUGGINGFACE:
@@ -2611,18 +2552,6 @@ def main(threaded=False):
                             if alt_held:
                                 cam.pan = world.center_of_mass.copy()
                             else:
-                                if hovered_vertex:
-                                    target_tet = hovered_vertex[0]
-                                    # Pause game and get input
-                                    new_label = get_user_input(screen, f"Rename '{target_tet.label}':", target_tet.label)
-                                    if new_label:
-                                        target_tet.label = new_label
-                                        # If we are a Guest, tell the Host we changed a label
-                                        if game_mode == 'guest' and guest_instance:
-                                            guest_instance.send_label(target_tet.id, new_label)
-                                        # If we are Host, the change is already local,
-                                        # and will be broadcast in the next world state update.
-
                                 # Check if clicking on an avatar
                                 clicked_avatar = None
                                 for avatar_id, avatar_data in net_avatars.items():
@@ -2788,10 +2717,28 @@ def main(threaded=False):
                         if d_sq < best_dist_sq: best_dist_sq = d_sq; current_hover_target = (tt, vidx)
                 locked_sticky_target = current_hover_target
         else:
-            # AUTO BOT VISION (HEADLESS)
+
+
+
+
+
+
+
+
+# AUTO BOT LOGIC (HEADLESS)
+
+
+
+
+
+
+
+
+
+            # AUTO BOT LOGIC (HEADLESS)
             now = time.time()
-            # 1. Camera Move + Auto Center (Every 5s)
-            if now - last_bot_move > 5:
+            # 1. Camera Move + Auto Center (Every 60s)
+            if now - last_bot_move > 60:
                 cam.yaw += 0.1; cam.pitch = max(-1, min(1, cam.pitch + random.uniform(-1, 1)))
                 if world.tets: cam.pan = world.center_of_mass.copy() # Auto-Center
                 last_bot_move = now
@@ -2811,6 +2758,63 @@ def main(threaded=False):
                     world.tets[-2].label = l2
                     print(f"[BOT] Spawned Pair: {l1} & {l2}")
                 last_bot_spawn = now
+
+            # 3. Thoughts
+            if now - last_bot_thought > 61.0:
+                if len(world.tets) > 1:
+                    # A. Pick a primary subject (TET)
+                    t1 = random.choice(world.tets)
+                    label1 = t1.label if t1.label else "Unknown"
+
+                    # B. Intelligent Object Selection for t2
+                    # Instead of a random 2nd TET, try to find one that matters to t1
+                    t2 = None
+
+                    # Priority 1: Find a partner (Joint or Sticky)
+                    neighbors = []
+                    for j in world.joints:
+                        if j.A.id == t1.id: neighbors.append(j.B)
+                        elif j.B.id == t1.id: neighbors.append(j.A)
+
+                    # Priority 2: Find a close neighbor (Proximity)
+                    if not neighbors:
+                        # Simple proximity check
+                        closest_dist = float('inf')
+                        for t in world.tets:
+                            if t.id == t1.id: continue
+                            d = np.linalg.norm(t.pos - t1.pos)
+                            if d < EDGE_LEN * 5: # Look within 5 units
+                                neighbors.append(t)
+
+                    # Pick t2
+                    if neighbors:
+                        t2 = random.choice(neighbors)
+                    else:
+                        # Fallback: Pick random distant TET
+                        t2 = random.choice(world.tets)
+                        while t2.id == t1.id and len(world.tets) > 1:
+                            t2 = random.choice(world.tets)
+
+                    label2 = t2.label if t2.label else "Void"
+
+                    # C. Get the Cohesive Symbol
+                    symbol = get_thought_symbol(t1, t2, world)
+
+                    # D. Formulate Thought
+                    # Special check for Self/Cycle
+                    if t1.id == t2.id:
+                         symbol = RELATIONSHIP_MAP['cycles']
+
+                    # Special check for synthesis champions
+                    if t1.synthesis_count > 0 and random.random() < 0.3:
+                         thought = f"{label1} {RELATIONSHIP_MAP['integrates']} synthesized {t1.synthesis_count}× ∞"
+                    else:
+                         thought = f"{label1} {symbol} {label2}"
+
+                    net_messages.append([f"[Thought]: {thought}", time.time() + 15])
+                    print(f"[BOT THOUGHT] {thought}")
+                last_bot_thought = now
+            pygame.event.pump()
 
         if game_mode == 'host' and host_instance:
             # Process queued operations from client threads
