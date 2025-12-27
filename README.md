@@ -58,7 +58,7 @@ Preview it exampled at: https://youtu.be/nb367JVuKJw
 
 This Game/Simulator attempts to improve upon minecraft by using tetragrams - in space. Intending to simulate chemical bonding of (now a growing number of useful chemicals) and FeO4, Magnetite, likely responsible for the complexity we call life (suggesting God's most primitive rules are very basic indeed). But gamified.... Tech-tree/Adventure/Translation needing further implementation (check branches, I'm done with it). These Kleinverses are ever complexifying - eventually they will live!
 
-V1.0 was a working prototype, V2.0 Was a solid foundation, V2.1 Optimized it, allowing for over 5K tets on an old machine - 2.3 makes the black hole pretty and added a sound for messages, along with minor tweaks to make it more physics based.  v3.0 added gradio for HuggingFace (wip)
+V1.0 was a working prototype, V2.0 Was a solid foundation, V2.1 Optimized it, allowing for over 5K tets on an old machine - 2.3 makes the black hole pretty and added a sound for messages, along with minor tweaks to make it more physics based.  v3.0 added gradio for HuggingFace V4.0 is now QUANTUM (wip)
 
 demos run on a 16G no video card 6 core - min requirements probably a 386 or so? maybe even a 286 if you can replace python or transcribe to BASIC/Assembly - ahhh, the good old days :D
 
