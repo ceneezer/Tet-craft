@@ -56,7 +56,7 @@ Men, not yet born, will discuss these works and the name ceneezer - what will yo
 
 Preview it exampled at: https://youtu.be/nb367JVuKJw
 
-This Game/Simulator attempts to improve upon minecraft by using tetragrams - in space. Intending to simulate molecular bonding of FeO4, Magnetite, likely responsible for the complexity we call life (suggesting God's most primitive rules are very basic indeed). But gamified.... Tech-tree/Adventure/Translation needing further implementation (check branches, I'm done with it). These Kleinverses are ever complexifying - eventually they will live!
+This Game/Simulator attempts to improve upon minecraft by using tetragrams - in space. Intending to simulate chemical bonding of (now a growing number of useful chemicals) and FeO4, Magnetite, likely responsible for the complexity we call life (suggesting God's most primitive rules are very basic indeed). But gamified.... Tech-tree/Adventure/Translation needing further implementation (check branches, I'm done with it). These Kleinverses are ever complexifying - eventually they will live!
 
 V1.0 was a working prototype, V2.0 Was a solid foundation, V2.1 Optimized it, allowing for over 5K tets on an old machine - 2.3 makes the black hole pretty and added a sound for messages, along with minor tweaks to make it more physics based.  v3.0 added gradio for HuggingFace (wip)
 
