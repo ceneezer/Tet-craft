@@ -1452,112 +1452,48 @@ class World:
     def update(self, scaled_dt, unscaled_dt, time_scale, add_msg_fn, spin_multiplier=1.0):
         if not self.tets: return
         self.check_magnetization()
-        self.update_magnetic_batteries(scaled_dt)
-        self.apply_corner_desires(scaled_dt)
-        self.apply_same_pole_repulsion(scaled_dt)
-        self.apply_negative_pole_orientation(scaled_dt)
+        self.update_magnetic_batteries(scaled_dt)  # PHASE 2: Battery oscillation
+        self.apply_corner_desires(scaled_dt)  # PHASE 3: Color attraction
+        self.apply_same_pole_repulsion(scaled_dt)  # PHASE 3: Positive repulsion
+        self.apply_negative_pole_orientation(scaled_dt)  # PHASE 3: Orient to origin
 
+        # PHASE 4: Chemistry reactions
         synthesis_reactions = self.attempt_synthesis_reactions(scaled_dt, add_msg_fn)
         decomposition_reactions = self.attempt_decomposition_reactions(scaled_dt, add_msg_fn)
-        self._last_synth_reactions = synthesis_reactions
+        self._last_synth_reactions = synthesis_reactions  # Store for particle effects
 
         self.center_of_mass = self.calculate_dynamic_center()
-
-        # Prepare arrays
-        positions = np.array([t.pos for t in self.tets])
-        positions_prev = np.array([t.pos_prev for t in self.tets])
-        locals_arr = np.array([t.local for t in self.tets])
-        locals_prev = np.array([t.local_prev for t in self.tets])
-        batteries = np.array([t.battery for t in self.tets])
+        positions = np.array([t.pos for t in self.tets]); positions_prev = np.array([t.pos_prev for t in self.tets])
+        locals_arr = np.array([t.local for t in self.tets]); locals_prev = np.array([t.local_prev for t in self.tets])
+        batteries = np.array([t.battery for t in self.tets]); id_to_idx = {t.id: i for i, t in enumerate(self.tets)}
         orientation_biases = np.array([t.orientation_bias for t in self.tets])
-
-        id_to_idx = {t.id: i for i, t in enumerate(self.tets)}
-
-        if self.sticky_pairs:
-            valid_pairs = [p for p in self.sticky_pairs if p[0].id in id_to_idx and p[2].id in id_to_idx]
-            sticky_pairs_data = np.array([[id_to_idx[p[0].id], p[1], id_to_idx[p[2].id], p[3]] for p in valid_pairs], dtype=np.int32)
-        else:
-            sticky_pairs_data = np.empty((0, 4), dtype=np.int32)
-
-        if self.joints:
-            valid_joints = [j for j in self.joints if j.A.id in id_to_idx and j.B.id in id_to_idx]
-            joints_data_jit = np.array([[id_to_idx[j.A.id], j.ia, id_to_idx[j.B.id], j.ib] for j in valid_joints], dtype=np.int32)
-        else:
-            joints_data_jit = np.empty((0, 4), dtype=np.int32)
-
+        sticky_pairs_data = np.array([[id_to_idx[p[0].id], p[1], id_to_idx[p[2].id], p[3]] for p in self.sticky_pairs if p[0].id in id_to_idx and p[2].id in id_to_idx], dtype=np.int32) if self.sticky_pairs else np.empty((0, 4), dtype=np.int32)
+        joints_data_jit = np.array([[id_to_idx[j.A.id], j.ia, id_to_idx[j.B.id], j.ib] for j in self.joints if j.A.id in id_to_idx and j.B.id in id_to_idx], dtype=np.int32) if self.joints else np.empty((0, 4), dtype=np.int32)
         magnet_indices = np.array([i for i, t in enumerate(self.tets) if t.is_magnetized], dtype=np.int32)
-        if magnet_indices.size > 0:
-            magnet_polarities = np.array([t.magnetism for t in self.tets if t.is_magnetized], dtype=np.float64)
-        else:
-            magnet_polarities = np.empty(0, dtype=np.float64)
-
-        # --- PHYSICS STEP ---
-        positions, positions_prev, locals_arr, locals_prev, batteries = world_update_physics_jit(
-            positions, positions_prev, locals_arr, locals_prev, batteries,
-            scaled_dt, time_scale, Tetrahedron.EDGES_NP, sticky_pairs_data,
-            joints_data_jit, spin_multiplier, magnet_indices
-        )
-
-        locals_arr, orientation_biases = update_magnetic_effects_jit(
-            locals_arr, orientation_biases, positions, magnet_indices, magnet_polarities, scaled_dt
-        )
-
+        positions, positions_prev, locals_arr, locals_prev, batteries = world_update_physics_jit(positions, positions_prev, locals_arr, locals_prev, batteries, scaled_dt, time_scale, Tetrahedron.EDGES_NP, sticky_pairs_data, joints_data_jit, spin_multiplier, magnet_indices)
+        magnet_polarities = np.array([t.magnetism for t in self.tets if t.is_magnetized], dtype=np.float64)
+        locals_arr, orientation_biases = update_magnetic_effects_jit(locals_arr, orientation_biases, positions, magnet_indices, magnet_polarities, scaled_dt)
         positions_prev = conserve_momentum_jit(positions, positions_prev)
-
-        # --- SAFETY: UNIVERSE BOUNDARY CHECK ---
-        # 1. Check for NaNs (Invalid numbers)
-        mask_nan = ~np.all(np.isfinite(positions), axis=1)
-
-        # 2. Check for "Exploded" coordinates (Too large for KDTree squaring)
-        # Limit to 1,000,000 units (Solar system is ~2500)
-        mask_huge = np.any(np.abs(positions) > 1e6, axis=1)
-
-        mask_bad = mask_nan | mask_huge
-
-        if np.any(mask_bad):
-            count = np.sum(mask_bad)
-            print(f"!!! PHYSICS BOUNDARY HIT: Resetting {count} particles !!!")
-            # Reset to center with slight jitter to prevent re-collision
-            positions[mask_bad] = np.random.uniform(-5, 5, (count, 3))
-            positions_prev[mask_bad] = positions[mask_bad] # Stop velocity
-
-            # Also reset locals to prevent internal explosion
-            locals_arr[mask_bad] = Tetrahedron.REST_NP.copy()
-            locals_prev[mask_bad] = Tetrahedron.REST_NP.copy()
-
-        # --- SPATIAL INDEXING ---
         tree = cKDTree(positions)
-
         if len(self.tets) >= 2:
             distances, indices = tree.query(positions, k=2)
             stray_indices = np.where(distances[:, 1] > NEIGHBOR_DESIRE_THRESHOLD)[0]
             if stray_indices.size > 0:
                 existing_connections = {tuple(sorted((j.A.id, j.B.id))) for j in self.joints} | {tuple(sorted((p[0].id, p[2].id))) for p in self.sticky_pairs}
                 for idx in stray_indices:
-                    if idx < len(self.tets) and indices[idx, 1] < len(self.tets):
-                        stray_tet, neighbor_tet = self.tets[idx], self.tets[indices[idx, 1]]
-                        if tuple(sorted((stray_tet.id, neighbor_tet.id))) not in existing_connections:
-                            self.sticky_pairs.append((stray_tet, random.randint(0, 3), neighbor_tet, random.randint(0, 3)))
-                            add_msg_fn("Forced Desire to prevent drifting", duration=2)
-                            break
-
+                    stray_tet, neighbor_tet = self.tets[idx], self.tets[indices[idx, 1]]
+                    if tuple(sorted((stray_tet.id, neighbor_tet.id))) not in existing_connections:
+                        self.sticky_pairs.append((stray_tet, random.randint(0, 3), neighbor_tet, random.randint(0, 3))); add_msg_fn("Forced Desire to prevent drifting", duration=2); break
         pairs = tree.query_pairs(r=COLLISION_RADIUS * 2)
         if pairs: positions = resolve_collisions_jit(positions, np.array(list(pairs)))
-
         if self.joints:
             if joints_data_jit.shape[0] > 0:
                 for _ in range(3): locals_arr = resolve_joints_jit(locals_arr, joints_data_jit)
-
         for pair in self.sticky_pairs[:]:
             t1, i1, t2, i2 = pair
             if t1.id not in id_to_idx or t2.id not in id_to_idx: continue
-            idx1, idx2 = id_to_idx[t1.id], id_to_idx[t2.id]
-            p1 = locals_arr[idx1, i1] + positions[idx1]
-            p2 = locals_arr[idx2, i2] + positions[idx2]
-            if np.linalg.norm(p2 - p1) < SNAP_DIST:
-                self.try_snap(t1, i1, t2, i2)
-                self.sticky_pairs.remove(pair)
-
+            p1, p2 = locals_arr[id_to_idx[t1.id], i1] + positions[id_to_idx[t1.id]], locals_arr[id_to_idx[t2.id], i2] + positions[id_to_idx[t2.id]]
+            if np.linalg.norm(p2 - p1) < SNAP_DIST: self.try_snap(t1, i1, t2, i2); self.sticky_pairs.remove(pair)
         for i, t in enumerate(self.tets):
             t.pos, t.pos_prev, t.local, t.local_prev, t.battery, t.orientation_bias = positions[i], positions_prev[i], locals_arr[i], locals_prev[i], batteries[i], orientation_biases[i]
 
@@ -1569,33 +1505,19 @@ class World:
     def set_state(self, state):
         self.tets.clear(); self.joints.clear(); self.sticky_pairs.clear()
         tet_map = {}
-
         for ts in state.get('tets', []):
             try:
-                # FIX: Explicitly force float64 for position
-                pos = np.array(ts['pos'], dtype=np.float64)
-                t = Tetrahedron(pos)
-                t.id = ts['id']
-                t.pos_prev = np.array(ts.get('pos_prev', pos), dtype=np.float64)
-
-                if 'local' in ts:
-                    t.local = np.array(ts['local'], dtype=np.float64)
-                    t.local_prev = np.array(ts.get('local_prev', t.local), dtype=np.float64)
-
-                t.battery = float(ts.get('battery', 0.5))
-
+                t = Tetrahedron(ts['pos']); t.id = ts['id']; t.pos_prev = np.array(ts['pos_prev']); t.local = np.array(ts['local'])
+                t.local_prev = np.array(ts['local_prev']); t.battery = ts['battery']
+                # FIX: Convert colors from JSON list back to tuples
                 if 'colors' in ts and ts['colors']:
                     t.colors = [tuple(c) for c in ts['colors']]
                 else:
                     t.colors = None
-
                 t.label = ts.get('label', "")
+                t.orientation_bias = np.array(ts.get('orientation_bias', [0,0,0]))
 
-                # CRITICAL FIX: Force orientation_bias to be float64
-                # (The default [0,0,0] caused it to be Int32, crashing Numba physics)
-                t.orientation_bias = np.array(ts.get('orientation_bias', [0, 0, 0]), dtype=np.float64)
-
-                # Reset physics flags
+                # FIX: Reset magnetization tracking attributes
                 t.is_magnetized = False
                 t.magnetism = 0
                 t.magnetic_strength = 0.0
@@ -1609,18 +1531,11 @@ class World:
 
                 self.tets.append(t); tet_map[t.id] = t
             except (KeyError, TypeError, ValueError): continue
-
         for js in state.get('joints', []):
             try:
-                if js['A_id'] in tet_map and js['B_id'] in tet_map:
-                    self.joints.append(VertexJoint(tet_map[js['A_id']], js['ia'], tet_map[js['B_id']], js['ib']))
+                if js['A_id'] in tet_map and js['B_id'] in tet_map: self.joints.append(VertexJoint(tet_map[js['A_id']], js['ia'], tet_map[js['B_id']], js['ib']))
             except (KeyError, TypeError): continue
-
-        if 'center_of_mass' in state:
-            self.center_of_mass = np.array(state['center_of_mass'], dtype=np.float64)
-        else:
-            self.center_of_mass = self.calculate_dynamic_center()
-
+        if 'center_of_mass' in state: self.center_of_mass = np.array(state['center_of_mass'])
         print(f"Loaded {len(self.tets)} tets and {len(self.joints)} joints.")
 
 net_avatars = {}; net_messages = deque(maxlen=5); game_mode = 'single_player'; host_instance, guest_instance = None, None
@@ -2333,41 +2248,11 @@ def main(threaded=False):
     loaded_from_save = False
     if cli_connect_addr: connect_as_guest(*(cli_connect_addr.split(':') if ':' in cli_connect_addr else (cli_connect_addr, DEFAULT_PORT)))
     elif cli_listen_port: initiate_host_mode(cli_listen_port)
-    if cli_load_file:
-        if os.path.exists(cli_load_file):
-            try:
-                # FIX 1: 'utf-8-sig' handles the BOM (hidden characters) in your save file
-                with open(cli_load_file, 'r', encoding='utf-8-sig') as f:
-                    state = json.load(f)
-                    world.set_state(state)
-
-                loaded_from_save = True
-                print(f"### SUCCESS: Loaded {cli_load_file} ###")
-
-                # FIX 2: Teleport camera to the loaded objects
-                # Your planets are at x=1200, but camera starts at x=0.
-                if world.tets:
-                    # Recalculate center of mass immediately
-                    world.center_of_mass = world.calculate_dynamic_center()
-                    cam.pan = world.center_of_mass.copy()
-
-                    # Auto-zoom out to fit the solar system
-                    max_dist = 0
-                    for t in world.tets:
-                        d = np.linalg.norm(t.pos - world.center_of_mass)
-                        if d > max_dist: max_dist = d
-
-                    if max_dist > 100:
-                        cam.dist = max_dist * 2.5
-                        print(f"### Auto-Zoomed to fit Universe (Radius: {max_dist:.1f}) ###")
-
-            except Exception as e:
-                print(f"### ERROR LOADING FILE: {e} ###")
-                # Force a message so you see it in the void screen logic if possible
-                msgs.append([f"Load Error: {e}", 0, pygame.time.get_ticks() + 10000])
-        else:
-            print(f"### FILE NOT FOUND: {cli_load_file} ###")
-            print(f"### Current Directory: {os.getcwd()} ###")
+    elif cli_load_file and os.path.exists(cli_load_file):
+        try:
+            with open(cli_load_file, 'r', encoding='utf-8-sig') as f: world.set_state(json.load(f))
+            add_timed_message(f"Loaded {cli_load_file}"); loaded_from_save = True
+        except Exception as e: print(f"Error loading '{cli_load_file}': {e}")
     if not (loaded_from_save or cli_connect_addr or cli_listen_port): show_void_screen(screen, world)
 
     if ON_HUGGINGFACE:
@@ -2797,7 +2682,7 @@ def main(threaded=False):
             zoom_factor = DEFAULT_CAM_DIST / cam.dist
             spin_multiplier = np.clip(1/np.log(zoom_factor + 1) + 1, 0.1, 2.0)
 
-            world.update(scaled_dt, unscaled_dt, time_scale, lambda t, duration=2: msgs.append([t, 0, pygame.time.get_ticks() + duration * 1000]), spin_multiplier)
+            world.update(scaled_dt, unscaled_dt, time_scale, lambda t: msgs.append([t, 0, pygame.time.get_ticks()+2000]), spin_multiplier)
 
             if len(world.tets) == 1 and not flags['t0']: flags['t0'] = True
             if len(world.tets) >= 2 and not flags['t2']: flags['t2'] = True; world.sticky_pairs.extend([(world.tets[0], v, world.tets[1], v) for v in range(4)])
@@ -2819,7 +2704,7 @@ def main(threaded=False):
         zoom_factor = DEFAULT_CAM_DIST / cam.dist  # 1.0 at default, >1 when zoomed in, <1 when zoomed out
         spin_multiplier = np.clip(1/np.log(zoom_factor + 1) + 1, 0.1, 2.0)  # Range: 0.1x to 2.0x spin
 
-        world.update(scaled_dt, unscaled_dt, time_scale, lambda t, duration=2: msgs.append([t, 0, pygame.time.get_ticks() + duration * 1000]), spin_multiplier)
+        world.update(scaled_dt, unscaled_dt, time_scale, lambda t: msgs.append([t, 0, pygame.time.get_ticks()+2000]), spin_multiplier)
         if len(world.tets) == 1 and not flags['t0']: flags['t0'] = True
         if len(world.tets) >= 2 and not flags['t2']: flags['t2'] = True; world.sticky_pairs.extend([(world.tets[0], v, world.tets[1], v) for v in range(4)])
         if len(world.tets) >= 2 and world.joints and not flags['j1']: flags['j1'] = True
