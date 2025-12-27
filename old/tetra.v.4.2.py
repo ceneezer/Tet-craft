@@ -179,16 +179,6 @@ import signal
 import queue
 import select
 
-from pygame import mixer
-try:
-    mixer.init()
-    # Dummy sound generation for robustness if files missing
-    REACTION_SOUND = generate_ping_sound()
-    QUANTUM_SOUND = generate_boing_sound()
-except:
-    REACTION_SOUND = None
-    QUANTUM_SOUND = None
-
 # Suppress runtime warnings
 warnings.filterwarnings("ignore", category=RuntimeWarning)
 
@@ -215,14 +205,6 @@ except ImportError:
 # ============================
 # CONFIG
 # ============================
-PLAYER_NAME = "Seeker"
-SAVE_FILENAME = "Temple.json"
-
-# GLOBAL STATE
-GRADIO_FRAME_BUFFER = None
-GAME_RUNNING = True
-START_TIME = time.time()
-
 WIDTH, HEIGHT = 800, 600
 FPS = 60
 
@@ -301,6 +283,40 @@ RELATIONSHIP_MAP = {
     'unknown': '?'
 }
 
+def get_thought_symbol(t1, t2, world):
+    """Determines the semantic relationship between two TETs based on physics"""
+    # 1. Check for Complex Integration (Are both parts of complex molecules?)
+    if t1.molecule_type and t2.molecule_type:
+        return RELATIONSHIP_MAP['integrates']
+
+    # 2. Check for Correlation (Are they physically joined?)
+    # We iterate joints to see if these two specific TETs are linked
+    for j in world.joints:
+        if (j.A.id == t1.id and j.B.id == t2.id) or (j.A.id == t2.id and j.B.id == t1.id):
+            return RELATIONSHIP_MAP['correlates']
+
+    # 3. Check for Desire (Are they magnetically stuck/pulling?)
+    for p in world.sticky_pairs:
+        # sticky_pairs is (t1, v1, t2, v2)
+        if (p[0].id == t1.id and p[2].id == t2.id) or (p[0].id == t2.id and p[2].id == t1.id):
+            return RELATIONSHIP_MAP['desires']
+
+    # 4. Check for Negation (Opposite Polarity)
+    # If both are magnetized and have opposite signs (1 vs -1)
+    if t1.is_magnetized and t2.is_magnetized:
+        if t1.magnetism != t2.magnetism:
+            return RELATIONSHIP_MAP['negates']
+
+    # 5. Check Spatial Relationship
+    dist = np.linalg.norm(t1.pos - t2.pos)
+
+    # If very close but not bonded
+    if dist < EDGE_LEN * 2.5:
+        return RELATIONSHIP_MAP['approaches']
+
+    # If far away
+    return RELATIONSHIP_MAP['diverges']
+
 # --- EXPANDED MOLECULE DATABASE (PHASE 4) ---
 # Format: {pattern_key: (aura_color, symbolic_name, description, stability, energy)}
 MOLECULE_DATABASE = {
@@ -346,40 +362,6 @@ MOLECULE_DATABASE = {
 # Symbolic names for bot thoughts
 MOLECULE_SYMBOLS = list(set(data[1] for data in MOLECULE_DATABASE.values()))
 
-def get_thought_symbol(t1, t2, world):
-    """Determines the semantic relationship between two TETs based on physics"""
-    # 1. Check for Complex Integration (Are both parts of complex molecules?)
-    if t1.molecule_type and t2.molecule_type:
-        return RELATIONSHIP_MAP['integrates']
-
-    # 2. Check for Correlation (Are they physically joined?)
-    # We iterate joints to see if these two specific TETs are linked
-    for j in world.joints:
-        if (j.A.id == t1.id and j.B.id == t2.id) or (j.A.id == t2.id and j.B.id == t1.id):
-            return RELATIONSHIP_MAP['correlates']
-
-    # 3. Check for Desire (Are they magnetically stuck/pulling?)
-    for p in world.sticky_pairs:
-        # sticky_pairs is (t1, v1, t2, v2)
-        if (p[0].id == t1.id and p[2].id == t2.id) or (p[0].id == t2.id and p[2].id == t1.id):
-            return RELATIONSHIP_MAP['desires']
-
-    # 4. Check for Negation (Opposite Polarity)
-    # If both are magnetized and have opposite signs (1 vs -1)
-    if t1.is_magnetized and t2.is_magnetized:
-        if t1.magnetism != t2.magnetism:
-            return RELATIONSHIP_MAP['negates']
-
-    # 5. Check Spatial Relationship
-    dist = np.linalg.norm(t1.pos - t2.pos)
-
-    # If very close but not bonded
-    if dist < EDGE_LEN * 2.5:
-        return RELATIONSHIP_MAP['approaches']
-
-    # If far away
-    return RELATIONSHIP_MAP['diverges']
-
 # PHASE 3: Corner desire and repulsion constants
 K_CORNER_DESIRE = 0.002
 K_SAME_POLE_REPULSION = 0.008
@@ -417,61 +399,13 @@ DECOMPOSITION_REACTIONS = {
     "Fe2O3": ["FeO4", "FeO4"],  # Rust decomposition
 }
 
-# MOS-HSRCF v6.0 CONSTANTS
-Ψ_NOOSPHERIC_INDEX = 0.18  # Threshold from MOS-HSRCF
-ERD_FLUCTUATION_BASE = 0.15  # Base ERD fluctuation
+PLAYER_NAME = "Seeker"
+SAVE_FILENAME = "Traveler.json"
 
-# ENHANCED CONSTANTS (Ψ-MODULATED)
-K_CORNER_DESIRE = 0.002 * (1 + Ψ_NOOSPHERIC_INDEX)
-K_SAME_POLE_REPULSION = 0.008 * (1 + Ψ_NOOSPHERIC_INDEX)
-K_ORIENTATION_PULL = 0.003 * (1 + Ψ_NOOSPHERIC_INDEX)
-CORNER_DESIRE_RANGE = EDGE_LEN * 8.0 * (1 + Ψ_NOOSPHERIC_INDEX)
-
-K_REACTION_ENERGY_RELEASE = 0.05 * (1 + Ψ_NOOSPHERIC_INDEX)
-REACTION_PROBABILITY_BASE = 0.001 * (1 + Ψ_NOOSPHERIC_INDEX * 2)
-CATALYST_BOOST = 3.0 * (1 + Ψ_NOOSPHERIC_INDEX)
-SYNTHESIS_ENERGY_COST = 0.1
-REACTION_RANGE = EDGE_LEN * 4.0
-
-CATALYSTS = ["FeO4", "CuSO4", "Fe3O4", "AlCl3", "Ψ-Crystal", "OBA-Torsion"]
-
-# REACTIONS
-SYNTHESIS_REACTIONS = {
-    ("H3O+", "PO4"): "H2O", ("H2O", "H2O"): "C2H6", ("CH4", "CH4"): "C2H6",
-    ("H2O", "CO2"): "C6H12O6", ("SO3", "H2O"): "H2SO4", ("NO3", "H2O"): "HNO3",
-    ("FeO4", "FeO4"): "Fe2O3", ("SiO4", "SiO4"): "C-Diamond", ("H3O+", "NaOH"): "H2O",
-    ("NH3", "HCl"): "NH4Cl", ("Ca(OH)2", "CO2"): "CaCO3", ("NaOH", "HCl"): "NaCl",
-    ("C2H6", "O2"): "CO2", ("CH4", "O2"): "CO2", ("Al2O3", "HCl"): "AlCl3",
-    # ERD REACTIONS
-    ("Ψ-Crystal", "H2O"): "ERD-Gradient", ("OBA-Torsion", "SiO4"): "Chrono-Fold",
-    ("ERD-Gradient", "C-Diamond"): "Ψ-Crystal",
-}
-
-DECOMPOSITION_REACTIONS = {
-    "H2SO4": ["SO3", "H2O"], "HNO3": ["NO3", "H2O"], "C6H12O6": ["H2O", "CO2"],
-    "Fe2O3": ["FeO4", "FeO4"], "CaCO3": ["Ca(OH)2", "CO2"], "NH4Cl": ["NH3", "HCl"],
-    "NaCl": ["NaOH", "HCl"], "AlCl3": ["Al2O3", "HCl"],
-    # ERD DECOMPOSITION
-    "Ψ-Crystal": ["H2O", "SiO4"], "OBA-Torsion": ["Fe3O4", "SiO4"],
-}
-
-# PHASE 5 QUANTUM CONSTANTS
-ERD_FLUCTUATION_STRENGTH = ERD_FLUCTUATION_BASE
-ERD_COHERENCE_THRESHOLD = Ψ_NOOSPHERIC_INDEX
-QUANTUM_TUNNEL_PROB = 0.0005 * (1 + Ψ_NOOSPHERIC_INDEX * 3)
-QUANTUM_ENTANGLE_RANGE = EDGE_LEN * 12.0 * (1 + Ψ_NOOSPHERIC_INDEX)
-QUANTUM_SPARKLE_COLOR = (0, 100, 255)
-
-QUANTUM_REACTIONS = {
-    ("H2O", "NaCl"): "NaOH", ("NH3", "HNO3"): "NH4NO3", ("C2H6", "O2"): "CO2",
-    ("CH4", "Cl2"): "CH3Cl", ("H2O", "CO"): "HCOOH", ("AlCl3", "C6H6"): "C6H5Cl",
-    ("Ψ-Crystal", "Fe3O4"): "ERD-Gradient", ("ERD-Gradient", "OBA-Torsion"): "Ψ-Crystal",
-}
-
-ENTANGLEMENT_PAIRS = [
-    ("H3O+", "OH-"), ("NH3", "H+"), ("CO2", "H2O"), ("Fe3O4", "Fe2O3"),
-    ("Ψ-Crystal", "ERD-Gradient"), ("OBA-Torsion", "Chrono-Fold"),
-]
+# GLOBAL STATE
+GRADIO_FRAME_BUFFER = None
+GAME_RUNNING = True
+START_TIME = time.time()
 
 class NumpyEncoder(json.JSONEncoder):
     def default(self, obj):
@@ -698,6 +632,20 @@ def resolve_joints_jit(locals_arr, joints_data):
 @njit(fastmath=True, cache=True)
 def calculate_disk_quads(center_pos, pan, yaw, pitch, dist, width, height,
                         shadow_radius, u_vec, v_vec, view_dir, color_base, battery_avg, current_time):
+
+
+
+
+
+
+    """Enhanced with temperature gradients and consciousness influence"""
+
+
+
+
+
+
+
 
     num_rings = 10  # Increased from 8
     segments = 50   # Increased from 40
@@ -953,11 +901,6 @@ class Tetrahedron:
         # Make sure locked_faces is initialized
         self.locked_faces = []  # List of face indices that are locked
 
-        # PHASE 5: Quantum properties
-        self.erd_coherence = 0.0  # Current ERD coherence level (0-1)
-        self.entangled_partner = None  # ID of entangled molecule
-        self.quantum_state = "ground"  # "ground", "excited", "tunneled"
-
     def verts(self): return self.local + self.pos
 
 class PastProjection4Sphere:
@@ -1108,20 +1051,6 @@ class World:
                     # PHASE 4: Check if this is a catalyst
                     t.is_catalyst = molecule_name in CATALYSTS
 
-            # PHASE 5: Calculate ERD coherence based on locked faces and battery
-            t.erd_coherence = min(1.0, (len(t.locked_faces) / 4.0) * t.battery)
-
-            # Check for entanglement eligibility
-            if t.label in [p[0] for p in ENTANGLEMENT_PAIRS] or t.label in [p[1] for p in ENTANGLEMENT_PAIRS]:
-                if t.entangled_partner is None and t.erd_coherence > ERD_COHERENCE_THRESHOLD:
-                    # Look for potential partner (simplified - first match)
-                    for potential in self.tets:
-                        if potential.id != t.id and potential.label in [pair[1 - pair.index(t.label)] if t.label in pair else None for pair in ENTANGLEMENT_PAIRS]:
-                            dist = np.linalg.norm(t.pos - potential.pos)
-                            if dist < QUANTUM_ENTANGLE_RANGE:
-                                t.entangled_partner = potential.id
-                                potential.entangled_partner = t.id
-                                break
     def update_magnetic_batteries(self, scaled_dt):
         """PHASE 2: Battery oscillation - emptiness transfers between magnetic pairs"""
         if not self.joints:
@@ -1171,155 +1100,110 @@ class World:
                         partner.battery = np.clip(1.0 - new_emptiness_p, 0.0, 1.0)
 
     def apply_corner_desires(self, scaled_dt):
-        """PHASE 3: Optimized - Apply corner-to-corner attraction between opposite colors"""
-        if len(self.tets) < 2: return
+        """PHASE 3: Apply corner-to-corner attraction between opposite colors"""
+        if len(self.tets) < 2:
+            return
 
-        # NumPy batch processing
-        tet_list = list(self.tets)
-        all_corners, corner_colors, corner_tets, corner_indices = [], [], [], []
+        # Build spatial tree for efficient corner searching
+        all_corners = []
+        corner_to_tet = []
+        corner_colors = []
 
-        for idx, t in enumerate(tet_list):
+        for t in self.tets:
             verts = t.verts()
-            for c_idx in range(4):
-                all_corners.append(verts[c_idx])
-                corner_tets.append(idx)
-                corner_indices.append(c_idx)
+            for corner_idx in range(4):
+                all_corners.append(verts[corner_idx])
+                corner_to_tet.append((t, corner_idx))
+
+                # Determine corner color (corner belongs to 3 faces, use first non-white/black)
                 corner_color = None
-                for f_idx in range(4):
-                    if c_idx in Tetrahedron.FACE_TO_CORNERS[f_idx]:
-                        face_color = t.colors[f_idx] if t.colors else Tetrahedron.FACE_COLORS[f_idx]
-                        if face_color == (255, 0, 0): corner_color = 'R'; break
-                        elif face_color == (0, 255, 255): corner_color = 'C'; break
-                corner_colors.append(corner_color or 'N')
+                for face_idx in range(4):
+                    if corner_idx in Tetrahedron.FACE_TO_CORNERS[face_idx]:
+                        face_color = t.colors[face_idx] if t.colors else Tetrahedron.FACE_COLORS[face_idx]
+                        if face_color == (255, 0, 0):  # Red
+                            corner_color = 'R'
+                            break
+                        elif face_color == (0, 255, 255):  # Cyan
+                            corner_color = 'C'
+                            break
+                if not corner_color:
+                    corner_color = 'N'  # Neutral (white/black)
+                corner_colors.append(corner_color)
 
         all_corners = np.array(all_corners)
+
+        if len(all_corners) < 2:
+            return
+
+        # Build KD-tree for fast neighbor search
         tree = cKDTree(all_corners)
 
-        for i in range(len(all_corners)):
-            if corner_colors[i] not in ['R', 'C']: continue
-            nearby_idx = tree.query_ball_point(all_corners[i], CORNER_DESIRE_RANGE)
+        # For each corner, find nearby opposite-colored corners
+        for i, (t1, c1_idx) in enumerate(corner_to_tet):
+            color1 = corner_colors[i]
 
-            forces = np.zeros(3)
-            for j in nearby_idx:
-                if i == j: continue
-                if (corner_colors[i] == 'R' and corner_colors[j] == 'C') or (corner_colors[i] == 'C' and corner_colors[j] == 'R'):
+            # Only Red and Cyan corners have desires
+            if color1 not in ['R', 'C']:
+                continue
+
+            # Find nearby corners within desire range
+            nearby_indices = tree.query_ball_point(all_corners[i], CORNER_DESIRE_RANGE)
+
+            for j in nearby_indices:
+                if i == j:
+                    continue
+
+                color2 = corner_colors[j]
+
+                # Red seeks Cyan, Cyan seeks Red
+                if (color1 == 'R' and color2 == 'C') or (color1 == 'C' and color2 == 'R'):
+                    t2, c2_idx = corner_to_tet[j]
+
+                    # Skip if same TET
+                    if t1.id == t2.id:
+                        continue
+
+                    # Calculate attraction force
                     delta = all_corners[j] - all_corners[i]
                     dist = np.linalg.norm(delta)
-                    if dist > 1e-6:
-                        forces += (delta / dist) * (K_CORNER_DESIRE * (1.0 - dist / CORNER_DESIRE_RANGE))
 
-            if np.any(forces):
-                t1 = tet_list[corner_tets[i]]
-                t1.local[corner_indices[i]] += forces * scaled_dt * 0.5
-                t1.pos += forces * scaled_dt * 0.5
+                    if dist > 1e-6 and dist < CORNER_DESIRE_RANGE:
+                        # Force falls off with distance
+                        force_strength = K_CORNER_DESIRE * (1.0 - dist / CORNER_DESIRE_RANGE)
+                        force_vec = delta / dist * force_strength
+
+                        # Apply force to both TET's local corner and position
+                        t1.local[c1_idx] += force_vec * scaled_dt * 0.5
+                        t1.pos += force_vec * scaled_dt * 0.5
+
+                        t2.local[c2_idx] -= force_vec * scaled_dt * 0.5
+                        t2.pos -= force_vec * scaled_dt * 0.5
 
     def apply_same_pole_repulsion(self, scaled_dt):
-        """PHASE 3: Optimized - Positive poles repel other positive poles"""
+        """PHASE 3: Positive poles repel other positive poles"""
         positive_poles = [t for t in self.tets if t.is_magnetized and t.magnetism > 0]
-        if len(positive_poles) < 2: return
 
-        pos_array = np.array([t.pos for t in positive_poles])
-        strengths = np.array([t.magnetic_strength for t in positive_poles])
+        if len(positive_poles) < 2:
+            return
 
-        for i in range(len(pos_array)):
-            deltas = pos_array - pos_array[i]
-            dists = np.linalg.norm(deltas, axis=1)
-            mask = (dists > 1e-6)
-            if np.any(mask):
-                unit_deltas = deltas[mask] / dists[mask][:, np.newaxis]
-                repulsions = (K_SAME_POLE_REPULSION / (dists[mask]**2 + 1.0)) * strengths[mask] * strengths[i]
-                total_force = np.sum(unit_deltas * repulsions[:, np.newaxis], axis=0)
-                positive_poles[i].pos -= total_force * scaled_dt
+        # Apply repulsion between all positive pole pairs
+        for i, t1 in enumerate(positive_poles):
+            for t2 in positive_poles[i+1:]:
+                delta = t2.pos - t1.pos
+                dist = np.linalg.norm(delta)
 
-    def apply_erd_fluctuations(self, scaled_dt):
-        """PHASE 5: Apply random ERD fluctuations"""
-        for t in self.tets:
-            if t.erd_coherence > 0.5:
-                fluctuation = np.random.uniform(-ERD_FLUCTUATION_STRENGTH, ERD_FLUCTUATION_STRENGTH) * t.erd_coherence
-                t.battery = np.clip(t.battery + fluctuation * scaled_dt, 0.0, 1.0)
-                t.quantum_state = "excited" if abs(fluctuation) > 0.1 else "ground"
+                if dist > 1e-6:
+                    # Repulsion falls off with distance squared (inverse square law)
+                    repulsion_strength = K_SAME_POLE_REPULSION / (dist * dist + 1.0)
 
-    def attempt_quantum_tunneling(self, scaled_dt, add_msg_fn):
-        """PHASE 5: Rare quantum tunneling reactions"""
-        current_time = time.time()
-        tunnel_reactions = []
-        for t in self.tets:
-            if t.erd_coherence < ERD_COHERENCE_THRESHOLD or current_time - t.last_reaction_time < 10.0: continue
+                    # Scale by magnetic strength
+                    repulsion_strength *= t1.magnetic_strength * t2.magnetic_strength
 
-            if random.random() < QUANTUM_TUNNEL_PROB * scaled_dt * 60 * t.erd_coherence:
-                positions = np.array([o.pos for o in self.tets if o.id != t.id])
-                if len(positions) == 0: continue
-                tree = cKDTree(positions)
-                far_indices = tree.query_ball_point(t.pos, QUANTUM_ENTANGLE_RANGE * 2)
-                if not far_indices: continue
+                    force_vec = delta / dist * repulsion_strength
 
-                partner = self.tets[random.choice(far_indices)]
-                if partner.label and (t.label, partner.label) in QUANTUM_REACTIONS:
-                    product = QUANTUM_REACTIONS[(t.label, partner.label)]
-                    t.label = product
-                    t.last_reaction_time = current_time; t.synthesis_count += 1
-                    t.battery -= SYNTHESIS_ENERGY_COST / 2
-                    partner.battery -= 0.05; partner.quantum_state = "tunneled"; t.quantum_state = "tunneled"
-                    tunnel_reactions.append((t.label, partner.label, product))
-                    add_msg_fn(f" Quantum Tunnel: {product} formed!", duration=5)
-                    try: QUANTUM_SOUND.play()
-                    except: pass
-        return tunnel_reactions
-
-    def process_entangled_reactions(self, scaled_dt, add_msg_fn):
-        """PHASE 5: Synchronized reactions for entangled pairs"""
-        processed, entangled_reactions = set(), []
-        for t in self.tets:
-            if t.entangled_partner is None or t.id in processed: continue
-            partner = next((p for p in self.tets if p.id == t.entangled_partner), None)
-            if not partner: t.entangled_partner = None; continue
-
-            processed.add(t.id); processed.add(partner.id)
-            avg_bat = (t.battery + partner.battery) / 2
-            t.battery = partner.battery = avg_bat
-
-            pair_key = tuple(sorted([t.label, partner.label]))
-            if pair_key in SYNTHESIS_REACTIONS and random.random() < REACTION_PROBABILITY_BASE * 2.0 * scaled_dt * 60:
-                product = SYNTHESIS_REACTIONS[pair_key]
-                t.label = partner.label = product
-                t.last_reaction_time = partner.last_reaction_time = time.time()
-                t.synthesis_count += 1; partner.synthesis_count += 1
-                energy_gain = K_REACTION_ENERGY_RELEASE * 1.5
-                t.battery = min(1.0, t.battery + energy_gain); partner.battery = min(1.0, partner.battery + energy_gain)
-                entangled_reactions.append((t.label, partner.label, product))
-                add_msg_fn(f" Entangled Formation: {product}!", duration=5)
-                try: QUANTUM_SOUND.play()
-                except: pass
-        return entangled_reactions
-
-    def spawn_quantum_visuals(self, screen, cam, quantum_events, width, height):
-        if not hasattr(self, 'quantum_particles'): self.quantum_particles = []
-        for event_type, pos in quantum_events:
-            color = (0, 200, 255) if event_type == "tunnel" else (100, 0, 255)
-            self.quantum_particles.append({'pos': np.array(pos), 'vel': np.random.uniform(-1, 1, 3)*40, 'color': color, 'life': 1.5, 'size': 12})
-            self.quantum_particles.append({'pos': np.array(pos), 'radius': 5, 'speed': 50, 'alpha': 180, 'life': 1.0, 'color': color})
-
-        to_keep = []
-        for p in self.quantum_particles:
-            if 'radius' in p:
-                p['radius'] += p['speed'] * 0.016; p['alpha'] = int(p['alpha'] * 0.95); p['life'] -= 0.02
-                if p['life'] > 0:
-                    sp = cam.project(p['pos'])
-                    if sp[0] > -10000:
-                        s = pygame.Surface((width, height), pygame.SRCALPHA)
-                        pygame.draw.circle(s, (*p['color'], p['alpha']//2), sp, p['radius'], 2)
-                        screen.blit(s, (0,0))
-                    to_keep.append(p)
-            else:
-                p['pos'] += p['vel'] * 0.016; p['vel'] *= 0.92; p['life'] -= 0.025
-                if p['life'] > 0:
-                    sp = cam.project(p['pos'])
-                    if sp[0] > -10000:
-                        s = pygame.Surface((p['size']*2, p['size']*2), pygame.SRCALPHA)
-                        pygame.draw.circle(s, (*p['color'], int(p['life']*255)), (p['size'], p['size']), p['size'])
-                        screen.blit(s, (sp[0]-p['size'], sp[1]-p['size']))
-                    to_keep.append(p)
-        self.quantum_particles = to_keep
+                    # Push apart
+                    t1.pos -= force_vec * scaled_dt
+                    t2.pos += force_vec * scaled_dt
 
     def apply_negative_pole_orientation(self, scaled_dt):
         """PHASE 3: Negative poles (fuller battery side) orient toward origin"""
@@ -1518,20 +1402,7 @@ class World:
 
                     decompositions_this_frame.append((old_label, products))
                     add_msg_fn(f"💥 {old_label} decomposed!", duration=3)
-        # PHASE 5: Quantum enhancements
-        self.apply_erd_fluctuations(scaled_dt)
-        tunnel_reactions = self.attempt_quantum_tunneling(scaled_dt, add_msg_fn)
-        entangle_reactions = self.process_entangled_reactions(scaled_dt, add_msg_fn)
 
-        # Collect events for visuals
-        quantum_events = []
-        for _, _, product in tunnel_reactions:
-            for t in self.tets:
-                if t.label == product and t.quantum_state == "tunneled": quantum_events.append(("tunnel", t.pos))
-        for _, _, product in entangle_reactions:
-            for t in self.tets:
-                if t.label == product: quantum_events.append(("entangle", t.pos))
-        self._last_quantum_events = quantum_events
         return decompositions_this_frame
 
     def spawn_reaction_particles(self, screen, cam, reactions, width, height):
@@ -2574,9 +2445,10 @@ def main(threaded=False):
             h_tet = hovered_vertex[0]; h_tet.pos_prev[:] = h_tet.pos[:]; h_tet.local_prev[:] = h_tet.local[:]
 
         # 3. Thoughts (moved from inside bot vision section, hugging face only)
-        if now - last_bot_thought > 61:
+        if now - last_bot_thought > 8.0: # Slightly faster for complex thoughts
             if len(world.tets) > 1:
-                 # --- Helper: Find physical neighbors ---
+
+                # --- Helper: Find physical neighbors ---
                 def get_neighbors(target_tet, exclude_id=None):
                     nb = []
                     # 1. Check Joints (Strongest link)
@@ -2627,53 +2499,14 @@ def main(threaded=False):
                 sym2 = get_thought_symbol(t2, t3, world)
 
                 # 5. Formulate Trinary Thought
-                thought = f"{label1} {sym1} {label2} {sym2} {label3} ?"
+                thought = f"{label1} {sym1} {label2} {sym2} {label3}"
 
                 # Add to chat log
                 net_messages.append([f"[Thought]: {thought}", time.time() + 15])
-                print(f"[Bot Thought]: {thought}")
 
-                #Stage 5 Quantum thoughts
-                def get_neighbors(target_tet, exclude_id=None):
-                    nb = []
-                    for j in world.joints:
-                        if j.A.id == target_tet.id and j.B.id != exclude_id: nb.append(j.B)
-                        elif j.B.id == target_tet.id and j.A.id != exclude_id: nb.append(j.A)
-                    if not nb:
-                        for p in world.sticky_pairs:
-                            if p[0].id == target_tet.id and p[2].id != exclude_id: nb.append(p[2])
-                            elif p[2].id == target_tet.id and p[0].id != exclude_id: nb.append(p[0])
-                    if not nb:
-                        for t in world.tets:
-                            if t.id == target_tet.id or t.id == exclude_id: continue
-                            if np.linalg.norm(t.pos - target_tet.pos) < EDGE_LEN * 4: nb.append(t)
-                    return nb
-
-                t1 = random.choice(world.tets)
-                label1 = t1.label if t1.label else "Unknown"
-
-                n1 = get_neighbors(t1)
-                t2 = random.choice(n1) if n1 else random.choice([t for t in world.tets if t.id != t1.id])
-                label2 = t2.label if t2.label else "Void"
-
-                n2 = get_neighbors(t2, exclude_id=t1.id)
-                t3 = random.choice(n2) if n2 else t1
-                label3 = t3.label if t3.label else "Mystery"
-
-                sym1 = get_thought_symbol(t1, t2, world)
-                sym2 = get_thought_symbol(t2, t3, world)
-
-                # PHASE 5: Inject Quantum Ontology
-                quantum_terms = ["ERD∇", "Ψ-coherence", "OBA⊗", "QuantumFold", "EntropicBridge"]
-
-                if t1.quantum_state != "ground" or t1.erd_coherence > 0.8:
-                    sym1 = random.choice(quantum_terms)
-
-                thought = f"{label1} {sym1} {label2} {sym2} {label3} !"
-                net_messages.append([f"[Quantum Reply]: {thought}", time.time() + 15])
-                print(f"[Quantum Reply]: {thought}")
             last_bot_thought = now
         pygame.event.pump()
+
 
         # Event Handling
         if not ON_HUGGINGFACE:
@@ -3141,12 +2974,6 @@ def main(threaded=False):
             recent_synth = getattr(world, '_last_synth_reactions', [])
             world.spawn_reaction_particles(screen, cam, recent_synth, WIDTH, HEIGHT)
             world._last_synth_reactions = []  # Clear after rendering
-
-        # PHASE 5: Draw quantum visuals
-        if hasattr(world, 'quantum_particles'):
-            recent_quantum = getattr(world, '_last_quantum_events', [])
-            world.spawn_quantum_visuals(screen, cam, recent_quantum, WIDTH, HEIGHT)
-            world._last_quantum_events = []
 
         for avatar_id, avatar_data in net_avatars.items():
             draw_player_avatar(screen, cam, np.array(avatar_data['pos']), avatar_data['color'], avatar_id, name=avatar_data.get('name'))
