@@ -28,7 +28,7 @@ The domain expired 3 times since and twice before.
 - ... serve? (see google for troubleshooting, php probably updated since I've abandoned it, may need updating. no IDK what version.)
 
 Ultimatly I abandoned it because the best argument against democracy is asking 100 random people what 6/2*(1+2) is - or why you should care about others! \
-Sorry, but if you're going to be that dumb you need a king/council!
+Sorry, but if you're going to be that dumb )on average, great, some of you can sing and paint!) you need a king/council!
 
 ## Lost In The Digital Roots Gamified IQ Test ##
 
