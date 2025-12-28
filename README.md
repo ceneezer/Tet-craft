@@ -1,4 +1,4 @@
-﻿### (Everything is Apache 2.0 - How could I otherwise as a pirate? - Thank yoou Jesus, and all) ###
+﻿### (Everything is Apache 2.0 - How could I otherwise as a pirate? - Thank you Jesus, and all) ###
 
  - \app.py (The only file you need for TET~CRAFT - see instructions bellow)
  - \mobeus.py (a nice visualizer for the different dimensions of a mobeus) \
