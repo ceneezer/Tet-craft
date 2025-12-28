@@ -89,16 +89,19 @@ Can I get from you so little as an Amen ceneezer!?! (#opWorldPeace) \
 All the better in Jesus name - maybe even as much as a share? \
 The more, the sooner, don't make me beg further!
 
-### Install ###
+### How to install Locally ###
 
-- Download/copypasta app.py (you don't *need* the rest) \
-- python -m venv tetcraft (after, place tetra.py inside)\
-- cd tetcraft \
-- source bin/activate \
-- pip install numpy pygame numba \
-- (optional) git pull <url> (thanks for archiving a backup, stupid censors) \
-- (optional) Create and modify blacklist.cfg as needed, auto-loaded. \
-- python app.py <options>
+- Install python?
+- **python -m venv tetcraft** (this step creates a virtual environment to **keep your system healthy and clean**)
+- **cd tetcraft**
+- Download/copypasta **app.py** inside (you don't *need* the rest, maybe requirements.txt)
+- (optional) **git pull** *url above* (thanks for archiving a backup, stupid censors - **inside: GIGs of "AI slop" proof** + some save files and other nice scripts) 
+- **source bin/activate** (this **activates the virtual environment** so pip doesn't corrupt yours with filth!)
+- **pip install** -r requirements.txt (or: pygame, numpy, numba, [scipy, gradio for HuggingFace/ect])
+- (optional) Create and modify **blacklist.cfg** as needed, auto-loaded. 
+- **python app.py** (CLI options)
+- wait for load, hit space, **play, chat**, whatever... \
+*be a **young god** learning, as **you already are** - always at least **one better**, if not me, **then** at least **Jesus** - and **rebecome childlike**.*
 
 ### Psuedocode ###
 
