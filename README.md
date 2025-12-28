@@ -1,6 +1,6 @@
 ﻿### (Everything is Apache 2.0) ###
 
- - \tetra.py (The only file you need for TET~CRAFT - see instructions bellow)
+ - \app.py (The only file you need for TET~CRAFT - see instructions bellow)
  - \bitvote (Direct Democracy, Open Source, Blockchain Backed)
  - \IQ (Lost In The Digital Roots IQ Gamified Test)
  - \research\txt (Text based research)
@@ -8,7 +8,7 @@
  - \research\pics (Image based research)
  - \research\m4a (Audio based research)
  - \research\mp4 (Video based research)
- - \old (old versions of tetra.py)
+ - \old (old versions of app.py)
  - \fractalOfceneeze.py (self explanatory - the python for my fractal)
  - \mobeus.py (a nice visualizer for the different dimensions of a mobeus) \
 (The .json's are example save files... the .ico is an icon :D)
@@ -88,14 +88,14 @@ The more, the sooner, don't make me beg further!
 
 ### Install ###
 
-- Download/copypasta tetra.py (you don't *need* the rest) \
+- Download/copypasta app.py (you don't *need* the rest) \
 - python -m venv tetcraft (after, place tetra.py inside)\
 - cd tetcraft \
 - source bin/activate \
 - pip install numpy pygame numba \
 - (optional) git pull <url> (thanks for archiving a backup, stupid censors) \
 - (optional) Create and modify blacklist.cfg as needed, auto-loaded. \
-- python tetra.py <options>
+- python app.py <options>
 
 ### Psuedocode ###
 
