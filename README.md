@@ -101,7 +101,8 @@ The more, the sooner, don't make me beg further!
 - (optional) Create and modify **blacklist.cfg** as needed, auto-loaded. 
 - **python app.py** (CLI options)
 - wait for load, hit space, **play, chat**, whatever... \
-*be a **young god** learning, as **you already are** - always at least **one better**, if not me, **then** at least **Jesus** - and **rebecome childlike**.*
+*be a **young god** learning, as **you already are** - always at least **one better**, if not me, **then** at least **Jesus** \
+**rebecome childlike and fill with awe and wonder!**.*
 
 ### Psuedocode ###
 
