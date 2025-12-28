@@ -1,12 +1,12 @@
 ﻿### (Everything is Apache 2.0 - How could I otherwise as a pirate? - Thank you Jesus, and all) ###
 
  - \app.py (The only file you need for TET~CRAFT - see instructions bellow)
- - \mobeus.py (a nice visualizer for the different dimensions of a mobeus) \
- - \fractalOfceneeze.py (self explanatory - the python for my fractal)
+ - \mobeus.py (a nice visualizer for the different dimensions of a mobeus)
+ - \fractalOfceneeze.py (self explanatory - the python for my fractal) \
+(The .json's are example save files... the .ico is an icon :D)
  - \old (old versions of app.py)
  - \bitvote (Direct Democracy, Hash Obfuscated, Blockchain Backed)
- - \IQ (Lost In The Digital Roots IQ Gamified Test)
-(The .json's are example save files... the .ico is an icon :D)
+ - \IQ (Lost In The Digital Roots IQ Gamified Test) 
  - \research\txt (Text based research)
  - \research\pdf (PDF based research)
  - \research\pics (Image based research)
