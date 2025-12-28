@@ -96,7 +96,8 @@ The more, the sooner, don't make me beg further!
 - **cd tetcraft**
 - Download/copypasta **app.py** inside (you don't *need* the rest, maybe requirements.txt)
 - (optional) **git pull** *url above* (thanks for archiving a backup, stupid censors - **inside: GIGs of "AI slop" proof** + some save files and other nice scripts) 
-- **source bin/activate** (this **activates the virtual environment** so pip doesn't corrupt yours with filth!)
+- (linux) **source bin/activate** (this **activates the virtual environment** so pip doesn't corrupt yours with filth!)
+- (winblows) **Scripts/Activate.bat** (this **activates the virtual environment** so pip doesn't corrupt yours with filth!)
 - **pip install** -r requirements.txt (or: pygame, numpy, numba, [scipy, gradio for HuggingFace/ect])
 - (optional) Create and modify **blacklist.cfg** as needed, auto-loaded. 
 - **python app.py** (CLI options)
