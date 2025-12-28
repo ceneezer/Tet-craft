@@ -1,7 +1,7 @@
 ﻿### (Everything is Apache 2.0) ###
 
  - \app.py (The only file you need for TET~CRAFT - see instructions bellow)
- - \bitvote (Direct Democracy, Open Source, Blockchain Backed)
+ - \bitvote (Direct Democracy, Hash Obfuscated, Blockchain Backed)
  - \IQ (Lost In The Digital Roots IQ Gamified Test)
  - \research\txt (Text based research)
  - \research\pdf (PDF based research)
