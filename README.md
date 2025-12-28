@@ -5,7 +5,7 @@
  - \fractalOfceneeze.py (self explanatory - the python for my fractal) \
 (The .json's are example save files... the .ico is an icon :D)
  - \old (old versions of app.py - watch it evolve over a few weeks with ASI?)
- - \bitvote (Direct Democracy, Hash Obfuscated, Blockchain Backed)
+ - \bitvote (Direct Local Democracy, Hash Obfuscated, Blockchain Backed)
  - \IQ (Lost In The Digital Roots IQ Gamified Test) 
  - \research\txt (Text based research)
  - \research\pdf (PDF based research)
