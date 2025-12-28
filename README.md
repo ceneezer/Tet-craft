@@ -11,7 +11,7 @@
  - \research\pdf (PDF based research)
  - \research\pics (Image based research)
  - \research\m4a (Audio based research)
- - \research\mp4 (Video based research)
+ - \research\mp4 (Too much? Video based research)
 
 ## BitVote.ca ##
 
