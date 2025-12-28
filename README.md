@@ -58,11 +58,11 @@ Preview it exampled at: https://youtu.be/nb367JVuKJw
 
 This Game/Simulator attempts to improve upon minecraft by using tetragrams - in space. Intending to simulate chemical bonding of (now a growing number of useful chemicals) and FeO4, Magnetite, likely responsible for the complexity we call life (suggesting God's most primitive rules are very basic indeed). But gamified.... Tech-tree/Adventure/Translation needing further implementation (check branches, I'm done with it). These Kleinverses are ever complexifying - eventually they will live!
 
-V1.0 was a working prototype, V2.0 Was a solid foundation, V2.1 Optimized it, allowing for over 5K tets on an old machine - 2.3 makes the black hole pretty and added a sound for messages, along with minor tweaks to make it more physics based.  v3.0 added gradio for HuggingFace V4.0 is now QUANTUM (wip)
+V1.0 was a working prototype, V2.0 Was a solid foundation, V2.1 Optimized it, allowing for over 5K tets on an old machine - 2.3 makes the black hole pretty and added a sound for messages, along with minor tweaks to make it more physics based.  v3.0 added gradio for HuggingFace V4.0 is now *"QUANTUM"* **(also very much wip, fine tuning)**
 
 demos run on a 16G no video card 6 core - min requirements probably a 386 or so? maybe even a 286 if you can replace python or transcribe to BASIC/Assembly - ahhh, the good old days :D
 
-You can Chat remotely with friends through unlimited, unrestricted (and unsecured) WAN connectivity and grow your universe from three basic facts into infinite complexity (only restricted by hardware - time, memory and storage for saves).
+You can Chat remotely with friends through unlimited, unrestricted (and unsecured) WAN connectivity and grow your universe from three basic facts into infinite complexity (only restricted by hardware - time, memory and storage for saves) - not to mention save snapshots, called instants, which can be fully loaded by any other "player" **(especially AI, who write save files particulairly well, fed the python)**!
 
 The environment is a 4 or Tetra-Sphere, which maps a Klien bottles topology, in which top and bottom link through left and right to create the illusion of a circle. Behind you is you, in the past, blue-shifted or red-shifted as you scale time - infinitely ahead is a singularity, growing and shrinking likewise.
 
