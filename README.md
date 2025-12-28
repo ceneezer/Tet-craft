@@ -91,7 +91,7 @@ The more, the sooner, don't make me beg further!
 
 ### How to install Locally ###
 
-- Install python?
+- Install python? pip?
 - **python -m venv tetcraft** (this step creates a virtual environment to **keep your system healthy and clean**)
 - **cd tetcraft**
 - Download/copypasta **app.py** inside (you don't *need* the rest, maybe requirements.txt)
