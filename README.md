@@ -27,6 +27,9 @@ The domain expired 3 times since and twice before.
 (optional) customize the pub folder for your logos ect
 - ... serve? (see google for troubleshooting, php probably updated since I've abandoned it, may need updating. no IDK what version.)
 
+Ultimatly I abandoned it because the best argument against democracy is asking 100 random (or even "educated" :( ) people what 6/2*(1+2) is! \
+Sorry, but if you're going to be that dumn you need a king.
+
 ## Lost In The Digital Roots Gamified IQ Test ##
 
 (Good Luck)
