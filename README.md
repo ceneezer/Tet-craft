@@ -104,7 +104,7 @@ The more, the sooner, don't make me beg further!
 *be a **young god** learning, as **you already are** - always at least **one better**, if not me, **then** at least **Jesus** \
 **rebecome childlike and fill with awe and wonder!**.*
 
-### Psuedocode ###
+### Psuedocode (from <v1.0) ###
 
 TetCraft Program Explained in Pseudo-Code 
 1. Configuration & Constants
