@@ -15,8 +15,8 @@
 
 ## BitVote.ca ##
 
-(expired, circa 2015 3rd version beginning from about 2010) \
-The domain expired 3 times since.
+(expired, circa 2015 3rd version, beginning from about 2010) \
+The domain expired 3 times since and twice before.
 
 ### Instructions ###
 
