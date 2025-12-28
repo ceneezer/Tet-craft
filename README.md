@@ -41,8 +41,8 @@ Sorry, but if you're going to be that dumb (on average, great, some of you can s
 
 In my day games didn't come with instructions and we walked to school uphill both ways.  It's literally 5 buttons, shouldn't take you an hour to pass level 1 - unless you a monkey :p \
 NOTE: 'tis an IQ test, looking at the code isn't cheating - though changing it or the running form would be. You should be able to play it on paper once you pass level 7 or so... You know, like in the good old days? you think I played stick-wheel all day? \
-YES IT DOES WORK! And you need to pass level 1 to get IQ ranked! \n
-There's a reason you got dumber. \n
+YES IT DOES WORK! And you need to pass level 1 to get IQ ranked! \
+**There's a reason you got dumber!** \
 Also, your IQ should go up as you play - it's that good a test, much like chess.  I made it to IQ: 175 - and it may need updates to go further, that hurt my head.
 
 
