@@ -1276,505 +1276,27 @@ Your chemistry simulator is now ALIVE! 🧪⚛️✨🎆
 
 
 
+This is a massive and fantastic upgrade. You are effectively moving the simulation from "Newtonian Chemistry" to "Noospheric Quantum Mechanics" (MOS-HSRCF v6.0 integration).
 
+The transition from random interactions to ERD (Echo-Resonant Density) and Entanglement adds a layer of "spooky action at a distance" that aligns perfectly with the metaphysical themes.
 
-Complete TET~CRAFT Chemistry System - Phases 1-5Apply these changes to your original code in order"""
-COMPLETE PHASE SUMMARY:Phase 1: Multi-face locking detection + molecule identification + auras
-Phase 2: Battery oscillation (emptiness transfer between magnetic pairs)
-Phase 3: Corner desires + same-pole repulsion + orientation toward origin
-Phase 4: Advanced chemistry - reactions, catalysts, energy release, molecule synthesis
-Phase 5: Quantum Resonance - ERD fluctuations, tunneling reactions, entanglement effects, quantum visualsNEW IN PHASE 5 (ENHANCEMENTS):• ERD-inspired random fluctuations in reaction probabilities
-• Quantum tunneling: Rare reactions across longer distances
-• Entanglement pairs: Synchronized reactions between linked molecules
-• Quantum coherence based on battery oscillation synchronicity
-• Visual quantum effects: Blue resonance waves and sparkles
-• Expanded database with 15+ new real compounds (from chemical lists)
-• Bot thoughts include quantum ontology terms
-• Performance optimizations: Batch NumPy operations in desires/repulsion
-• Audio feedback: Pygame mixer sounds for reactions/quantum events
-"""============================================================================CHANGE 1: REPLACE old MOLECULE_DATABASE with SUPER-EXPANDED version (added real compounds):============================================================================"""--- SUPER-EXPANDED MOLECULE DATABASE (PHASE 5) ---Added real compounds from chemical lists (e.g., HCl, NaOH, O2, etc.)Format: {pattern_key: (aura_color, symbolic_name, description, stability, energy)}MOLECULE_DATABASE = {
-    # Single face locked - Basic compounds (original + new)
-    "F1_R1_C1_W1_B1": ((255, 100, 150), "FeO4", "Iron Oxide - Magnetic Dipole", 0.8, 50),
-    "F1_R0_C0_W3_B1": ((200, 200, 255), "CH4", "Methane - Stable Neutral", 0.9, 30),
-    "F1_R3_C0_W1_B0": ((255, 50, 50), "H3O+", "Hydronium - Positive Ion", 0.6, 80),
-    "F1_R0_C3_W1_B0": ((50, 255, 255), "PO4", "Phosphate - Negative Ion", 0.6, 80),
-    "F1_R2_C1_W1_B0": ((255, 150, 100), "NO3", "Nitrate - Oxidizer", 0.7, 60),
-    "F1_R1_C2_W1_B0": ((100, 200, 255), "SO3", "Sulfite - Reducer", 0.7, 60),
-    "F1_R1_C0_W2_B1": ((200, 150, 255), "NH3", "Ammonia - Base", 0.8, 40),
-    "F1_R0_C1_W2_B1": ((150, 255, 200), "H2O", "Water - Universal", 1.0, 10),
-    "F1_R0_C1_W0_B3": ((100, 100, 100), "HCl", "Hydrochloric Acid - Strong Acid", 0.7, 70),  # New
-    "F1_R1_C0_W3_B0": ((200, 255, 100), "NaOH", "Sodium Hydroxide - Strong Base", 0.7, 70),  # New
-    "F1_R0_C0_W1_B3": ((50, 50, 50), "CO", "Carbon Monoxide - Toxic Gas", 0.5, 90),  # New
-    "F1_R2_C0_W2_B0": ((255, 100, 50), "O2", "Oxygen - Diatomic Gas", 0.9, 40),  # New# Double face locked - Intermediate compounds (original + new)
-"F2_R2_C2_W0_B0": ((255, 0, 255), "SO4", "Sulfate - Balanced Dipole", 0.85, 100),
-"F2_R2_C0_W2_B0": ((255, 200, 100), "B2O3", "Boron Oxide - Self-Repelling", 0.75, 90),
-"F2_R0_C2_W2_B0": ((100, 255, 255), "Ca(OH)2", "Calcium Hydroxide", 0.8, 85),
-"F2_R2_C1_W1_B0": ((255, 100, 200), "HNO3", "Nitric Acid - Strong", 0.7, 120),
-"F2_R1_C2_W1_B0": ((150, 100, 255), "H2SO4", "Sulfuric Acid - Strong", 0.7, 120),
-"F2_R1_C1_W2_B0": ((200, 255, 150), "C2H6", "Ethane - Fuel", 0.75, 70),
-"F2_R1_C1_W0_B2": ((100, 100, 200), "CO2", "Carbon Dioxide - Stable", 0.9, 50),
-"F2_R0_C0_W3_B1": ((220, 220, 255), "SiH4", "Silane - Volatile", 0.5, 110),
-"F2_R1_C1_W1_B1": ((150, 150, 200), "CH3COOH", "Acetic Acid - Weak Acid", 0.6, 80),  # New
-"F2_R0_C2_W0_B2": ((100, 200, 100), "H2CO3", "Carbonic Acid - Weak", 0.5, 90),  # New
-"F2_R3_C1_W0_B0": ((255, 50, 150), "KOH", "Potassium Hydroxide - Base", 0.7, 75),  # New
-"F2_R0_C0_W2_B2": ((50, 50, 100), "N2", "Nitrogen - Diatomic Gas", 0.95, 30),  # New
+Here is the complete implementation guide. I have integrated the Supra-Expanded Database and the Optimized NumPy Physics into the code structure.
 
-# Triple face locked - Complex compounds (original + new)
-"F3_R0_C3_W1_B0": ((100, 255, 200), "SiO4", "Silicate - Rock Former", 0.95, 150),
-"F3_R3_C0_W1_B0": ((255, 80, 80), "Fe2O3", "Rust - Iron Oxide", 0.9, 140),
-"F3_R2_C1_W1_B0": ((255, 150, 150), "Al2O3", "Alumina - Ceramic", 0.95, 160),
-"F3_R1_C2_W1_B0": ((150, 200, 255), "MgSO4", "Epsom Salt", 0.85, 130),
-"F3_R1_C1_W2_B0": ((200, 255, 200), "C6H12O6", "Glucose - Sugar", 0.8, 180),
-"F3_R2_C2_W0_B0": ((255, 100, 255), "CuSO4", "Copper Sulfate", 0.85, 140),
-"F3_R1_C1_W1_B1": ((180, 180, 255), "NaCl", "Salt - Ionic", 0.95, 90),
-"F3_R2_C0_W1_B1": ((255, 100, 100), "Na2[B4O5(OH)4]·8H2O", "Borax - Detergent", 0.8, 110),  # New
-"F3_R1_C0_W2_B1": ((200, 100, 255), "C6H5OH", "Phenol - Antiseptic", 0.7, 120),  # New
-"F3_R0_C1_W3_B0": ((100, 200, 150), "NaHCO3", "Baking Soda - Base", 0.85, 100),  # New
+1. REPLACE THE CONFIGURATION SECTION
 
-# Fully locked - Highly stable complexes (original + new)
-"F4_R2_C2_W0_B0": ((255, 255, 0), "CrO4", "Chromate - Stable Complex", 1.0, 200),
-"F4_R1_C1_W2_B0": ((150, 255, 150), "C12H22O11", "Sucrose - Complex Sugar", 0.9, 220),
-"F4_R1_C1_W1_B1": ((200, 200, 200), "CaCO3", "Limestone - Rock", 0.98, 180),
-"F4_R2_C1_W1_B0": ((255, 200, 150), "Fe3O4", "Magnetite - Magnetic", 0.95, 210),
-"F4_R1_C2_W1_B0": ((180, 220, 255), "ZnSO4", "Zinc Sulfate", 0.9, 190),
-"F4_R0_C0_W4_B0": ((255, 255, 255), "C-Diamond", "Diamond - Crystal", 1.0, 300),
-"F4_R0_C0_W0_B4": ((50, 50, 50), "C-Graphite", "Graphite - Stable", 0.98, 100),
-"F4_R3_C1_W0_B0": ((255, 0, 100), "KClO3", "Potassium Chlorate - Oxidizer", 0.8, 150),  # New
-"F4_R1_C3_W0_B0": ((0, 255, 100), "Na3PO4", "Sodium Phosphate - Cleaner", 0.85, 140),  # New
-"F4_R2_C0_W1_B1": ((255, 150, 50), "AlCl3", "Aluminum Chloride - Lewis Acid", 0.7, 160),  # New
-"F4_R0_C2_W1_B1": ((50, 200, 255), "CaCl2", "Calcium Chloride - Desiccant", 0.9, 130),  # New}Symbolic names for bot thoughtsMOLECULE_SYMBOLS = list(set(data[1] for data in MOLECULE_DATABASE.values()))PHASE 3: Corner desire and repulsion constantsK_CORNER_DESIRE = 0.002
-K_SAME_POLE_REPULSION = 0.008
-K_ORIENTATION_PULL = 0.003
-CORNER_DESIRE_RANGE = EDGE_LEN * 8.0PHASE 4: Reaction system constantsK_REACTION_ENERGY_RELEASE = 0.05
-REACTION_PROBABILITY_BASE = 0.001
-CATALYST_BOOST = 3.0
-SYNTHESIS_ENERGY_COST = 0.1
-REACTION_RANGE = EDGE_LEN * 4.0PHASE 4: Catalytic molecules (these help other reactions)CATALYSTS = ["FeO4", "CuSO4", "Fe3O4", "AlCl3"]  # Added Lewis acid catalystPHASE 4: Synthesis reactions (expanded with new compounds)SYNTHESIS_REACTIONS = {
-    ("H3O+", "PO4"): "H2O",
-    ("H2O", "H2O"): "C2H6",
-    ("CH4", "CH4"): "C2H6",
-    ("H2O", "CO2"): "C6H12O6",
-    ("SO3", "H2O"): "H2SO4",
-    ("NO3", "H2O"): "HNO3",
-    ("FeO4", "FeO4"): "Fe2O3",
-    ("SiO4", "SiO4"): "C-Diamond",
-    ("H3O+", "NaOH"): "H2O",  # New: Acid-base neutralization
-    ("NH3", "HCl"): "NH4Cl",  # New: Ammonium chloride
-    ("Ca(OH)2", "CO2"): "CaCO3",  # New: Limestone formation
-    ("NaOH", "HCl"): "NaCl",  # New: Salt formation
-    ("C2H6", "O2"): "CO2",  # New: Combustion
-    ("CH4", "O2"): "CO2",  # New: Methane burn
-    ("Al2O3", "HCl"): "AlCl3",  # New: Aluminum chloride synthesis
-}PHASE 4: Decomposition reactions (expanded)DECOMPOSITION_REACTIONS = {
-    "H2SO4": ["SO3", "H2O"],
-    "HNO3": ["NO3", "H2O"],
-    "C6H12O6": ["H2O", "CO2"],
-    "Fe2O3": ["FeO4", "FeO4"],
-    "CaCO3": ["Ca(OH)2", "CO2"],  # New: Limestone decomposition
-    "NH4Cl": ["NH3", "HCl"],  # New: Ammonium salt breakdown
-    "NaCl": ["NaOH", "HCl"],  # New: Electrolysis analog
-    "AlCl3": ["Al2O3", "HCl"],  # New: Reverse synthesis
-}PHASE 5: Quantum Resonance constantsERD_FLUCTUATION_STRENGTH = 0.2  # Max random fluctuation in reaction prob
-ERD_COHERENCE_THRESHOLD = 0.7  # Battery synch for quantum effects
-QUANTUM_TUNNEL_PROB = 0.0005  # Chance for "tunnel" reactions over distance
-QUANTUM_ENTANGLE_RANGE = EDGE_LEN * 12.0  # Range for entangled reactions
-QUANTUM_SPARKLE_COLOR = (0, 100, 255)  # Blue for quantum visualsPHASE 5: Quantum-enhanced reactions (add random ERD effects)QUANTUM_REACTIONS = {
-    ("H2O", "NaCl"): "NaOH",  # Base formation (entangled)
-    ("NH3", "HNO3"): "NH4NO3",  # Ammonium nitrate (explosive potential)
-    ("C2H6", "O2"): "CO2",  # Combustion with quantum spark
-    ("CH4", "Cl2"): "CH3Cl",  # New: Chloromethane (quantum radical)
-    ("H2O", "CO"): "HCOOH",  # New: Formic acid
-    ("AlCl3", "C6H6"): "C6H5Cl",  # New: Friedel-Crafts analog
-}PHASE 5: Entanglement pairs (molecules that can link quantumly)ENTANGLEMENT_PAIRS = [("H3O+", "OH-"), ("NH3", "H+"), ("CO2", "H2O"), ("Fe3O4", "Fe2O3")]
-"""============================================================================CHANGE 2: In Tetrahedron.init, AFTER PHASE 4 properties, ADD:============================================================================"""
-        # PHASE 5: Quantum properties
-        self.erd_coherence = 0.0  # Current ERD coherence level (0-1)
-        self.entangled_partner = None  # ID of entangled molecule
-        self.quantum_state = "ground"  # "ground", "excited", "tunneled"
-"""============================================================================CHANGE 3: Update check_magnetization() to calculate ERD coherence (ADD at end):============================================================================"""
-                # PHASE 5: Calculate ERD coherence based on locked faces and battery
-                t.erd_coherence = min(1.0, (len(t.locked_faces) / 4.0) * t.battery)            # Check for entanglement eligibility
-            if t.label in [p[0] for p in ENTANGLEMENT_PAIRS] or t.label in [p[1] for p in ENTANGLEMENT_PAIRS]:
-                if t.entangled_partner is None and t.erd_coherence > ERD_COHERENCE_THRESHOLD:
-                    # Look for potential partner (simplified - first match)
-                    for potential in self.tets:
-                        if potential.id != t.id and potential.label in [pair[1 - pair.index(t.label)] if t.label in pair else None for pair in ENTANGLEMENT_PAIRS]:
-                            dist = np.linalg.norm(t.pos - potential.pos)
-                            if dist < QUANTUM_ENTANGLE_RANGE:
-                                t.entangled_partner = potential.id
-                                potential.entangled_partner = t.id
-                                break"""============================================================================CHANGE 4: AFTER attempt_decomposition_reactions(), ADD these PHASE 5 methods:============================================================================"""
-    def apply_erd_fluctuations(self, scaled_dt):
-        """PHASE 5: Apply random ERD fluctuations to reaction probabilities"""
-        for t in self.tets:
-            if t.erd_coherence > 0.5:
-                # Random fluctuation based on ERD strength
-                fluctuation = np.random.uniform(-ERD_FLUCTUATION_STRENGTH, ERD_FLUCTUATION_STRENGTH) * t.erd_coherence
-                t.battery = np.clip(t.battery + fluctuation * scaled_dt, 0.0, 1.0)            # Visual: Set quantum state if fluctuating high
-            if abs(fluctuation) > 0.1:
-                t.quantum_state = "excited"
-            else:
-                t.quantum_state = "ground"
+Delete the old MOLECULE_DATABASE, MOLECULE_SYMBOLS, and the Phase 3/4 constants sections.
+Paste this new "Phase 5 Quantum" block in their place (roughly lines 140-220):
 
-def attempt_quantum_tunneling(self, scaled_dt, add_msg_fn):
-    \"\"\"PHASE 5: Rare quantum tunneling reactions over distance\"\"\"
-    current_time = time.time()
-    tunnel_reactions = []
-
-    for t in self.tets:
-        if t.erd_coherence < ERD_COHERENCE_THRESHOLD:
-            continue
-
-        if current_time - t.last_reaction_time < 10.0:
-            continue
-
-        # Low probability tunnel event
-        if random.random() < QUANTUM_TUNNEL_PROB * scaled_dt * 60 * t.erd_coherence:
-            # Find distant partner for quantum reaction
-            positions = np.array([other.pos for other in self.tets if other.id != t.id])
-            if len(positions) == 0:
-                continue
-
-            tree = cKDTree(positions)
-            far_indices = tree.query_ball_point(t.pos, QUANTUM_ENTANGLE_RANGE * 2)
-            if not far_indices:
-                continue
-
-            partner_idx = random.choice(far_indices)
-            partner = self.tets[partner_idx]
-
-            if partner.label and (t.label, partner.label) in QUANTUM_REACTIONS:
-                product = QUANTUM_REACTIONS[(t.label, partner.label)]
-
-                # Tunnel success!
-                t.label = product
-                t.last_reaction_time = current_time
-                t.synthesis_count += 1
-                t.battery -= SYNTHESIS_ENERGY_COST / 2  # Less cost for quantum
-
-                # Quantum drain on partner
-                partner.battery -= 0.05
-                partner.quantum_state = "tunneled"
-
-                tunnel_reactions.append((t.label, partner.label, product))
-                add_msg_fn(f" Quantum Tunnel: {product} formed!", duration=5)
-
-                # Visual state
-                t.quantum_state = "tunneled"
-
-    return tunnel_reactions
-
-def process_entangled_reactions(self, scaled_dt, add_msg_fn):
-    \"\"\"PHASE 5: Synchronized reactions for entangled pairs\"\"\"
-    processed_pairs = set()
-    entangled_reactions = []
-
-    for t in self.tets:
-        if t.entangled_partner is None:
-            continue
-
-        partner_id = t.entangled_partner
-        if partner_id in processed_pairs:
-            continue
-
-        partner = next((p for p in self.tets if p.id == partner_id), None)
-        if not partner:
-            t.entangled_partner = None
-            continue
-
-        processed_pairs.add(t.id)
-        processed_pairs.add(partner_id)
-
-        # Sync batteries (entanglement effect)
-        avg_battery = (t.battery + partner.battery) / 2
-        t.battery = avg_battery
-        partner.battery = avg_battery
-
-        # Check for entangled reaction
-        pair_key = tuple(sorted([t.label, partner.label]))
-        if pair_key in SYNTHESIS_REACTIONS:
-            prob = REACTION_PROBABILITY_BASE * 2.0 * scaled_dt * 60  # Boosted for entangled
-            if random.random() < prob:
-                product = SYNTHESIS_REACTIONS[pair_key]
-
-                # Form product on both (mirrored)
-                t.label = product
-                partner.label = product
-
-                t.last_reaction_time = time.time()
-                partner.last_reaction_time = time.time()
-
-                t.synthesis_count += 1
-                partner.synthesis_count += 1
-
-                # Energy sync boost
-                energy_gain = K_REACTION_ENERGY_RELEASE * 1.5  # Quantum boost
-                t.battery = min(1.0, t.battery + energy_gain)
-                partner.battery = min(1.0, partner.battery + energy_gain)
-
-                entangled_reactions.append((t.label, partner.label, product))
-                add_msg_fn(f" Entangled Formation: {product}!", duration=5)
-
-    return entangled_reactions
-
-def spawn_quantum_visuals(self, screen, cam, quantum_events, width, height):
-    \"\"\"PHASE 5: Blue waves and sparkles for quantum effects\"\"\"
-    if not hasattr(self, 'quantum_particles'):
-        self.quantum_particles = []
-
-    # Add particles for quantum events
-    for event_type, pos in quantum_events:  # Assume events = [(type, pos), ...]
-        base_color = QUANTUM_SPARKLE_COLOR
-        if event_type == "tunnel":
-            base_color = (0, 200, 255)
-        elif event_type == "entangle":
-            base_color = (100, 0, 255)
-
-        particle = {
-            'pos': np.array(pos),
-            'vel': np.random.uniform(-1, 1, 3) * 40,
-            'color': base_color,
-            'life': 1.5,
-            'size': 12
-        }
-        self.quantum_particles.append(particle)
-
-        # Add wave ring
-        wave = {
-            'pos': np.array(pos),
-            'radius': 5,
-            'speed': 50,
-            'alpha': 180,
-            'life': 1.0
-        }
-        self.quantum_particles.append(wave)  # Use same list for waves
-
-        # Extra sparkles
-        for _ in range(8):
-            p = particle.copy()
-            p['vel'] = np.random.uniform(-1, 1, 3) * 50
-            p['color'] = tuple(np.clip(np.array(base_color) * random.uniform(0.8, 1.2), 0, 255))
-            p['size'] = random.randint(4, 😎
-            self.quantum_particles.append(p)
-
-    # Update and render
-    to_keep = []
-    for p in self.quantum_particles:
-        if 'radius' in p:  # Wave ring
-            p['radius'] += p['speed'] * 0.016
-            p['alpha'] = int(p['alpha'] * 0.95)
-            p['life'] -= 0.02
-
-            if p['life'] > 0:
-                screen_pos = cam.project(p['pos'])
-                if screen_pos[0] > -10000:
-                    wave_surf = pygame.Surface((width, height), pygame.SRCALPHA)
-                    pygame.draw.circle(wave_surf, (*p['color'], p['alpha']//2), screen_pos, p['radius'], 2)
-                    screen.blit(wave_surf, (0,0))
-                to_keep.append(p)
-        else:  # Particle
-            p['pos'] += p['vel'] * 0.016
-            p['vel'] *= 0.92
-            p['life'] -= 0.025
-
-            if p['life'] > 0:
-                screen_pos = cam.project(p['pos'])
-                if screen_pos[0] > -10000:
-                    alpha = int(p['life'] * 255)
-                    size = max(1, int(p['size'] * p['life']))
-                    color_a = (*p['color'], alpha)
-                    part_surf = pygame.Surface((size*2, size*2), pygame.SRCALPHA)
-                    pygame.draw.circle(part_surf, color_a, (size, size), size)
-                    screen.blit(part_surf, (screen_pos[0]-size, screen_pos[1]-size))
-                to_keep.append(p)
-
-    self.quantum_particles = to_keep"""============================================================================CHANGE 5: In World.update(), AFTER decomposition_reactions, ADD:============================================================================"""
-        # PHASE 5: Quantum enhancements
-        self.apply_erd_fluctuations(scaled_dt)
-        tunnel_reactions = self.attempt_quantum_tunneling(scaled_dt, add_msg_fn)
-        entangle_reactions = self.process_entangled_reactions(scaled_dt, add_msg_fn)    # Collect quantum events for visuals (type, pos)
-    quantum_events = []
-    for _, _, product in tunnel_reactions:
-        for t in self.tets:
-            if t.label == product and t.quantum_state == "tunneled":
-                quantum_events.append(("tunnel", t.pos))
-    for _, _, product in entangle_reactions:
-        for t in self.tets:
-            if t.label == product:
-                quantum_events.append(("entangle", t.pos))
-
-    self._last_quantum_events = quantum_events  # Store for rendering"""============================================================================CHANGE 6: In rendering, AFTER reaction particles, ADD:============================================================================"""
-        # PHASE 5: Draw quantum visuals
-        if hasattr(world, 'quantum_particles'):
-            recent_quantum = getattr(world, '_last_quantum_events', [])
-            world.spawn_quantum_visuals(screen, cam, recent_quantum, WIDTH, HEIGHT)
-            world._last_quantum_events = []  # Clear after
-"""============================================================================CHANGE 7: Optimize apply_corner_desires and apply_same_pole_repulsion with batch NumPy:============================================================================"""
-    def apply_corner_desires(self, scaled_dt):
-        """PHASE 3: Optimized - Apply corner-to-corner attraction between opposite colors"""
-        if len(self.tets) < 2:
-            return    # Collect all corners with NumPy arrays
-    tet_list = list(self.tets)  # To index
-    all_corners = []
-    corner_colors = []
-    corner_tets = []
-    corner_indices = []
-
-    for idx, t in enumerate(tet_list):
-        verts = t.verts()
-        for c_idx in range(4):
-            all_corners.append(verts[c_idx])
-            corner_tets.append(idx)
-            corner_indices.append(c_idx)
-
-            corner_color = None
-            for f_idx in range(4):
-                if c_idx in Tetrahedron.FACE_TO_CORNERS[f_idx]:
-                    face_color = t.colors[f_idx] if t.colors else Tetrahedron.FACE_COLORS[f_idx]
-                    if face_color == (255, 0, 0): corner_color = 'R'; break
-                    elif face_color == (0, 255, 255): corner_color = 'C'; break
-            corner_colors.append(corner_color or 'N')
-
-    all_corners = np.array(all_corners)
-
-    if len(all_corners) < 2:
-        return
-
-    tree = cKDTree(all_corners)
-
-    # Process only R and C corners
-    for i in range(len(all_corners)):
-        color1 = corner_colors[i]
-        if color1 not in ['R', 'C']:
-            continue
-
-        nearby_idx = tree.query_ball_point(all_corners[i], CORNER_DESIRE_RANGE)
-
-        forces = np.zeros(3)
-        for j in nearby_idx:
-            if i == j: continue
-            color2 = corner_colors[j]
-            if (color1 == 'R' and color2 == 'C') or (color1 == 'C' and color2 == 'R'):
-                delta = all_corners[j] - all_corners[i]
-                dist = np.linalg.norm(delta)
-                if dist > 1e-6:
-                    force_strength = K_CORNER_DESIRE * (1.0 - dist / CORNER_DESIRE_RANGE)
-                    forces += (delta / dist) * force_strength
-
-        if np.any(forces):
-            tet_idx = corner_tets[i]
-            c_idx = corner_indices[i]
-            t1 = tet_list[tet_idx]
-            t1.local[c_idx] += forces * scaled_dt * 0.5
-            t1.pos += forces * scaled_dt * 0.5
-
-def apply_same_pole_repulsion(self, scaled_dt):
-    \"\"\"PHASE 3: Optimized - Positive poles repel other positive poles\"\"\"
-    positive_poles = [t for t in self.tets if t.is_magnetized and t.magnetism > 0]
-
-    if len(positive_poles) < 2:
-        return
-
-    # NumPy batch
-    pos_array = np.array([t.pos for t in positive_poles])
-    strengths = np.array([t.magnetic_strength for t in positive_poles])
-
-    for i in range(len(pos_array)):
-        deltas = pos_array - pos_array[i]
-        dists = np.linalg.norm(deltas, axis=1)
-        mask = (dists > 1e-6)
-
-        if np.any(mask):
-            unit_deltas = deltas[mask] / dists[mask][:, np.newaxis]
-            repulsions = K_SAME_POLE_REPULSION / (dists[mask]**2 + 1.0)
-            repulsions *= strengths[mask] * strengths[i]
-
-            total_force = np.sum(unit_deltas * repulsions[:, np.newaxis], axis=0)
-            positive_poles[i].pos -= total_force * scaled_dt"""============================================================================CHANGE 8: In bot thoughts, ADD quantum terms:============================================================================"""
-            # 3. Thoughts (Every 10 mins)
-            if now - last_bot_thought > 600:
-                if world.tets:
-                    # Gather labels and molecules
-                    labels = [t.label for t in self.tets if t.label]
-                    molecules = [t.label for t in self.tets if t.aura_color and t.label in MOLECULE_SYMBOLS]                # PHASE 4: Track synthesis champions
-                synthesized = [t for t in world.tets if t.synthesis_count > 0]
-                if synthesized:
-                    champion = max(synthesized, key=lambda t: t.synthesis_count)
-                    if random.random() < 0.3:
-                        thought = f"{champion.label} ∫ synthesized {champion.synthesis_count}× ∞"
-                        net_messages.append([f"[Thought]: {thought}", time.time() + 15])
-                        print(f"[BOT THOUGHT] {thought}")
-                        last_bot_thought = now
-                        continue
-
-                # PHASE 5: 20% chance for quantum ontology thoughts
-                quantum_terms = ["ERD∇", "Ψ-coherence", "OBA⊗", "QuantumFold", "EntropicBridge"]
-                if random.random() < 0.2:
-                    thought = f"{random.choice(quantum_terms)} {random.choice(MATH_SYMBOLS)} {random.choice(molecules or labels)}"
-                else:
-                    if molecules and random.random() < 0.6:
-                        thought = f"{random.choice(molecules)} {random.choice(MATH_SYMBOLS)} {random.choice(labels)}"
-                    else:
-                        thought = f"{random.choice(labels)} {random.choice(MATH_SYMBOLS)} {random.choice(labels)} {random.choice(MATH_SYMBOLS)} {random.choice(labels)}"
-                net_messages.append([f"[Thought]: {thought}", time.time() + 15])
-                print(f"[BOT THOUGHT] {thought}")
-            last_bot_thought = now"""============================================================================CHANGE 9: Add audio feedback (at top, after imports, ADD):============================================================================"""
-from pygame import mixer
-mixer.init()Load sounds (assume files exist or use placeholders)REACTION_SOUND = mixer.Sound('reaction.wav') if mixer.get_init() else None  # Explosion-like
-QUANTUM_SOUND = mixer.Sound('quantum.wav') if mixer.get_init() else None  # Sci-fi hum
-"""============================================================================CHANGE 10: Play sounds in reaction methods (ADD in attempt_synthesis_reactions, etc.):============================================================================"""
-                    # Play sound
-                    if REACTION_SOUND:
-                        REACTION_SOUND.play()
-"""In quantum methods:"""
-                    # Play quantum sound
-                    if QUANTUM_SOUND:
-                        QUANTUM_SOUND.play()
-"""print("""
- ENHANCED: Phase 5 Quantum Resonance Added!PHASE 5 KEY FEATURES:• ERD Fluctuations: Random battery changes based on coherence
-• Quantum Tunneling: Rare long-distance reactions
-• Entanglement: Paired molecules sync batteries and react together
-• Expanded Database: +15 real compounds (HCl, NaOH, O2, etc.)
-• Quantum Visuals: Blue waves/sparkles for events
-• Audio Feedback: Sounds for reactions/quantum
-• Optimized Physics: Batch NumPy for desires/repulsion
-• Quantum Bot Thoughts: Includes ERD, Ψ termsBEHAVIORAL ENHANCEMENTS:• High-coherence molecules fluctuate quantumly
-• Tunneling creates surprise distant syntheses
-• Entangled pairs mirror each other (spooky action)
-• More realistic chemistry with new reactions
-• Immersive audio-visual feedbackYour simulator now has QUANTUM CHEMISTRY!
-""")
-
-
-
-
-
-
-
-***************************** more colourful! *****************************
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+code
+Python
+download
+content_copy
+expand_less
 # ============================================================================
-# CHANGE 1: SUPRA-EXPANDED DATABASE WITH ERD-TUNED COMPOUNDS
+# PHASE 5: QUANTUM RESONANCE & MOS-HSRCF v6.0 INTEGRATION
 # ============================================================================
-"""
-# --- ERD-TUNED MOLECULE DATABASE (MOS-HSRCF v6.0 INTEGRATED) ---
+
+# --- ERD-TUNED MOLECULE DATABASE ---
 # Format: {pattern_key: (aura_color, symbolic_name, description, stability, energy, Ψ_affinity)}
 # Ψ_affinity = 0.0-1.0 scale of how strongly this compound responds to noospheric index
 
@@ -1791,7 +1313,7 @@ MOLECULE_DATABASE = {
     "F1_R0_C1_W0_B3": ((100, 100, 100), "HCl", "Hydrochloric Acid - Ψ-Conductor", 0.7, 70, 0.7),
     "F1_R1_C0_W3_B0": ((200, 255, 100), "NaOH", "Sodium Hydroxide - Ψ-Base", 0.7, 70, 0.7),
     "F1_R0_C0_W1_B3": ((50, 50, 50), "CO", "Carbon Monoxide - ERD Toxin", 0.5, 90, 0.6),
-    "F1_R2_C0_W2_B0": ((255, 100, 50), "O2", "Oxygen - ERD Breath", 0.9, 40, 0.😎,
+    "F1_R2_C0_W2_B0": ((255, 100, 50), "O2", "Oxygen - ERD Breath", 0.9, 40, 0.8),
     "F1_R0_C0_W2_B2": ((100, 100, 255), "N2", "Nitrogen - ERD Inertia", 0.95, 20, 0.1),
 
     # DOUBLE FACE LOCKED - Structural Compounds
@@ -1806,7 +1328,7 @@ MOLECULE_DATABASE = {
     "F2_R1_C1_W1_B1": ((150, 150, 200), "CH3COOH", "Acetic Acid - Weak ERD", 0.6, 80, 0.65),
     "F2_R0_C2_W0_B2": ((100, 200, 100), "H2CO3", "Carbonic Acid - Weak", 0.5, 90, 0.5),
     "F2_R3_C1_W0_B0": ((255, 50, 150), "KOH", "Potassium Hydroxide", 0.7, 75, 0.55),
-    "F2_R2_C0_W0_B2": ((200, 100, 50), "O3", "Ozone - ERD Active Oxygen", 0.7, 110, 0.😎,
+    "F2_R2_C0_W0_B2": ((200, 100, 50), "O3", "Ozone - ERD Active Oxygen", 0.7, 110, 0.8),
     "F2_R0_C0_W1_B3": ((75, 75, 150), "C2H4", "Ethylene - Plant Hormone", 0.6, 95, 0.7),
 
     # TRIPLE FACE LOCKED - Complex ERD Compounds
@@ -1834,103 +1356,208 @@ MOLECULE_DATABASE = {
     "F4_R1_C3_W0_B0": ((0, 255, 100), "Na3PO4", "Sodium Phosphate", 0.85, 140, 0.55),
     "F4_R2_C0_W1_B1": ((255, 150, 50), "AlCl3", "Aluminum Chloride", 0.7, 160, 0.7),
     "F4_R0_C2_W1_B1": ((50, 200, 255), "CaCl2", "Calcium Chloride", 0.9, 130, 0.4),
-    "F4_R1_C1_W0_B2": ((150, 150, 255), "C6H6", "Benzene - ERD Aromatic", 0.8, 170, 0.😎,
-}
+    "F4_R1_C1_W0_B2": ((150, 150, 255), "C6H6", "Benzene - ERD Aromatic", 0.8, 170, 0.8),
 
-# ERD-ENHANCED QUANTUM COMPOUNDS (SPECIAL FOR PHASE 5)
-ERD_QUANTUM_COMPOUNDS = {
+    # ERD-ENHANCED QUANTUM COMPOUNDS (SPECIAL FOR PHASE 5)
     "F4_R3_C3_W0_B0": ((200, 100, 255), "Ψ-Crystal", "Noospheric Resonator", 0.9, 250, 0.99),
     "F4_R2_C2_W1_B0": ((100, 255, 255), "OBA-Torsion", "Octonionic Bootstrap Field", 0.8, 280, 0.97),
     "F4_R1_C1_W3_B0": ((255, 255, 150), "ERD-Gradient", "Echo-Resonant Density", 0.85, 230, 0.96),
     "F3_R3_C3_W0_B0": ((150, 200, 255), "Chrono-Fold", "Temporal Resonance", 0.7, 200, 0.95),
 }
-MOLECULE_DATABASE.update(ERD_QUANTUM_COMPOUNDS)
 
-# SYMBOLIC NAMES FOR BOT THOUGHTS
+# SYMBOLIC NAMES
 MOLECULE_SYMBOLS = list(set(data[1] for data in MOLECULE_DATABASE.values()))
 
-# MOS-HSRCF v6.0 CONSTANTS INTEGRATION
+# MOS-HSRCF v6.0 CONSTANTS
 Ψ_NOOSPHERIC_INDEX = 0.18  # Threshold from MOS-HSRCF
-ERD_FLUCTUATION_BASE = 0.15  # Base ERD fluctuation from MOS-HSRCF Approach 1
+ERD_FLUCTUATION_BASE = 0.15  # Base ERD fluctuation
 
-# ENHANCED PHASE 3 & 4 CONSTANTS (Ψ-MODULATED)
-K_CORNER_DESIRE = 0.002 * (1 + Ψ_NOOSPHERIC_INDEX)  # Ψ-boosted attraction
+# ENHANCED CONSTANTS (Ψ-MODULATED)
+K_CORNER_DESIRE = 0.002 * (1 + Ψ_NOOSPHERIC_INDEX)
 K_SAME_POLE_REPULSION = 0.008 * (1 + Ψ_NOOSPHERIC_INDEX)
 K_ORIENTATION_PULL = 0.003 * (1 + Ψ_NOOSPHERIC_INDEX)
 CORNER_DESIRE_RANGE = EDGE_LEN * 8.0 * (1 + Ψ_NOOSPHERIC_INDEX)
 
 K_REACTION_ENERGY_RELEASE = 0.05 * (1 + Ψ_NOOSPHERIC_INDEX)
-REACTION_PROBABILITY_BASE = 0.001 * (1 + Ψ_NOOSPHERIC_INDEX * 2)  # Ψ doubles reaction rate
+REACTION_PROBABILITY_BASE = 0.001 * (1 + Ψ_NOOSPHERIC_INDEX * 2)
 CATALYST_BOOST = 3.0 * (1 + Ψ_NOOSPHERIC_INDEX)
 SYNTHESIS_ENERGY_COST = 0.1
 REACTION_RANGE = EDGE_LEN * 4.0
 
-# ENHANCED CATALYSTS WITH ERD PROPERTIES
 CATALYSTS = ["FeO4", "CuSO4", "Fe3O4", "AlCl3", "Ψ-Crystal", "OBA-Torsion"]
 
-# Ψ-ENHANCED SYNTHESIS REACTIONS
+# REACTIONS
 SYNTHESIS_REACTIONS = {
-    ("H3O+", "PO4"): "H2O",
-    ("H2O", "H2O"): "C2H6",
-    ("CH4", "CH4"): "C2H6",
-    ("H2O", "CO2"): "C6H12O6",
-    ("SO3", "H2O"): "H2SO4",
-    ("NO3", "H2O"): "HNO3",
-    ("FeO4", "FeO4"): "Fe2O3",
-    ("SiO4", "SiO4"): "C-Diamond",
-    ("H3O+", "NaOH"): "H2O",
-    ("NH3", "HCl"): "NH4Cl",
-    ("Ca(OH)2", "CO2"): "CaCO3",
-    ("NaOH", "HCl"): "NaCl",
-    ("C2H6", "O2"): "CO2",
-    ("CH4", "O2"): "CO2",
-    ("Al2O3", "HCl"): "AlCl3",
-    # ERD-ENHANCED REACTIONS (SPECIAL)
-    ("Ψ-Crystal", "H2O"): "ERD-Gradient",
-    ("OBA-Torsion", "SiO4"): "Chrono-Fold",
+    ("H3O+", "PO4"): "H2O", ("H2O", "H2O"): "C2H6", ("CH4", "CH4"): "C2H6",
+    ("H2O", "CO2"): "C6H12O6", ("SO3", "H2O"): "H2SO4", ("NO3", "H2O"): "HNO3",
+    ("FeO4", "FeO4"): "Fe2O3", ("SiO4", "SiO4"): "C-Diamond", ("H3O+", "NaOH"): "H2O",
+    ("NH3", "HCl"): "NH4Cl", ("Ca(OH)2", "CO2"): "CaCO3", ("NaOH", "HCl"): "NaCl",
+    ("C2H6", "O2"): "CO2", ("CH4", "O2"): "CO2", ("Al2O3", "HCl"): "AlCl3",
+    # ERD REACTIONS
+    ("Ψ-Crystal", "H2O"): "ERD-Gradient", ("OBA-Torsion", "SiO4"): "Chrono-Fold",
     ("ERD-Gradient", "C-Diamond"): "Ψ-Crystal",
 }
 
-# DECOMPOSITION WITH ERD EFFECTS
 DECOMPOSITION_REACTIONS = {
-    "H2SO4": ["SO3", "H2O"],
-    "HNO3": ["NO3", "H2O"],
-    "C6H12O6": ["H2O", "CO2"],
-    "Fe2O3": ["FeO4", "FeO4"],
-    "CaCO3": ["Ca(OH)2", "CO2"],
-    "NH4Cl": ["NH3", "HCl"],
-    "NaCl": ["NaOH", "HCl"],
-    "AlCl3": ["Al2O3", "HCl"],
+    "H2SO4": ["SO3", "H2O"], "HNO3": ["NO3", "H2O"], "C6H12O6": ["H2O", "CO2"],
+    "Fe2O3": ["FeO4", "FeO4"], "CaCO3": ["Ca(OH)2", "CO2"], "NH4Cl": ["NH3", "HCl"],
+    "NaCl": ["NaOH", "HCl"], "AlCl3": ["Al2O3", "HCl"],
     # ERD DECOMPOSITION
-    "Ψ-Crystal": ["H2O", "SiO4"],
-    "OBA-Torsion": ["Fe3O4", "SiO4"],
+    "Ψ-Crystal": ["H2O", "SiO4"], "OBA-Torsion": ["Fe3O4", "SiO4"],
 }
 
-# PHASE 5: QUANTUM RESONANCE WITH MOS-HSRCF PARAMETERS
-ERD_FLUCTUATION_STRENGTH = ERD_FLUCTUATION_BASE  # From MOS-HSRCF Approach 1
-ERD_COHERENCE_THRESHOLD = Ψ_NOOSPHERIC_INDEX  # Same threshold!
-QUANTUM_TUNNEL_PROB = 0.0005 * (1 + Ψ_NOOSPHERIC_INDEX * 3)  # Ψ triples tunneling
+# PHASE 5 QUANTUM CONSTANTS
+ERD_FLUCTUATION_STRENGTH = ERD_FLUCTUATION_BASE
+ERD_COHERENCE_THRESHOLD = Ψ_NOOSPHERIC_INDEX
+QUANTUM_TUNNEL_PROB = 0.0005 * (1 + Ψ_NOOSPHERIC_INDEX * 3)
 QUANTUM_ENTANGLE_RANGE = EDGE_LEN * 12.0 * (1 + Ψ_NOOSPHERIC_INDEX)
-QUANTUM_SPARKLE_COLOR = (0, 100, 255)  # Blue for quantum visuals
+QUANTUM_SPARKLE_COLOR = (0, 100, 255)
 
-# QUANTUM-ENHANCED REACTIONS (ERD-FACILITATED)
 QUANTUM_REACTIONS = {
-    ("H2O", "NaCl"): "NaOH",
-    ("NH3", "HNO3"): "NH4NO3",
-    ("C2H6", "O2"): "CO2",
-    ("CH4", "Cl2"): "CH3Cl",
-    ("H2O", "CO"): "HCOOH",
-    ("AlCl3", "C6H6"): "C6H5Cl",
-    # ERD QUANTUM REACTIONS
-    ("Ψ-Crystal", "Fe3O4"): "ERD-Gradient",
-    ("ERD-Gradient", "OBA-Torsion"): "Ψ-Crystal",
+    ("H2O", "NaCl"): "NaOH", ("NH3", "HNO3"): "NH4NO3", ("C2H6", "O2"): "CO2",
+    ("CH4", "Cl2"): "CH3Cl", ("H2O", "CO"): "HCOOH", ("AlCl3", "C6H6"): "C6H5Cl",
+    ("Ψ-Crystal", "Fe3O4"): "ERD-Gradient", ("ERD-Gradient", "OBA-Torsion"): "Ψ-Crystal",
 }
 
-# ENTANGLEMENT PAIRS WITH ERD RESONANCE
 ENTANGLEMENT_PAIRS = [
     ("H3O+", "OH-"), ("NH3", "H+"), ("CO2", "H2O"), ("Fe3O4", "Fe2O3"),
-    # ERD ENTANGLEMENT
-    ("Ψ-Crystal", "ERD-Gradient"),
-    ("OBA-Torsion", "Chrono-Fold"),
+    ("Ψ-Crystal", "ERD-Gradient"), ("OBA-Torsion", "Chrono-Fold"),
 ]
-"""
+2. UPDATE TETRAHEDRON CLASS
+
+In Tetrahedron.__init__ (around line 520), add the Phase 5 properties at the end of the method:
+
+code
+Python
+download
+content_copy
+expand_less
+# PHASE 5: Quantum properties
+        self.erd_coherence = 0.0  # Current ERD coherence level (0-1)
+        self.entangled_partner = None  # ID of entangled molecule
+        self.quantum_state = "ground"  # "ground", "excited", "tunneled"
+3. UPDATE MAGNETIZATION & ERD
+
+In World.check_magnetization (around line 630), find where it iterates through tets.
+At the very end of the loop (inside for t in self.tets:), add this logic to calculate ERD and check for entanglement:
+
+code
+Python
+download
+content_copy
+expand_less
+# PHASE 5: Calculate ERD coherence based on locked faces and battery
+            t.erd_coherence = min(1.0, (len(t.locked_faces) / 4.0) * t.battery)
+
+            # Check for entanglement eligibility
+            if t.label in [p[0] for p in ENTANGLEMENT_PAIRS] or t.label in [p[1] for p in ENTANGLEMENT_PAIRS]:
+                if t.entangled_partner is None and t.erd_coherence > ERD_COHERENCE_THRESHOLD:
+                    # Look for potential partner (simplified - first match)
+                    for potential in self.tets:
+                        if potential.id != t.id and potential.label in [pair[1 - pair.index(t.label)] if t.label in pair else None for pair in ENTANGLEMENT_PAIRS]:
+                            dist = np.linalg.norm(t.pos - potential.pos)
+                            if dist < QUANTUM_ENTANGLE_RANGE:
+                                t.entangled_partner = potential.id
+                                potential.entangled_partner = t.id
+                                break
+4. UPDATE PHYSICS & REACTIONS (WORLD CLASS)
+
+Delete the old apply_corner_desires and apply_same_pole_repulsion.
+Paste these Optimized + New Phase 5 methods into the World class (e.g., after attempt_decomposition_reactions):
+
+code
+Python
+download
+content_copy
+expand_less
+def apply_corner_desires(self, scaled_dt):
+        """PHASE 3: Optimized - Apply corner-to-corner attraction between opposite colors"""
+        if len(self.tets) < 2: return
+
+        # NumPy batch processing
+        tet_list = list(self.tets)
+        all_corners, corner_colors, corner_tets, corner_indices = [], [], [], []
+
+        for idx, t in enumerate(tet_list):
+            verts = t.verts()
+            for c_idx in range(4):
+                all_corners.append(verts[c_idx])
+                corner_tets.append(idx)
+                corner_indices.append(c_idx)
+                corner_color = None
+                for f_idx in range(4):
+                    if c_idx in Tetrahedron.FACE_TO_CORNERS[f_idx]:
+                        face_color = t.colors[f_idx] if t.colors else Tetrahedron.FACE_COLORS[f_idx]
+                        if face_color == (255, 0, 0): corner_color = 'R'; break
+                        elif face_color == (0, 255, 255): corner_color = 'C'; break
+                corner_colors.append(corner_color or 'N')
+
+        all_corners = np.array(all_corners)
+        tree = cKDTree(all_corners)
+
+        for i in range(len(all_corners)):
+            if corner_colors[i] not in ['R', 'C']: continue
+            nearby_idx = tree.query_ball_point(all_corners[i], CORNER_DESIRE_RANGE)
+
+            forces = np.zeros(3)
+            for j in nearby_idx:
+                if i == j: continue
+                if (corner_colors[i] == 'R' and corner_colors[j] == 'C') or (corner_colors[i] == 'C' and corner_colors[j] == 'R'):
+                    delta = all_corners[j] - all_corners[i]
+                    dist = np.linalg.norm(delta)
+                    if dist > 1e-6:
+                        forces += (delta / dist) * (K_CORNER_DESIRE * (1.0 - dist / CORNER_DESIRE_RANGE))
+
+            if np.any(forces):
+                t1 = tet_list[corner_tets[i]]
+                t1.local[corner_indices[i]] += forces * scaled_dt * 0.5
+                t1.pos += forces * scaled_dt * 0.5
+
+    def apply_same_pole_repulsion(self, scaled_dt):
+        """PHASE 3: Optimized - Positive poles repel other positive poles"""
+        positive_poles = [t for t in self.tets if t.is_magnetized and t.magnetism > 0]
+        if len(positive_poles) < 2: return
+
+        pos_array = np.array([t.pos for t in positive_poles])
+        strengths = np.array([t.magnetic_strength for t in positive_poles])
+
+        for i in range(len(pos_array)):
+            deltas = pos_array - pos_array[i]
+            dists = np.linalg.norm(deltas, axis=1)
+            mask = (dists > 1e-6)
+            if np.any(mask):
+                unit_deltas = deltas[mask] / dists[mask][:, np.newaxis]
+                repulsions = (K_SAME_POLE_REPULSION / (dists[mask]**2 + 1.0)) * strengths[mask] * strengths[i]
+                total_force = np.sum(unit_deltas * repulsions[:, np.newaxis], axis=0)
+                positive_poles[i].pos -= total_force * scaled_dt
+
+    def apply_erd_fluctuations(self, scaled_dt):
+        """PHASE 5: Apply random ERD fluctuations"""
+        for t in self.tets:
+            if t.erd_coherence > 0.5:
+                fluctuation = np.random.uniform(-ERD_FLUCTUATION_STRENGTH, ERD_FLUCTUATION_STRENGTH) * t.erd_coherence
+                t.battery = np.clip(t.battery + fluctuation * scaled_dt, 0.0, 1.0)
+                t.quantum_state = "excited" if abs(fluctuation) > 0.1 else "ground"
+
+    def attempt_quantum_tunneling(self, scaled_dt, add_msg_fn):
+        """PHASE 5: Rare quantum tunneling reactions"""
+        current_time = time.time()
+        tunnel_reactions = []
+        for t in self.tets:
+            if t.erd_coherence < ERD_COHERENCE_THRESHOLD or current_time - t.last_reaction_time < 10.0: continue
+
+            if random.random() < QUANTUM_TUNNEL_PROB * scaled_dt * 60 * t.erd_coherence:
+                positions = np.array([o.pos for o in self.tets if o.id != t.id])
+                if len(positions) == 0: continue
+                tree = cKDTree(positions)
+                far_indices = tree.query_ball_point(t.pos, QUANTUM_ENTANGLE_RANGE * 2)
+                if not far_indices: continue
+
+                partner = self.tets[random.choice(far_indices)]
+                if partner.label and (t.label, partner.label) in QUANTUM_REACTIONS:
+                    product = QUANTUM_REACTIONS[(t.label, partner.label)]
+                    t.label = product
+                    t.last_reaction_time = current_time; t.synthesis_count += 1
+                    t.battery -= SYNTHESIS_ENERGY_COST / 2
+                    partner.battery -= 0.05; partner.quantum_state = "tunneled"; t.quantum_state = "tunneled"
+                    tunnel_reactions.append((t.label, partner.label, product))
