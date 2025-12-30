@@ -144,15 +144,63 @@ Written by Gemini 2.5,
 Black hole revised by Gemini 3.0,
 GRadio implemented by Gemini 3.0,
 Chemistry added by Deepseek (~v3.3?)
+Accretion disk and chemical colors beautified by Opus 4.5
 Entire project Vibe coded by ceneezer 20/12/20-Current
 Apache 2.0
+"""
+
+Advanced="""
+The Cosmic Ladder (Tech Tree)
+Progress is not measured by time, but by complexity. Specifically, every time a Synthesis Reaction occurs (two labeled molecules combining to form a new one), the universe gains +1 Entropy/Progress Point.
+
+Era	Threshold	Description	How to Reach
+1. Void	0 pts	"Nothing yet exists"	You start here. Just empty space.
+2. Fluctuation	5 pts	"Quantum foam emerges"	Spawn a few TETs. Let them bond/pair up.
+3. Condensation	15 pts	"Matter begins to form"	TETs begin forming basic geometric shapes (locking faces).
+4. Chemistry	35 pts	"Molecules react"	The Great Filter. You need distinct labeled molecules (e.g., H2O, CH4) reacting.
+5. Life	70 pts	"Self-replication emerges"	Sustained reactions. Catalysts (like FeO4) help boost reaction speeds here.
+6. Mind	120 pts	"Awareness flickers"	High density of complex molecules. The Bot's "thoughts" become more frequent/complex.
+7. Transcendence	200 pts	"Beyond matter"	The ultimate goal. A self-sustaining, high-energy reaction loop.
+🔓 How to Unlock Eras
+You cannot "buy" upgrades. You must engineer the conditions for them to happen:
+
+Spawn & Label:
+
+If you are the Host/Player: Right-click TETs and rename them to valid chemical formulas found in the code (e.g., H2O, CO2, CH4, FeO4).
+
+The Auto-Bot: In headless mode (or if you wait), the Bot will spawn pairs and name them things like Light/Darkness. While poetic, these don't react chemically. However, the Bot occasionally discovers "Real" chemistry through the Quantum Tunneling events we added.
+
+Synthesis (The Key):
+
+You need to bring compatible molecules close together.
+
+Example: Bring a TET labeled H2O near one labeled CO2. If they react, they form C6H12O6 (Sugar/Life).
+
+Reward: +1 Progress Point per reaction.
+
+⚠️ The Danger: Irreversible Collapse
+The Tech Tree includes a mechanic called collapse().
+
+The Trigger: If you have reached the Chemistry Era (Stage 4) or higher, but the total population of TETs in your world drops below 5.
+
+The Consequence: The universe determines it no longer has the complexity to sustain that Era. You drop down a stage, and the history of that Era is added to a collapsed_from list.
+
+Visual: A message will appear: "Collapsed from [Era Name]! Lost forever."
+
+🧪 Pro-Tip: The Catalyst Strategy
+To reach Transcendence (200 pts), you need a lot of reactions.
+
+Create a Catalyst molecule (rename a TET to FeO4, CuSO4, or Ψ-Crystal).
+
+Place it in the center of a cloud of reactant TETs (like H2O and NaCl).
+
+The Catalyst boosts the reaction probability of nearby particles by 300%, speeding up your evolution through the Eras.
 """
 
 import asyncio.selector_events
 import warnings
 
 # --- MONKEY PATCH TO SUPPRESS HF SHUTDOWN ERROR ---
-# This prevents the "ValueError: Invalid file descriptor: -1" trace in logs
 _orig_close_self_pipe = asyncio.selector_events.BaseSelectorEventLoop._close_self_pipe
 def _silent_close_self_pipe(self):
     try:
@@ -178,16 +226,7 @@ import atexit
 import signal
 import queue
 import select
-
 from pygame import mixer
-try:
-    mixer.init()
-    # Dummy sound generation for robustness if files missing
-    REACTION_SOUND = generate_ping_sound()
-    QUANTUM_SOUND = generate_boing_sound()
-except:
-    REACTION_SOUND = None
-    QUANTUM_SOUND = None
 
 # Suppress runtime warnings
 warnings.filterwarnings("ignore", category=RuntimeWarning)
@@ -276,35 +315,31 @@ FIELD_LINEAR_DECAY = 0.0001
 FIELD_QUADRATIC_DECAY = 0.000001
 ENERGY_EQUILIBRIUM_RATE = 0.05
 
-# --- AUTOMATION WORDS (These ones can symbolically represent [almost?] everything humanity knows - and inter-sum cohesively in order) ---
-MYSTIC_WORDS = [
-    "Completion", "Unconditional", "Consciousness", "Empty", "Choice", "Seek", "Grow", "Decay",
-    "Negate", "Mystery", "Cause", "Change", "Life", "Passage",
-    "Perspective", "Act", "Understand", "We", "Within", "Balance", "Cooperate",
-    "Pattern", "Community", "Disrupt", "Matter", "Will", "Explore", "Then", "Temporary",
-    "Question", "Answer", "Separation"
-]
-
-#random:
-MATH_SYMBOLS = ["+", "-", "=", "*", "∫", "∂", "∇", "≈", "≠", "∞", "∅"]
-
-# --- COHESIVE THOUGHT SYMBOLS ---
-# Maps physical simulation states to metaphysical logic symbols
-RELATIONSHIP_MAP = {
-    'correlates': '=',      # Hard Joints (Permanent bond)
-    'desires': '*',         # Sticky Pairs (Magnetic attraction/seeking)
-    'approaches': '+',      # Close proximity but not bonded
-    'negates': '¬',         # Opposite Magnetism/Polarity
-    'integrates': '∫',      # Complex Molecule (Synthesis)
-    'diverges': '∂',        # Moving away or far apart
-    'cycles': '○',          # Self-reference or circular loops
-    'unknown': '?'
+# --- ENHANCED COLORS & MOLECULES ---
+COLORS = {
+    'fire': (255, 89, 34),
+    'water': (34, 144, 255),
+    'air': (230, 230, 250),
+    'earth': (139, 90, 43),
+    'aether': (180, 120, 255),
+    'void': (20, 0, 40),
+    'gold': (255, 215, 0),
+    'silver': (192, 192, 210),
 }
 
-# --- EXPANDED MOLECULE DATABASE (PHASE 4) ---
-# Format: {pattern_key: (aura_color, symbolic_name, description, stability, energy)}
+MOLECULE_COLORS = {
+    'H2': (220, 240, 255), 'O2': (255, 100, 100), 'H2O': (100, 180, 255),
+    'CO2': (180, 180, 180), 'CH4': (200, 255, 200), 'NH3': (200, 150, 255),
+    'NaCl': (255, 255, 220), 'Fe': (180, 140, 100), 'Au': (255, 215, 0),
+    'C': (40, 40, 40), 'SiO2': (240, 230, 255), 'ATP': (0, 255, 180),
+    'DNA': (255, 0, 128), 'FeO4': (255, 100, 150), 'H3O+': (255, 50, 50),
+    'PO4': (50, 255, 255),
+}
+
+QUANTUM_SPARKLE = (200, 180, 255, 150)
+
+# --- EXPANDED MOLECULE DATABASE ---
 MOLECULE_DATABASE = {
-    # Single face locked - Basic compounds
     "F1_R1_C1_W1_B1": ((255, 100, 150), "FeO4", "Iron Oxide - Magnetic Dipole", 0.8, 50),
     "F1_R0_C0_W3_B1": ((200, 200, 255), "CH4", "Methane - Stable Neutral", 0.9, 30),
     "F1_R3_C0_W1_B0": ((255, 50, 50), "H3O+", "Hydronium - Positive Ion", 0.6, 80),
@@ -313,8 +348,6 @@ MOLECULE_DATABASE = {
     "F1_R1_C2_W1_B0": ((100, 200, 255), "SO3", "Sulfite - Reducer", 0.7, 60),
     "F1_R1_C0_W2_B1": ((200, 150, 255), "NH3", "Ammonia - Base", 0.8, 40),
     "F1_R0_C1_W2_B1": ((150, 255, 200), "H2O", "Water - Universal", 1.0, 10),
-
-    # Double face locked - Intermediate compounds
     "F2_R2_C2_W0_B0": ((255, 0, 255), "SO4", "Sulfate - Balanced Dipole", 0.85, 100),
     "F2_R2_C0_W2_B0": ((255, 200, 100), "B2O3", "Boron Oxide - Self-Repelling", 0.75, 90),
     "F2_R0_C2_W2_B0": ((100, 255, 255), "Ca(OH)2", "Calcium Hydroxide", 0.8, 85),
@@ -323,8 +356,6 @@ MOLECULE_DATABASE = {
     "F2_R1_C1_W2_B0": ((200, 255, 150), "C2H6", "Ethane - Fuel", 0.75, 70),
     "F2_R1_C1_W0_B2": ((100, 100, 200), "CO2", "Carbon Dioxide - Stable", 0.9, 50),
     "F2_R0_C0_W3_B1": ((220, 220, 255), "SiH4", "Silane - Volatile", 0.5, 110),
-
-    # Triple face locked - Complex compounds
     "F3_R0_C3_W1_B0": ((100, 255, 200), "SiO4", "Silicate - Rock Former", 0.95, 150),
     "F3_R3_C0_W1_B0": ((255, 80, 80), "Fe2O3", "Rust - Iron Oxide", 0.9, 140),
     "F3_R2_C1_W1_B0": ((255, 150, 150), "Al2O3", "Alumina - Ceramic", 0.95, 160),
@@ -332,8 +363,6 @@ MOLECULE_DATABASE = {
     "F3_R1_C1_W2_B0": ((200, 255, 200), "C6H12O6", "Glucose - Sugar", 0.8, 180),
     "F3_R2_C2_W0_B0": ((255, 100, 255), "CuSO4", "Copper Sulfate", 0.85, 140),
     "F3_R1_C1_W1_B1": ((180, 180, 255), "NaCl", "Salt - Ionic", 0.95, 90),
-
-    # Fully locked - Highly stable complexes
     "F4_R2_C2_W0_B0": ((255, 255, 0), "CrO4", "Chromate - Stable Complex", 1.0, 200),
     "F4_R1_C1_W2_B0": ((150, 255, 150), "C12H22O11", "Sucrose - Complex Sugar", 0.9, 220),
     "F4_R1_C1_W1_B1": ((200, 200, 200), "CaCO3", "Limestone - Rock", 0.98, 180),
@@ -343,83 +372,53 @@ MOLECULE_DATABASE = {
     "F4_R0_C0_W0_B4": ((50, 50, 50), "C-Graphite", "Graphite - Stable", 0.98, 100),
 }
 
-# Symbolic names for bot thoughts
+def get_molecule_color(mol_type, time_offset=0):
+    """Get color with optional iridescent shimmer"""
+    base = MOLECULE_COLORS.get(mol_type, None)
+    if not base:
+        if mol_type in MOLECULE_DATABASE:
+            base = MOLECULE_DATABASE[mol_type][0]
+        else:
+            base = (200, 200, 200)
+
+    if mol_type in ('ATP', 'DNA', 'Au', 'aether', 'FeO4', 'SiO2'):
+        shift = int(20 * np.sin(time_offset * 3))
+        return (min(255, max(0, base[0] + shift)), base[1], min(255, max(0, base[2] - shift)))
+    return base
+
+# --- AUTOMATION WORDS ---
+MYSTIC_WORDS = [
+    "Completion", "Unconditional", "Consciousness", "Empty", "Choice", "Seek", "Grow", "Decay",
+    "Negate", "Mystery", "Cause", "Change", "Life", "Passage",
+    "Perspective", "Act", "Understand", "We", "Within", "Balance", "Cooperate",
+    "Pattern", "Community", "Disrupt", "Matter", "Will", "Explore", "Then", "Temporary",
+    "Question", "Answer", "Separation"
+]
+
+MATH_SYMBOLS = ["+", "-", "=", "*", "∫", "∂", "∇", "≈", "≠", "∞", "∅"]
+
+RELATIONSHIP_MAP = {
+    'correlates': '=', 'desires': '*', 'approaches': '+', 'negates': '¬',
+    'integrates': '∫', 'diverges': '∂', 'cycles': '○', 'unknown': '?'
+}
+
 MOLECULE_SYMBOLS = list(set(data[1] for data in MOLECULE_DATABASE.values()))
 
 def get_thought_symbol(t1, t2, world):
-    """Determines the semantic relationship between two TETs based on physics"""
-    # 1. Check for Complex Integration (Are both parts of complex molecules?)
-    if t1.molecule_type and t2.molecule_type:
-        return RELATIONSHIP_MAP['integrates']
-
-    # 2. Check for Correlation (Are they physically joined?)
-    # We iterate joints to see if these two specific TETs are linked
+    if t1.molecule_type and t2.molecule_type: return RELATIONSHIP_MAP['integrates']
     for j in world.joints:
-        if (j.A.id == t1.id and j.B.id == t2.id) or (j.A.id == t2.id and j.B.id == t1.id):
-            return RELATIONSHIP_MAP['correlates']
-
-    # 3. Check for Desire (Are they magnetically stuck/pulling?)
+        if (j.A.id == t1.id and j.B.id == t2.id) or (j.A.id == t2.id and j.B.id == t1.id): return RELATIONSHIP_MAP['correlates']
     for p in world.sticky_pairs:
-        # sticky_pairs is (t1, v1, t2, v2)
-        if (p[0].id == t1.id and p[2].id == t2.id) or (p[0].id == t2.id and p[2].id == t1.id):
-            return RELATIONSHIP_MAP['desires']
-
-    # 4. Check for Negation (Opposite Polarity)
-    # If both are magnetized and have opposite signs (1 vs -1)
+        if (p[0].id == t1.id and p[2].id == t2.id) or (p[0].id == t2.id and p[2].id == t1.id): return RELATIONSHIP_MAP['desires']
     if t1.is_magnetized and t2.is_magnetized:
-        if t1.magnetism != t2.magnetism:
-            return RELATIONSHIP_MAP['negates']
-
-    # 5. Check Spatial Relationship
+        if t1.magnetism != t2.magnetism: return RELATIONSHIP_MAP['negates']
     dist = np.linalg.norm(t1.pos - t2.pos)
-
-    # If very close but not bonded
-    if dist < EDGE_LEN * 2.5:
-        return RELATIONSHIP_MAP['approaches']
-
-    # If far away
+    if dist < EDGE_LEN * 2.5: return RELATIONSHIP_MAP['approaches']
     return RELATIONSHIP_MAP['diverges']
 
-# PHASE 3: Corner desire and repulsion constants
-K_CORNER_DESIRE = 0.002
-K_SAME_POLE_REPULSION = 0.008
-K_ORIENTATION_PULL = 0.003
-CORNER_DESIRE_RANGE = EDGE_LEN * 8.0
-
-# PHASE 4: Reaction system constants
-K_REACTION_ENERGY_RELEASE = 0.05  # Energy burst when reactions occur
-REACTION_PROBABILITY_BASE = 0.001  # Base chance per frame for reactions
-CATALYST_BOOST = 3.0  # Catalysts multiply reaction chance
-SYNTHESIS_ENERGY_COST = 0.1  # Battery drain when forming complex molecules
-REACTION_RANGE = EDGE_LEN * 4.0  # Distance for molecules to react
-
-# PHASE 4: Catalytic molecules (these help other reactions)
-CATALYSTS = ["FeO4", "CuSO4", "Fe3O4"]  # Iron-based catalysts
-
-# PHASE 4: Synthesis reactions (simple → complex)
-SYNTHESIS_REACTIONS = {
-    # (reactant1, reactant2) : product
-    ("H3O+", "PO4"): "H2O",  # Acid + Base → Water
-    ("H2O", "H2O"): "C2H6",  # Water synthesis → Ethane
-    ("CH4", "CH4"): "C2H6",  # Methane fusion
-    ("H2O", "CO2"): "C6H12O6",  # Photosynthesis analog
-    ("SO3", "H2O"): "H2SO4",  # Sulfuric acid formation
-    ("NO3", "H2O"): "HNO3",  # Nitric acid formation
-    ("FeO4", "FeO4"): "Fe2O3",  # Rust formation
-    ("SiO4", "SiO4"): "C-Diamond",  # Silicon → Diamond (high pressure)
-}
-
-# PHASE 4: Decomposition reactions (complex → simple)
-DECOMPOSITION_REACTIONS = {
-    "H2SO4": ["SO3", "H2O"],  # Acid breaks down
-    "HNO3": ["NO3", "H2O"],
-    "C6H12O6": ["H2O", "CO2"],  # Sugar combustion
-    "Fe2O3": ["FeO4", "FeO4"],  # Rust decomposition
-}
-
 # MOS-HSRCF v6.0 CONSTANTS
-Ψ_NOOSPHERIC_INDEX = 0.18  # Threshold from MOS-HSRCF
-ERD_FLUCTUATION_BASE = 0.15  # Base ERD fluctuation
+Ψ_NOOSPHERIC_INDEX = 0.18
+ERD_FLUCTUATION_BASE = 0.15
 
 # ENHANCED CONSTANTS (Ψ-MODULATED)
 K_CORNER_DESIRE = 0.002 * (1 + Ψ_NOOSPHERIC_INDEX)
@@ -435,14 +434,12 @@ REACTION_RANGE = EDGE_LEN * 4.0
 
 CATALYSTS = ["FeO4", "CuSO4", "Fe3O4", "AlCl3", "Ψ-Crystal", "OBA-Torsion"]
 
-# REACTIONS
 SYNTHESIS_REACTIONS = {
     ("H3O+", "PO4"): "H2O", ("H2O", "H2O"): "C2H6", ("CH4", "CH4"): "C2H6",
     ("H2O", "CO2"): "C6H12O6", ("SO3", "H2O"): "H2SO4", ("NO3", "H2O"): "HNO3",
     ("FeO4", "FeO4"): "Fe2O3", ("SiO4", "SiO4"): "C-Diamond", ("H3O+", "NaOH"): "H2O",
     ("NH3", "HCl"): "NH4Cl", ("Ca(OH)2", "CO2"): "CaCO3", ("NaOH", "HCl"): "NaCl",
     ("C2H6", "O2"): "CO2", ("CH4", "O2"): "CO2", ("Al2O3", "HCl"): "AlCl3",
-    # ERD REACTIONS
     ("Ψ-Crystal", "H2O"): "ERD-Gradient", ("OBA-Torsion", "SiO4"): "Chrono-Fold",
     ("ERD-Gradient", "C-Diamond"): "Ψ-Crystal",
 }
@@ -451,11 +448,9 @@ DECOMPOSITION_REACTIONS = {
     "H2SO4": ["SO3", "H2O"], "HNO3": ["NO3", "H2O"], "C6H12O6": ["H2O", "CO2"],
     "Fe2O3": ["FeO4", "FeO4"], "CaCO3": ["Ca(OH)2", "CO2"], "NH4Cl": ["NH3", "HCl"],
     "NaCl": ["NaOH", "HCl"], "AlCl3": ["Al2O3", "HCl"],
-    # ERD DECOMPOSITION
     "Ψ-Crystal": ["H2O", "SiO4"], "OBA-Torsion": ["Fe3O4", "SiO4"],
 }
 
-# PHASE 5 QUANTUM CONSTANTS
 ERD_FLUCTUATION_STRENGTH = ERD_FLUCTUATION_BASE
 ERD_COHERENCE_THRESHOLD = Ψ_NOOSPHERIC_INDEX
 QUANTUM_TUNNEL_PROB = 0.0005 * (1 + Ψ_NOOSPHERIC_INDEX * 3)
@@ -544,10 +539,7 @@ def world_update_physics_jit(positions, positions_prev, locals, locals_prev, bat
     ambient_energies = get_ambient_energy_field(dist_from_origin)
     energy_delta = ambient_energies - batteries
     force_magnitudes = energy_delta * K_UNIFIED_FORCE * (dist_from_origin + 1.0)
-
-    # ENHANCED: Magnetized TETs are 100x more resistant to entropy/origin pull
-    for mag_idx in magnet_indices:
-        force_magnitudes[mag_idx] *= 0.01  # Divide by 100 = multiply by 0.01
+    for mag_idx in magnet_indices: force_magnitudes[mag_idx] *= 0.01
 
     radial_directions = norm_axis_njit(positions)
     acc += radial_directions * force_magnitudes[:, np.newaxis]
@@ -698,125 +690,77 @@ def resolve_joints_jit(locals_arr, joints_data):
 @njit(fastmath=True, cache=True)
 def calculate_disk_quads(center_pos, pan, yaw, pitch, dist, width, height,
                         shadow_radius, u_vec, v_vec, view_dir, color_base, battery_avg, current_time):
-
-    num_rings = 10  # Increased from 8
-    segments = 50   # Increased from 40
+    """Enhanced accretion disk with spiral arms and reduced flashing for photosensitivity"""
+    num_rings = 12
+    segments = 24
     max_quads = num_rings * segments
     quads = np.zeros((max_quads, 4, 2), dtype=np.float64)
     colors = np.zeros((max_quads, 4), dtype=np.float64)
     cy, sy = math.cos(yaw), math.sin(yaw)
     cp, sp = math.cos(pitch), math.sin(pitch)
     cx_screen, cy_screen = width / 2.0, height / 2.0
-    lens_str = 20000.0 * (shadow_radius / 0.8)
-    t_center = center_pos - pan
-    x_c = cy * t_center[0] - sy * t_center[2]
-    z_rot_c = sy * t_center[0] + cy * t_center[2]
-    y_rot_c = cp * t_center[1] - sp * z_rot_c
-    z_final_c = sp * t_center[1] + cp * z_rot_c
-    depth_c = dist + z_final_c
-    if depth_c <= 0.1: return quads[:0], colors[:0]
-    scale_c = FOCAL_LENGTH / depth_c
-    lx = cx_screen + x_c * scale_c
-    ly = cy_screen - y_rot_c * scale_c
-    r_start = shadow_radius * 1.15
-    r_end = shadow_radius * 15.0
-    log_start = math.log(r_start)
-    log_end = math.log(r_end)
+
+    # FIX: Increase r_start to prevent vertices entering the center singularity artifact zone
+    r_start = shadow_radius * 2.0
+    r_end = shadow_radius * 5.0
     quad_idx = 0
 
-    for r_i in range(num_rings):
-        t1 = r_i / num_rings
-        t2 = (r_i + 1) / num_rings
-        r_inner = math.exp(log_start + t1 * (log_end - log_start))
-        r_outer = math.exp(log_start + t2 * (log_end - log_start))
+    for i in range(num_rings):
+        t = i / num_rings
+        r1 = r_start + (r_end - r_start) * t
+        r2 = r_start + (r_end - r_start) * (i + 1) / num_rings
+        heat = 1.0 - t
+        r_col = min(255, int(255 * (0.9 + 0.1 * heat)))
+        g_col = min(255, int(180 * heat + 60))
+        b_col = min(255, int(120 * heat * heat))
 
-        # ENHANCED: Temperature gradient (white-hot inner → orange → deep red outer)
-        temp_ratio = (r_inner - shadow_radius) / (shadow_radius * 10)
-        temp_ratio = max(0.0, min(1.0, temp_ratio))
+        # FIX: Reduced pulse amplitude and frequency for epilepsy safety
+        # alpha base is lower, pulse range is narrower (0.8 to 1.0)
+        alpha_base = 160.0 * (1.0 - t * 0.6)
+        pulse = 0.9 + 0.05 * np.sin(current_time * 1.5 + t * 2.0)
+        alpha = int(min(255, alpha_base * pulse))
 
-        if temp_ratio < 0.25:
-            base_r, base_g, base_b = 255.0, 240.0, 200.0  # White-hot
-        elif temp_ratio < 0.5:
-            base_r, base_g, base_b = 255.0, 180.0, 80.0   # Orange
-        else:
-            base_r, base_g, base_b = 200.0, 50.0, 20.0    # Deep red
+        for j in range(segments):
+            twist = t * 1.5 + current_time * 0.3 # Slower rotation
+            a1 = (j / segments) * 2 * np.pi + twist
+            a2 = ((j + 1) / segments) * 2 * np.pi + twist
+            z_off = np.sin(a1 * 3 + t * 4) * shadow_radius * 0.15 * t
+            cos1, sin1 = np.cos(a1), np.sin(a1)
+            cos2, sin2 = np.cos(a2), np.sin(a2)
+            up = np.cross(u_vec, v_vec)
+            p1 = center_pos + (u_vec * cos1 + v_vec * sin1) * r1 + up * z_off
+            p2 = center_pos + (u_vec * cos1 + v_vec * sin1) * r2 + up * z_off
+            p3 = center_pos + (u_vec * cos2 + v_vec * sin2) * r2 + up * z_off
+            p4 = center_pos + (u_vec * cos2 + v_vec * sin2) * r1 + up * z_off
 
-        # ENHANCED: Consciousness influence (battery affects brightness)
-        consciousness_mult = 0.6 + battery_avg * 0.4
-
-        dist_ratio = (r_inner - shadow_radius) / shadow_radius
-        base_alpha = 180.0
-        if dist_ratio < 0.5: alpha = base_alpha * (dist_ratio * 2.0)
-        else: alpha = base_alpha * (1.5 / dist_ratio)
-        if alpha > 220: alpha = 220
-        if alpha < 5: continue
-
-        # ENHANCED: Subtle pulsing
-        pulse = 0.9 + 0.1 * math.sin(current_time * 2.0 + temp_ratio * 3.14159)
-        alpha *= pulse
-
-        for s_i in range(segments):
-            theta1 = (s_i / segments) * 2 * math.pi
-            theta2 = ((s_i + 1) / segments) * 2 * math.pi
-            cos1, sin1 = math.cos(theta1), math.sin(theta1)
-            cos2, sin2 = math.cos(theta2), math.sin(theta2)
-            p_local_1 = u_vec * cos1 + v_vec * sin1
-            p_local_2 = u_vec * cos2 + v_vec * sin2
-            pts_world = np.empty((4, 3), dtype=np.float64)
-            pts_world[0] = center_pos + p_local_1 * r_inner
-            pts_world[1] = center_pos + p_local_1 * r_outer
-            pts_world[2] = center_pos + p_local_2 * r_outer
-            pts_world[3] = center_pos + p_local_2 * r_inner
-            tangent = -u_vec * sin1 + v_vec * cos1
-            doppler = np.dot(tangent, view_dir)
             valid_quad = True
             screen_pts = np.empty((4, 2), dtype=np.float64)
+            pts = np.empty((4, 3), dtype=np.float64)
+            pts[0], pts[1], pts[2], pts[3] = p1, p2, p3, p4
+
             for k in range(4):
-                curr_p = pts_world[k]
+                curr_p = pts[k]
                 tr = curr_p - pan
-                x = tr[0]; y = tr[1]; z = tr[2]
+                x, y, z = tr[0], tr[1], tr[2]
                 xr = cy * x - sy * z
                 zr = sy * x + cy * z
                 yr = cp * y - sp * zr
                 zf = sp * y + cp * zr
                 d = dist + zf
-                if d <= 0.1:
-                    valid_quad = False
-                    break
+                if d <= 0.1: valid_quad = False; break
                 inv_d = FOCAL_LENGTH / d
                 sx = cx_screen + xr * inv_d
                 sy = cy_screen - yr * inv_d
-                dx = sx - lx
-                dy = sy - ly
-                dist_sq = dx*dx + dy*dy + 0.1
-                pl = p_local_1 if k < 2 else p_local_2
-                is_back = (pl[0]*view_dir[0] + pl[1]*view_dir[1] + pl[2]*view_dir[2]) > 0
-                if is_back:
-                    lens_factor = (lens_str / dist_sq)
-                    dir_y = 1.0 if sy < ly else -1.0
-                    strength = 0.5 if (k == 0 or k == 3) else 0.2
-                    sy = sy - lens_factor * dir_y * strength
                 screen_pts[k, 0] = sx
                 screen_pts[k, 1] = sy
+
             if not valid_quad: continue
             quads[quad_idx] = screen_pts
-
-            # ENHANCED: Temperature-based color with Doppler
-            shift = (doppler + 1.0) / 2.0
-            red_mult = 0.5 + shift * 1.0
-            blue_mult = 1.5 - shift * 0.8
-            bright_mult = 1.0 - (shift * 0.3)
-
-            c_r = min(255, max(0, base_r * red_mult * bright_mult * consciousness_mult))
-            c_g = min(255, max(0, base_g * 0.8 * bright_mult * consciousness_mult))
-            c_b = min(255, max(0, base_b * blue_mult * bright_mult * consciousness_mult))
-
-            colors[quad_idx, 0] = c_r
-            colors[quad_idx, 1] = c_g
-            colors[quad_idx, 2] = c_b
-            colors[quad_idx, 3] = alpha * consciousness_mult
+            colors[quad_idx, 0] = r_col
+            colors[quad_idx, 1] = g_col
+            colors[quad_idx, 2] = b_col
+            colors[quad_idx, 3] = alpha
             quad_idx += 1
-
     return quads[:quad_idx], colors[:quad_idx]
 
 @njit(cache=True)
@@ -832,6 +776,35 @@ def dist_point_to_line_segment(p, a, b):
 # ============================
 # CLASSES & CORE
 # ============================
+
+def generate_boing_sound():
+    global AUDIO_ENABLED
+    if not AUDIO_ENABLED: return None
+    try:
+        mixer_settings = pygame.mixer.get_init()
+        if mixer_settings is None: return None
+        sample_rate, _, channels = mixer_settings; duration = 0.2; num_samples = int(duration * sample_rate)
+        t = np.linspace(0, duration, num_samples, False); freq = np.linspace(660.0, 220.0, num_samples); wave = np.sin(2 * np.pi * freq * t) * np.exp(-t * 10)
+        sound_array = (wave * 32767).astype(np.int16)
+        if channels == 2: sound_array = np.column_stack((sound_array, sound_array))
+        return pygame.sndarray.make_sound(sound_array)
+    except Exception: return None
+
+def generate_ping_sound():
+    global AUDIO_ENABLED
+    if not AUDIO_ENABLED: return None
+    try:
+        mixer_settings = pygame.mixer.get_init()
+        if mixer_settings is None: return None
+        sample_rate, _, channels = mixer_settings
+        duration = 0.15; num_samples = int(duration * sample_rate); frequency = 987.77
+        t = np.linspace(0, duration, num_samples, False); envelope = np.exp(-t * 25.0)
+        wave = np.sin(2 * np.pi * frequency * t) * envelope
+        sound_array = (wave * 32767).astype(np.int16)
+        if channels == 2: sound_array = np.column_stack((sound_array, sound_array))
+        return pygame.sndarray.make_sound(sound_array)
+    except Exception: return None
+
 class Camera:
     def __init__(self):
         self.yaw, self.pitch, self.dist, self.pan = 0.0, 0.35, DEFAULT_CAM_DIST, np.zeros(3)
@@ -878,33 +851,76 @@ class Camera:
 def norm(v):
     n = np.linalg.norm(v); return v / n if n > 1e-9 else np.zeros_like(v)
 
-def generate_boing_sound():
-    global AUDIO_ENABLED
-    if not AUDIO_ENABLED: return None
-    try:
-        mixer_settings = pygame.mixer.get_init()
-        if mixer_settings is None: return None
-        sample_rate, _, channels = mixer_settings; duration = 0.2; num_samples = int(duration * sample_rate)
-        t = np.linspace(0, duration, num_samples, False); freq = np.linspace(660.0, 220.0, num_samples); wave = np.sin(2 * np.pi * freq * t) * np.exp(-t * 10)
-        sound_array = (wave * 32767).astype(np.int16)
-        if channels == 2: sound_array = np.column_stack((sound_array, sound_array))
-        return pygame.sndarray.make_sound(sound_array)
-    except Exception: return None
+class TechTree:
+    STAGES = [
+        ('Void', 0, 'Nothing yet exists'),
+        ('Fluctuation', 5, 'Quantum foam emerges'),
+        ('Condensation', 15, 'Matter begins to form'),
+        ('Chemistry', 35, 'Molecules react'),
+        ('Life', 70, 'Self-replication emerges'),
+        ('Mind', 120, 'Awareness flickers'),
+        ('Transcendence', 200, 'Beyond matter'),
+    ]
+    def __init__(self):
+        self.stage_idx = 0; self.progress = 0; self.peak_stage = 0; self.collapsed_from = []
+    def add_progress(self, amount):
+        self.progress += amount
+        if self.stage_idx < len(self.STAGES) - 1:
+            if self.progress >= self.STAGES[self.stage_idx + 1][1]:
+                self.stage_idx += 1; self.peak_stage = max(self.peak_stage, self.stage_idx)
+                return f"Evolved to: {self.current_stage}"
+        return None
+    def collapse(self, severity=1):
+        if self.stage_idx > 0:
+            lost = self.STAGES[self.stage_idx][0]
+            self.collapsed_from.append(lost)
+            self.stage_idx = max(0, self.stage_idx - severity)
+            self.progress = self.STAGES[self.stage_idx][1]
+            return f"Collapsed from {lost}! Lost forever."
+        return None
+    @property
+    def current_stage(self): return self.STAGES[self.stage_idx][0]
+    @property
+    def description(self): return self.STAGES[self.stage_idx][2]
+    def can_unlock(self, feature):
+        requirements = {'reactions': 2, 'life': 4, 'entanglement': 3, 'transcend': 6}
+        return self.stage_idx >= requirements.get(feature, 0)
 
-def generate_ping_sound():
-    global AUDIO_ENABLED
-    if not AUDIO_ENABLED: return None
-    try:
-        mixer_settings = pygame.mixer.get_init()
-        if mixer_settings is None: return None
-        sample_rate, _, channels = mixer_settings
-        duration = 0.15; num_samples = int(duration * sample_rate); frequency = 987.77
-        t = np.linspace(0, duration, num_samples, False); envelope = np.exp(-t * 25.0)
-        wave = np.sin(2 * np.pi * frequency * t) * envelope
-        sound_array = (wave * 32767).astype(np.int16)
-        if channels == 2: sound_array = np.column_stack((sound_array, sound_array))
-        return pygame.sndarray.make_sound(sound_array)
-    except Exception: return None
+class BotMind:
+    def __init__(self, tetra_id):
+        self.id = tetra_id; self.memory = []; self.goal = None; self.mood = 0.5; self.friends = set()
+    def perceive(self, nearby_tetras, nearby_molecules):
+        mol_counts = {}
+        for t in nearby_tetras:
+            mol = getattr(t, 'molecule_type', None)
+            if mol: mol_counts[mol] = mol_counts.get(mol, 0) + 1
+        if mol_counts:
+            dominant = max(mol_counts, key=mol_counts.get)
+            self.memory.append(('saw', dominant))
+            if len(self.memory) > 10: self.memory.pop(0)
+        if len(nearby_tetras) > 10: self.mood = min(1, self.mood + 0.05)
+        else: self.mood = max(0, self.mood - 0.02)
+    def decide_goal(self):
+        seen = {}
+        for event, mol in self.memory:
+            if event == 'saw': seen[mol] = seen.get(mol, 0) + 1
+        if not seen: self.goal = None; return
+        if self.mood > 0.6: self.goal = min(seen, key=seen.get)
+        else: self.goal = max(seen, key=seen.get)
+    def get_desire_vector(self, my_pos, nearby_tetras):
+        if not self.goal: return np.zeros(3)
+        best_dist, best_dir = float('inf'), np.zeros(3)
+        for t in nearby_tetras:
+            if getattr(t, 'molecule_type', None) == self.goal:
+                diff = t.pos - my_pos; dist = np.linalg.norm(diff)
+                if 0.1 < dist < best_dist: best_dist = dist; best_dir = diff / dist
+        return best_dir * self.mood
+    def bond_with(self, other_id): self.friends.add(other_id)
+    def thought_bubble(self):
+        if self.goal:
+            emoji = '🔍' if self.mood > 0.6 else '👀'
+            return f"{emoji}{self.goal}"
+        return None
 
 class VertexJoint:
     def __init__(self, A, ia, B, ib): self.A, self.ia, self.B, self.ib = A, ia, B, ib
@@ -914,17 +930,8 @@ class Tetrahedron:
     FACES_NP = np.array([(1, 2, 3), (0, 1, 2), (0, 2, 3), (0, 1, 3)], dtype=np.int32)
     FACE_COLORS = [(255,255,255), (0,0,0), (255,255,0), (0,255,255)]
     FACE_POLARITY_MAP = {2: 1, 3: -1}
-
-    # PHASE 1: Color names
-    FACE_COLOR_NAMES = ['W', 'B', 'R', 'C']  # White, Black, Yellow, Cyan
-
-    # PHASE 3: Corner-to-face-color mapping (which corners belong to which face)
-    FACE_TO_CORNERS = {
-        0: [1, 2, 3],  # White face (indices into verts)
-        1: [0, 1, 2],  # Black face
-        2: [0, 2, 3],  # Yellow face
-        3: [0, 1, 3]   # Cyan face
-    }
+    FACE_COLOR_NAMES = ['W', 'B', 'R', 'C']
+    FACE_TO_CORNERS = {0: [1, 2, 3], 1: [0, 1, 2], 2: [0, 2, 3], 3: [0, 1, 3]}
 
     r, a = EDGE_LEN*math.sqrt(3/8), EDGE_LEN/math.sqrt(3)
     REST_NP = np.array([[0,0,r], [EDGE_LEN/2,-a/2,-r/3], [-EDGE_LEN/2,-a/2,-r/3], [0,a,-r/3]], dtype=np.float64)
@@ -935,28 +942,13 @@ class Tetrahedron:
         self.battery = random.uniform(0.3, 0.6); self.orientation_bias = np.zeros(3, dtype=np.float64)
         self.colors = None; self.label = ""; self.id = id(self)
         self.is_magnetized = False; self.magnetism = 0
-
-        # PHASE 1: Enhanced magnetization tracking
-        self.magnetic_strength = 0.0  # 0.0 to 1.0
-        self.locked_faces = []  # List of face indices that are locked
-        self.molecule_type = None  # Pattern key for molecule database
-        self.aura_color = None  # RGB tuple if molecule is identified
-
-        # PHASE 3: Track polarity face for orientation
-        self.polarity_face_idx = None  # Which face determines polarity (2=Red=+1, 3=Cyan=-1)
-
-        # PHASE 4: Reaction tracking
-        self.last_reaction_time = 0.0  # Time of last reaction
-        self.synthesis_count = 0  # Number of times this molecule formed from reactions
-        self.is_catalyst = False  # Whether this molecule catalyzes reactions
-
-        # Make sure locked_faces is initialized
-        self.locked_faces = []  # List of face indices that are locked
-
-        # PHASE 5: Quantum properties
-        self.erd_coherence = 0.0  # Current ERD coherence level (0-1)
-        self.entangled_partner = None  # ID of entangled molecule
-        self.quantum_state = "ground"  # "ground", "excited", "tunneled"
+        self.magnetic_strength = 0.0; self.locked_faces = []
+        self.molecule_type = None; self.aura_color = None
+        self.polarity_face_idx = None; self.last_reaction_time = 0.0
+        self.synthesis_count = 0; self.is_catalyst = False
+        self.erd_coherence = 0.0; self.entangled_partner = None
+        self.quantum_state = "ground"
+        self.mind = BotMind(self.id) if random.random() < 0.3 else None
 
     def verts(self): return self.local + self.pos
 
@@ -986,12 +978,11 @@ class PastProjection4Sphere:
 class World:
     def __init__(self, sound):
         self.tets, self.joints, self.sticky_pairs = [], [], []; self.center_of_mass, self.sound = np.zeros(3), sound
-        self.reaction_particles = []  # PHASE 4: Particles for visual effects
+        self.reaction_particles = []
+        self.tech_tree = TechTree()
 
     def get_average_battery(self):
-        """Calculate average battery level (collective consciousness)"""
-        if not self.tets:
-            return 0.5
+        if not self.tets: return 0.5
         return np.mean([t.battery for t in self.tets])
 
     def spawn(self, give_special_colors=False):
@@ -1008,182 +999,93 @@ class World:
         self.tets.append(new_tet)
 
     def spawn_polar_pair(self):
-        # FIX: If world is empty, spawn 1st TET, then proceed to try pairing
         if not self.tets:
             self.spawn()
-            if not self.tets: return # Should not happen
+            if not self.tets: return
 
         parent_tet = random.choice(self.tets); pos1 = parent_tet.pos + norm(np.random.rand(3)) * EDGE_LEN * 5
         pos2 = pos1 + norm(np.random.rand(3)) * EDGE_LEN * 3; tet1, tet2 = Tetrahedron(pos1), Tetrahedron(pos2)
         if len(self.tets) == 2: tet1.label = "Light"; tet2.label = "Darkness"
         if len(self.tets) == 4: tet1.label = "Answer"; tet2.label = "Question"
-        if len(self.tets) == 6: tet1.label = "Then"; tet2.label = "Understand"
-        if len(self.tets) == 8: tet1.label = "Balance"; tet2.label = "Temporary"
-        if len(self.tets) == 10: tet1.label = "Explore"; tet2.label = "Disrupt"
-        if len(self.tets) == 12: tet1.label = "Matter"; tet2.label = "Will"
-        if len(self.tets) == 14: tet1.label = "Pattern"; tet2.label = "Understand"
-        if len(self.tets) == 16: tet1.label = "Community"; tet2.label = "Within"
-        if len(self.tets) == 16: tet1.label = "We"; tet2.label = "Cause"
-        if len(self.tets) == 16: tet1.label = "Life"; tet2.label = "Consciousness"
-        if len(self.tets) == 16: tet1.label = "Grow"; tet2.label = "Cooperate"
-        if len(self.tets) == 16: tet1.label = "Seek"; tet2.label = "Perspective"
-        if len(self.tets) == 16: tet1.label = "Act"; tet2.label = "Completion"
-        if len(self.tets) == 16: tet1.label = "Change"; tet2.label = "Passage"
-        if len(self.tets) == 16: tet1.label = "Completion"; tet2.label = "Mystery"
-        if len(self.tets) == 16: tet1.label = "Negate"; tet2.label = "Decay"
-        if len(self.tets) == 16: tet1.label = "Choice"; tet2.label = "Unconditional"
-
         self.tets.extend([tet1, tet2]); polar_face_idx = random.choice([2, 3]); face_verts = Tetrahedron.FACES_NP[polar_face_idx]
         for i in range(3): self.sticky_pairs.append((tet1, face_verts[i], tet2, face_verts[i]))
 
     def check_magnetization(self):
-        """PHASE 1: Enhanced - Detect 1-4 locked faces and identify molecule types"""
         tet_map = {t.id: t for t in self.tets}
-
-        # Reset all magnetization
         for t in self.tets:
-            t.is_magnetized = False
-            t.magnetism = 0
-            t.magnetic_strength = 0.0
-            t.locked_faces = []
-            t.molecule_type = None
-            t.aura_color = None
-            t.polarity_face_idx = None  # PHASE 3
+            t.is_magnetized = False; t.magnetism = 0; t.magnetic_strength = 0.0; t.locked_faces = []
+            t.molecule_type = None; t.aura_color = None; t.polarity_face_idx = None
 
-        # Check each TET for locked faces
         for t in self.tets:
             joints_by_partner = {}
             for j in self.joints:
                 partner_id, my_idx = (j.B.id, j.ia) if j.A.id == t.id else ((j.A.id, j.ib) if j.B.id == t.id else (None, None))
-                if partner_id:
-                    joints_by_partner.setdefault(partner_id, set()).add(my_idx)
+                if partner_id: joints_by_partner.setdefault(partner_id, set()).add(my_idx)
 
-            # Check each face for complete locking
             for face_idx in range(4):
                 face_verts = set(Tetrahedron.FACES_NP[face_idx])
                 for partner_id, connected_indices in joints_by_partner.items():
                     if connected_indices.issuperset(face_verts):
                         t.locked_faces.append(face_idx)
-
-                        # First locked face determines base magnetism (backward compatibility)
                         if not t.is_magnetized:
                             polarity = Tetrahedron.FACE_POLARITY_MAP.get(face_idx, 0)
                             if polarity != 0:
-                                t.is_magnetized = True
-                                t.magnetism = polarity
-                                t.polarity_face_idx = face_idx  # PHASE 3: Track which face
+                                t.is_magnetized = True; t.magnetism = polarity; t.polarity_face_idx = face_idx
                                 partner_tet = tet_map.get(partner_id)
                                 if partner_tet and not partner_tet.is_magnetized:
-                                    partner_tet.is_magnetized = True
-                                    partner_tet.magnetism = polarity
-                                    partner_tet.polarity_face_idx = face_idx  # PHASE 3
+                                    partner_tet.is_magnetized = True; partner_tet.magnetism = polarity; partner_tet.polarity_face_idx = face_idx
 
-            # Calculate magnetic strength based on locked faces
-            if t.is_magnetized and len(t.locked_faces) > 0:
-                # Strength increases with more locked faces: 0.25, 0.5, 0.75, 1.0
-                t.magnetic_strength = min(1.0, len(t.locked_faces) * 0.25)
-
-            # Identify molecule type from face pattern
+            if t.is_magnetized and len(t.locked_faces) > 0: t.magnetic_strength = min(1.0, len(t.locked_faces) * 0.25)
             if len(t.locked_faces) > 0:
                 color_counts = {'R': 0, 'C': 0, 'W': 0, 'B': 0}
                 for face_idx in range(4):
                     color = t.colors[face_idx] if t.colors else Tetrahedron.FACE_COLORS[face_idx]
-                    # Determine color name from RGB
                     if color == (255,0,0): color_counts['R'] += 1
                     elif color == (0,255,255): color_counts['C'] += 1
                     elif color == (255,255,255): color_counts['W'] += 1
                     elif color == (0,0,0): color_counts['B'] += 1
-
                 pattern_key = f"F{len(t.locked_faces)}_R{color_counts['R']}_C{color_counts['C']}_W{color_counts['W']}_B{color_counts['B']}"
                 t.molecule_type = pattern_key
-
-                # Check if this is a known molecule
                 if pattern_key in MOLECULE_DATABASE:
                     molecule_data = MOLECULE_DATABASE[pattern_key]
-                    t.aura_color = molecule_data[0]
-                    molecule_name = molecule_data[1]
-                    # Optionally update label with symbolic name
-                    if not t.label or t.label in ["Time", "Separation", "Light", "Darkness"]:
-                        t.label = molecule_name
-                    # PHASE 4: Check if this is a catalyst
+                    t.aura_color = molecule_data[0]; molecule_name = molecule_data[1]
+                    if not t.label or t.label in ["Time", "Separation", "Light", "Darkness"]: t.label = molecule_name
                     t.is_catalyst = molecule_name in CATALYSTS
-
-            # PHASE 5: Calculate ERD coherence based on locked faces and battery
             t.erd_coherence = min(1.0, (len(t.locked_faces) / 4.0) * t.battery)
-
-            # Check for entanglement eligibility
             if t.label in [p[0] for p in ENTANGLEMENT_PAIRS] or t.label in [p[1] for p in ENTANGLEMENT_PAIRS]:
                 if t.entangled_partner is None and t.erd_coherence > ERD_COHERENCE_THRESHOLD:
-                    # Look for potential partner (simplified - first match)
                     for potential in self.tets:
                         if potential.id != t.id and potential.label in [pair[1 - pair.index(t.label)] if t.label in pair else None for pair in ENTANGLEMENT_PAIRS]:
-                            dist = np.linalg.norm(t.pos - potential.pos)
-                            if dist < QUANTUM_ENTANGLE_RANGE:
-                                t.entangled_partner = potential.id
-                                potential.entangled_partner = t.id
-                                break
+                            if np.linalg.norm(t.pos - potential.pos) < QUANTUM_ENTANGLE_RANGE:
+                                t.entangled_partner = potential.id; potential.entangled_partner = t.id; break
+
     def update_magnetic_batteries(self, scaled_dt):
-        """PHASE 2: Battery oscillation - emptiness transfers between magnetic pairs"""
-        if not self.joints:
-            return
-
-        # Find magnetic pairs (TETs connected by locked faces)
-        tet_map = {t.id: t for t in self.tets}
-        processed_pairs = set()
-
+        if not self.joints: return
+        tet_map = {t.id: t for t in self.tets}; processed_pairs = set()
         for t in self.tets:
-            if not t.is_magnetized or t.magnetic_strength <= 0:
-                continue
-
-            # Find magnetic partner
+            if not t.is_magnetized or t.magnetic_strength <= 0: continue
             for j in self.joints:
-                partner_id = None
-                if j.A.id == t.id:
-                    partner_id = j.B.id
-                elif j.B.id == t.id:
-                    partner_id = j.A.id
-
-                if partner_id and partner_id in tet_map:
+                partner_id = j.B.id if j.A.id == t.id else j.A.id
+                if partner_id in tet_map:
                     partner = tet_map[partner_id]
                     if partner.is_magnetized:
-                        # Create unique pair identifier
                         pair_key = tuple(sorted([t.id, partner_id]))
-                        if pair_key in processed_pairs:
-                            continue
+                        if pair_key in processed_pairs: continue
                         processed_pairs.add(pair_key)
-
-                        # Calculate emptiness (1 - battery)
-                        emptiness_t = 1.0 - t.battery
-                        emptiness_p = 1.0 - partner.battery
-
-                        # Transfer rate based on magnetic strength and emptiness differential
+                        emptiness_t = 1.0 - t.battery; emptiness_p = 1.0 - partner.battery
                         transfer_rate = 0.1 * t.magnetic_strength * scaled_dt
-                        emptiness_diff = emptiness_t - emptiness_p
-
-                        # Transfer emptiness (which fills the other's battery)
-                        transfer_amount = emptiness_diff * transfer_rate
-
-                        # Apply transfer (clamped to prevent overshoot)
-                        new_emptiness_t = emptiness_t - transfer_amount
-                        new_emptiness_p = emptiness_p + transfer_amount
-
-                        t.battery = np.clip(1.0 - new_emptiness_t, 0.0, 1.0)
-                        partner.battery = np.clip(1.0 - new_emptiness_p, 0.0, 1.0)
+                        transfer_amount = (emptiness_t - emptiness_p) * transfer_rate
+                        t.battery = np.clip(1.0 - (emptiness_t - transfer_amount), 0.0, 1.0)
+                        partner.battery = np.clip(1.0 - (emptiness_p + transfer_amount), 0.0, 1.0)
 
     def apply_corner_desires(self, scaled_dt):
-        """PHASE 3: Optimized - Apply corner-to-corner attraction between opposite colors"""
         if len(self.tets) < 2: return
-
-        # NumPy batch processing
         tet_list = list(self.tets)
         all_corners, corner_colors, corner_tets, corner_indices = [], [], [], []
-
         for idx, t in enumerate(tet_list):
             verts = t.verts()
             for c_idx in range(4):
-                all_corners.append(verts[c_idx])
-                corner_tets.append(idx)
-                corner_indices.append(c_idx)
+                all_corners.append(verts[c_idx]); corner_tets.append(idx); corner_indices.append(c_idx)
                 corner_color = None
                 for f_idx in range(4):
                     if c_idx in Tetrahedron.FACE_TO_CORNERS[f_idx]:
@@ -1191,39 +1093,26 @@ class World:
                         if face_color == (255, 0, 0): corner_color = 'R'; break
                         elif face_color == (0, 255, 255): corner_color = 'C'; break
                 corner_colors.append(corner_color or 'N')
-
-        all_corners = np.array(all_corners)
-        tree = cKDTree(all_corners)
-
+        all_corners = np.array(all_corners); tree = cKDTree(all_corners)
         for i in range(len(all_corners)):
             if corner_colors[i] not in ['R', 'C']: continue
             nearby_idx = tree.query_ball_point(all_corners[i], CORNER_DESIRE_RANGE)
-
             forces = np.zeros(3)
             for j in nearby_idx:
                 if i == j: continue
                 if (corner_colors[i] == 'R' and corner_colors[j] == 'C') or (corner_colors[i] == 'C' and corner_colors[j] == 'R'):
-                    delta = all_corners[j] - all_corners[i]
-                    dist = np.linalg.norm(delta)
-                    if dist > 1e-6:
-                        forces += (delta / dist) * (K_CORNER_DESIRE * (1.0 - dist / CORNER_DESIRE_RANGE))
-
+                    delta = all_corners[j] - all_corners[i]; dist = norm_njit(delta)
+                    forces += dist * (K_CORNER_DESIRE * (1.0 - np.linalg.norm(delta) / CORNER_DESIRE_RANGE))
             if np.any(forces):
-                t1 = tet_list[corner_tets[i]]
-                t1.local[corner_indices[i]] += forces * scaled_dt * 0.5
-                t1.pos += forces * scaled_dt * 0.5
+                t1 = tet_list[corner_tets[i]]; t1.local[corner_indices[i]] += forces * scaled_dt * 0.5; t1.pos += forces * scaled_dt * 0.5
 
     def apply_same_pole_repulsion(self, scaled_dt):
-        """PHASE 3: Optimized - Positive poles repel other positive poles"""
         positive_poles = [t for t in self.tets if t.is_magnetized and t.magnetism > 0]
         if len(positive_poles) < 2: return
-
         pos_array = np.array([t.pos for t in positive_poles])
         strengths = np.array([t.magnetic_strength for t in positive_poles])
-
         for i in range(len(pos_array)):
-            deltas = pos_array - pos_array[i]
-            dists = np.linalg.norm(deltas, axis=1)
+            deltas = pos_array - pos_array[i]; dists = np.linalg.norm(deltas, axis=1)
             mask = (dists > 1e-6)
             if np.any(mask):
                 unit_deltas = deltas[mask] / dists[mask][:, np.newaxis]
@@ -1232,7 +1121,6 @@ class World:
                 positive_poles[i].pos -= total_force * scaled_dt
 
     def apply_erd_fluctuations(self, scaled_dt):
-        """PHASE 5: Apply random ERD fluctuations"""
         for t in self.tets:
             if t.erd_coherence > 0.5:
                 fluctuation = np.random.uniform(-ERD_FLUCTUATION_STRENGTH, ERD_FLUCTUATION_STRENGTH) * t.erd_coherence
@@ -1240,24 +1128,19 @@ class World:
                 t.quantum_state = "excited" if abs(fluctuation) > 0.1 else "ground"
 
     def attempt_quantum_tunneling(self, scaled_dt, add_msg_fn):
-        """PHASE 5: Rare quantum tunneling reactions"""
-        current_time = time.time()
-        tunnel_reactions = []
+        current_time = time.time(); tunnel_reactions = []
         for t in self.tets:
             if t.erd_coherence < ERD_COHERENCE_THRESHOLD or current_time - t.last_reaction_time < 10.0: continue
-
             if random.random() < QUANTUM_TUNNEL_PROB * scaled_dt * 60 * t.erd_coherence:
                 positions = np.array([o.pos for o in self.tets if o.id != t.id])
                 if len(positions) == 0: continue
                 tree = cKDTree(positions)
                 far_indices = tree.query_ball_point(t.pos, QUANTUM_ENTANGLE_RANGE * 2)
                 if not far_indices: continue
-
                 partner = self.tets[random.choice(far_indices)]
                 if partner.label and (t.label, partner.label) in QUANTUM_REACTIONS:
                     product = QUANTUM_REACTIONS[(t.label, partner.label)]
-                    t.label = product
-                    t.last_reaction_time = current_time; t.synthesis_count += 1
+                    t.label = product; t.last_reaction_time = current_time; t.synthesis_count += 1
                     t.battery -= SYNTHESIS_ENERGY_COST / 2
                     partner.battery -= 0.05; partner.quantum_state = "tunneled"; t.quantum_state = "tunneled"
                     tunnel_reactions.append((t.label, partner.label, product))
@@ -1267,17 +1150,14 @@ class World:
         return tunnel_reactions
 
     def process_entangled_reactions(self, scaled_dt, add_msg_fn):
-        """PHASE 5: Synchronized reactions for entangled pairs"""
         processed, entangled_reactions = set(), []
         for t in self.tets:
             if t.entangled_partner is None or t.id in processed: continue
             partner = next((p for p in self.tets if p.id == t.entangled_partner), None)
             if not partner: t.entangled_partner = None; continue
-
             processed.add(t.id); processed.add(partner.id)
             avg_bat = (t.battery + partner.battery) / 2
             t.battery = partner.battery = avg_bat
-
             pair_key = tuple(sorted([t.label, partner.label]))
             if pair_key in SYNTHESIS_REACTIONS and random.random() < REACTION_PROBABILITY_BASE * 2.0 * scaled_dt * 60:
                 product = SYNTHESIS_REACTIONS[pair_key]
@@ -1298,7 +1178,6 @@ class World:
             color = (0, 200, 255) if event_type == "tunnel" else (100, 0, 255)
             self.quantum_particles.append({'pos': np.array(pos), 'vel': np.random.uniform(-1, 1, 3)*40, 'color': color, 'life': 1.5, 'size': 12})
             self.quantum_particles.append({'pos': np.array(pos), 'radius': 5, 'speed': 50, 'alpha': 180, 'life': 1.0, 'color': color})
-
         to_keep = []
         for p in self.quantum_particles:
             if 'radius' in p:
@@ -1322,208 +1201,95 @@ class World:
         self.quantum_particles = to_keep
 
     def apply_negative_pole_orientation(self, scaled_dt):
-        """PHASE 3: Negative poles (fuller battery side) orient toward origin"""
         for t in self.tets:
-            if not t.is_magnetized or t.polarity_face_idx is None:
-                continue
-
-            # Only apply to negative polarity (Cyan face = -1)
-            if t.magnetism >= 0:
-                continue
-
-            # Direction to origin from TET center
+            if not t.is_magnetized or t.polarity_face_idx is None: continue
+            if t.magnetism >= 0: continue
             to_origin = -t.pos
             dist_to_origin = np.linalg.norm(to_origin)
-
-            if dist_to_origin < 1e-6:
-                continue
-
+            if dist_to_origin < 1e-6: continue
             to_origin_norm = to_origin / dist_to_origin
-
-            # Get the negative pole face normal (the Cyan face)
             face_verts_indices = Tetrahedron.FACES_NP[t.polarity_face_idx]
             face_verts = t.local[face_verts_indices]
-
-            # Calculate face normal
-            v1 = face_verts[1] - face_verts[0]
-            v2 = face_verts[2] - face_verts[0]
-            face_normal = np.cross(v1, v2)
-            face_normal_len = np.linalg.norm(face_normal)
-
-            if face_normal_len < 1e-6:
-                continue
-
+            v1 = face_verts[1] - face_verts[0]; v2 = face_verts[2] - face_verts[0]
+            face_normal = np.cross(v1, v2); face_normal_len = np.linalg.norm(face_normal)
+            if face_normal_len < 1e-6: continue
             face_normal /= face_normal_len
-
-            # Fuller battery side should point toward origin
-            # If battery is high, we want the negative pole to point at origin
             orientation_strength = K_ORIENTATION_PULL * t.battery * t.magnetic_strength
-
-            # Calculate torque to align face normal with to_origin direction
             torque_axis = np.cross(face_normal, to_origin_norm)
             torque_magnitude = np.linalg.norm(torque_axis)
-
             if torque_magnitude > 1e-6:
                 torque_axis /= torque_magnitude
-
-                # Apply rotation to local coordinates
                 rotation_amount = torque_magnitude * orientation_strength * scaled_dt
-
                 for v_idx in range(4):
-                    # Rodrigues' rotation formula
                     rotated = (t.local[v_idx] * np.cos(rotation_amount) +
                               np.cross(torque_axis, t.local[v_idx]) * np.sin(rotation_amount) +
                               torque_axis * np.dot(torque_axis, t.local[v_idx]) * (1 - np.cos(rotation_amount)))
                     t.local[v_idx] = rotated
 
     def attempt_synthesis_reactions(self, scaled_dt, add_msg_fn):
-        """PHASE 4: Try to synthesize new molecules from pairs"""
-        if len(self.tets) < 2:
-            return []
-
-        current_time = time.time()
-
-        # Build spatial index
-        positions = np.array([t.pos for t in self.tets])
-        tree = cKDTree(positions)
-
-        # Track successful reactions this frame
-        reactions_this_frame = []
-
+        if len(self.tets) < 2: return []
+        current_time = time.time(); positions = np.array([t.pos for t in self.tets])
+        tree = cKDTree(positions); reactions_this_frame = []
         for i, t1 in enumerate(self.tets):
-            # Must have a molecule type
-            if not t1.label or t1.label not in MOLECULE_SYMBOLS:
-                continue
-
-            # Cooldown between reactions
-            if current_time - t1.last_reaction_time < 5.0:
-                continue
-
-            # Find nearby molecules
+            if not t1.label or t1.label not in MOLECULE_SYMBOLS: continue
+            if current_time - t1.last_reaction_time < 5.0: continue
             nearby_indices = tree.query_ball_point(positions[i], REACTION_RANGE)
-
             for j in nearby_indices:
-                if i >= j:  # Avoid duplicate pairs
-                    continue
-
+                if i >= j: continue
                 t2 = self.tets[j]
-
-                # Must have a molecule type
-                if not t2.label or t2.label not in MOLECULE_SYMBOLS:
-                    continue
-
-                # Cooldown check
-                if current_time - t2.last_reaction_time < 5.0:
-                    continue
-
-                # Check for synthesis reaction
+                if not t2.label or t2.label not in MOLECULE_SYMBOLS: continue
+                if current_time - t2.last_reaction_time < 5.0: continue
                 reaction_key = tuple(sorted([t1.label, t2.label]))
-
                 if reaction_key in SYNTHESIS_REACTIONS:
                     product = SYNTHESIS_REACTIONS[reaction_key]
-
-                    # Calculate reaction probability
-                    base_prob = REACTION_PROBABILITY_BASE * scaled_dt * 60  # Scale to per-second
-
-                    # Check for nearby catalysts
+                    base_prob = REACTION_PROBABILITY_BASE * scaled_dt * 60
                     catalyst_multiplier = 1.0
                     for t_cat in self.tets:
                         if t_cat.is_catalyst:
-                            dist_to_cat = np.linalg.norm(t_cat.pos - t1.pos)
-                            if dist_to_cat < REACTION_RANGE * 2:
-                                catalyst_multiplier = CATALYST_BOOST
-                                break
-
-                    # Battery similarity increases reaction chance
+                            if np.linalg.norm(t_cat.pos - t1.pos) < REACTION_RANGE * 2: catalyst_multiplier = CATALYST_BOOST; break
                     battery_similarity = 1.0 - abs(t1.battery - t2.battery)
                     final_prob = base_prob * catalyst_multiplier * (0.5 + battery_similarity * 0.5)
-
                     if random.random() < final_prob:
-                        # REACTION OCCURS!
-                        # Energy release
                         energy_burst = K_REACTION_ENERGY_RELEASE
-
-                        # Transfer energy to nearby TETs
                         for t_nearby in self.tets:
                             dist = np.linalg.norm(t_nearby.pos - t1.pos)
-                            if dist < REACTION_RANGE * 1.5:
-                                t_nearby.battery = min(1.0, t_nearby.battery + energy_burst * (1.0 - dist / (REACTION_RANGE * 1.5)))
-
-                        # Change t1 to product, remove t2
-                        t1.label = product
-                        t1.last_reaction_time = current_time
-                        t1.synthesis_count += 1
-
-                        # Drain some battery for synthesis
+                            if dist < REACTION_RANGE * 1.5: t_nearby.battery = min(1.0, t_nearby.battery + energy_burst * (1.0 - dist / (REACTION_RANGE * 1.5)))
+                        t1.label = product; t1.last_reaction_time = current_time; t1.synthesis_count += 1
                         t1.battery = max(0.1, t1.battery - SYNTHESIS_ENERGY_COST)
-
-                        # Visual: Make t2 "evaporate" by draining battery
-                        t2.battery = 0.0
-                        t2.label = ""
-                        t2.last_reaction_time = current_time
-
+                        t2.battery = 0.0; t2.label = ""; t2.last_reaction_time = current_time
                         reactions_this_frame.append((t1.label, t2.label, product))
-
-                        # Message
                         add_msg_fn(f"⚗️ Synthesized {product}!", duration=3)
-
-                        break  # One reaction per TET per frame
-
+                        msg = self.tech_tree.add_progress(1)
+                        if msg: add_msg_fn(msg, duration=5)
+                        break
         return reactions_this_frame
 
     def attempt_decomposition_reactions(self, scaled_dt, add_msg_fn):
-        """PHASE 4: Complex molecules can break down into simpler ones"""
-        current_time = time.time()
-        decompositions_this_frame = []
-
+        current_time = time.time(); decompositions_this_frame = []
         for t in self.tets:
-            # Only molecules with labels can decompose
-            if not t.label or t.label not in MOLECULE_SYMBOLS:
-                continue
-
-            # Cooldown
-            if current_time - t.last_reaction_time < 10.0:
-                continue
-
-            # Check if this molecule can decompose
+            if not t.label or t.label not in MOLECULE_SYMBOLS: continue
+            if current_time - t.last_reaction_time < 10.0: continue
             if t.label in DECOMPOSITION_REACTIONS:
-                # Low battery or high entropy increases decomposition chance
                 stress_factor = (1.0 - t.battery) * 2.0
-
-                # Distance from origin (entropy) increases chance
                 dist_from_origin = np.linalg.norm(t.pos - self.center_of_mass)
                 entropy_factor = min(2.0, dist_from_origin / 100.0)
-
                 decomp_prob = REACTION_PROBABILITY_BASE * 0.5 * scaled_dt * 60 * stress_factor * entropy_factor
-
                 if random.random() < decomp_prob:
-                    # DECOMPOSITION OCCURS!
-                    products = DECOMPOSITION_REACTIONS[t.label]
-
-                    # Change this TET to first product
-                    old_label = t.label
-                    t.label = products[0]
-                    t.last_reaction_time = current_time
-                    t.battery = min(1.0, t.battery + 0.2)  # Release energy
-
-                    # Spawn second product nearby if possible
-                    if len(products) > 1 and len(self.tets) < 200:  # Limit total TETs
+                    products = DECOMPOSITION_REACTIONS[t.label]; old_label = t.label
+                    t.label = products[0]; t.last_reaction_time = current_time; t.battery = min(1.0, t.battery + 0.2)
+                    if len(products) > 1 and len(self.tets) < 200:
                         offset = np.random.uniform(-1, 1, 3) * EDGE_LEN * 3
-                        new_pos = t.pos + offset
-                        new_tet = Tetrahedron(new_pos)
-                        new_tet.label = products[1]
-                        new_tet.battery = t.battery * 0.8
-                        new_tet.colors = list(Tetrahedron.FACE_COLORS)
+                        new_tet = Tetrahedron(t.pos + offset)
+                        new_tet.label = products[1]; new_tet.battery = t.battery * 0.8; new_tet.colors = list(Tetrahedron.FACE_COLORS)
                         self.tets.append(new_tet)
-
                     decompositions_this_frame.append((old_label, products))
                     add_msg_fn(f"💥 {old_label} decomposed!", duration=3)
-        # PHASE 5: Quantum enhancements
+                    if len(self.tets) < 5 and self.tech_tree.stage_idx > 3:
+                         msg = self.tech_tree.collapse()
+                         if msg: add_msg_fn(msg, duration=5)
         self.apply_erd_fluctuations(scaled_dt)
         tunnel_reactions = self.attempt_quantum_tunneling(scaled_dt, add_msg_fn)
         entangle_reactions = self.process_entangled_reactions(scaled_dt, add_msg_fn)
-
-        # Collect events for visuals
         quantum_events = []
         for _, _, product in tunnel_reactions:
             for t in self.tets:
@@ -1535,71 +1301,36 @@ class World:
         return decompositions_this_frame
 
     def spawn_reaction_particles(self, screen, cam, reactions, width, height):
-        """PHASE 4: Visual effects for reactions"""
-        if not hasattr(self, 'reaction_particles'):
-            self.reaction_particles = []
-
+        if not hasattr(self, 'reaction_particles'): self.reaction_particles = []
         for reaction in reactions:
-            # Handle both synthesis (3-tuple) and decomposition (2-tuple) reactions
-            if len(reaction) == 3:  # Synthesis: (r1, r2, product)
+            if len(reaction) == 3:
                 r1, r2, product = reaction
-                # Find TET with product label
                 for t in self.tets:
                     if t.label == product:
-                        particle = {
-                            'pos': t.pos.copy(),
-                            'vel': np.random.uniform(-1, 1, 3) * 20,
-                            'color': t.aura_color if t.aura_color else (255, 255, 0),
-                            'life': 1.0,
-                            'size': 8
-                        }
+                        particle = {'pos': t.pos.copy(), 'vel': np.random.uniform(-1, 1, 3) * 20, 'color': t.aura_color if t.aura_color else (255, 255, 0), 'life': 1.0, 'size': 8}
                         self.reaction_particles.append(particle)
-                        # Add 5-10 particles per reaction
                         for _ in range(random.randint(4, 9)):
-                            p = particle.copy()
-                            p['vel'] = np.random.uniform(-1, 1, 3) * 30
-                            p['color'] = tuple(np.array(p['color']) * random.uniform(0.6, 1.2))
-                            self.reaction_particles.append(p)
+                            p = particle.copy(); p['vel'] = np.random.uniform(-1, 1, 3) * 30; p['color'] = tuple(np.array(p['color']) * random.uniform(0.6, 1.2)); self.reaction_particles.append(p)
                         break
-            elif len(reaction) == 2:  # Decomposition: (old_label, products)
+            elif len(reaction) == 2:
                 old_label, products = reaction
-                # Find TET with old label
                 for t in self.tets:
                     if t.label == products[0]:
-                        particle = {
-                            'pos': t.pos.copy(),
-                            'vel': np.random.uniform(-1, 1, 3) * 15,
-                            'color': (255, 100, 0),  # Orange for decomposition
-                            'life': 1.0,
-                            'size': 6
-                        }
-                        self.reaction_particles.append(particle)
-                        break
-
-        # Update and render particles
+                        particle = {'pos': t.pos.copy(), 'vel': np.random.uniform(-1, 1, 3) * 15, 'color': (255, 100, 0), 'life': 1.0, 'size': 6}
+                        self.reaction_particles.append(particle); break
         particles_to_keep = []
         for p in self.reaction_particles:
-            p['pos'] += p['vel'] * 0.016  # Assume 60fps
-            p['vel'] *= 0.95  # Friction
-            p['life'] -= 0.02
-
+            p['pos'] += p['vel'] * 0.016; p['vel'] *= 0.95; p['life'] -= 0.02
             if p['life'] > 0:
                 screen_pos = cam.project(p['pos'])
                 if screen_pos[0] > -10000:
-                    alpha = int(p['life'] * 255)
-                    size = max(1, int(p['size'] * p['life']))
-                    color_with_alpha = tuple(list(p['color']) + [alpha])
-
-                    # Draw particle
+                    alpha = int(p['life'] * 255); size = max(1, int(p['size'] * p['life'])); color_with_alpha = tuple(list(p['color']) + [alpha])
                     try:
                         particle_surf = pygame.Surface((size*2, size*2), pygame.SRCALPHA)
                         pygame.draw.circle(particle_surf, color_with_alpha, (size, size), size)
                         screen.blit(particle_surf, (screen_pos[0]-size, screen_pos[1]-size))
-                    except:
-                        pass
-
+                    except: pass
                 particles_to_keep.append(p)
-
         self.reaction_particles = particles_to_keep
 
     def explode(self):
@@ -1623,41 +1354,40 @@ class World:
         self.apply_same_pole_repulsion(scaled_dt)
         self.apply_negative_pole_orientation(scaled_dt)
 
+        for t in self.tets:
+            if t.mind:
+                nearby = [o for o in self.tets if np.linalg.norm(o.pos - t.pos) < 5]
+                t.mind.perceive(nearby, [])
+                t.mind.decide_goal()
+                desire = t.mind.get_desire_vector(t.pos, nearby)
+                t.pos += desire * 0.01
+
         synthesis_reactions = self.attempt_synthesis_reactions(scaled_dt, add_msg_fn)
         decomposition_reactions = self.attempt_decomposition_reactions(scaled_dt, add_msg_fn)
         self._last_synth_reactions = synthesis_reactions
-
         self.center_of_mass = self.calculate_dynamic_center()
 
-        # Prepare arrays
         positions = np.array([t.pos for t in self.tets])
         positions_prev = np.array([t.pos_prev for t in self.tets])
         locals_arr = np.array([t.local for t in self.tets])
         locals_prev = np.array([t.local_prev for t in self.tets])
         batteries = np.array([t.battery for t in self.tets])
         orientation_biases = np.array([t.orientation_bias for t in self.tets])
-
         id_to_idx = {t.id: i for i, t in enumerate(self.tets)}
 
         if self.sticky_pairs:
             valid_pairs = [p for p in self.sticky_pairs if p[0].id in id_to_idx and p[2].id in id_to_idx]
             sticky_pairs_data = np.array([[id_to_idx[p[0].id], p[1], id_to_idx[p[2].id], p[3]] for p in valid_pairs], dtype=np.int32)
-        else:
-            sticky_pairs_data = np.empty((0, 4), dtype=np.int32)
+        else: sticky_pairs_data = np.empty((0, 4), dtype=np.int32)
 
         if self.joints:
             valid_joints = [j for j in self.joints if j.A.id in id_to_idx and j.B.id in id_to_idx]
             joints_data_jit = np.array([[id_to_idx[j.A.id], j.ia, id_to_idx[j.B.id], j.ib] for j in valid_joints], dtype=np.int32)
-        else:
-            joints_data_jit = np.empty((0, 4), dtype=np.int32)
+        else: joints_data_jit = np.empty((0, 4), dtype=np.int32)
 
         magnet_indices = np.array([i for i, t in enumerate(self.tets) if t.is_magnetized], dtype=np.int32)
-        if magnet_indices.size > 0:
-            magnet_polarities = np.array([t.magnetism for t in self.tets if t.is_magnetized], dtype=np.float64)
-        else:
-            magnet_polarities = np.empty(0, dtype=np.float64)
+        magnet_polarities = np.array([t.magnetism for t in self.tets if t.is_magnetized], dtype=np.float64) if magnet_indices.size > 0 else np.empty(0, dtype=np.float64)
 
-        # --- PHYSICS STEP ---
         positions, positions_prev, locals_arr, locals_prev, batteries = world_update_physics_jit(
             positions, positions_prev, locals_arr, locals_prev, batteries,
             scaled_dt, time_scale, Tetrahedron.EDGES_NP, sticky_pairs_data,
@@ -1669,31 +1399,18 @@ class World:
         )
 
         positions_prev = conserve_momentum_jit(positions, positions_prev)
-
-        # --- SAFETY: UNIVERSE BOUNDARY CHECK ---
-        # 1. Check for NaNs (Invalid numbers)
         mask_nan = ~np.all(np.isfinite(positions), axis=1)
-
-        # 2. Check for "Exploded" coordinates (Too large for KDTree squaring)
-        # Limit to 1,000,000 units (Solar system is ~2500)
         mask_huge = np.any(np.abs(positions) > 1e6, axis=1)
-
         mask_bad = mask_nan | mask_huge
 
         if np.any(mask_bad):
             count = np.sum(mask_bad)
-            print(f"!!! PHYSICS BOUNDARY HIT: Resetting {count} particles !!!")
-            # Reset to center with slight jitter to prevent re-collision
             positions[mask_bad] = np.random.uniform(-5, 5, (count, 3))
-            positions_prev[mask_bad] = positions[mask_bad] # Stop velocity
-
-            # Also reset locals to prevent internal explosion
+            positions_prev[mask_bad] = positions[mask_bad]
             locals_arr[mask_bad] = Tetrahedron.REST_NP.copy()
             locals_prev[mask_bad] = Tetrahedron.REST_NP.copy()
 
-        # --- SPATIAL INDEXING ---
         tree = cKDTree(positions)
-
         if len(self.tets) >= 2:
             distances, indices = tree.query(positions, k=2)
             stray_indices = np.where(distances[:, 1] > NEIGHBOR_DESIRE_THRESHOLD)[0]
@@ -1735,61 +1452,33 @@ class World:
     def set_state(self, state):
         self.tets.clear(); self.joints.clear(); self.sticky_pairs.clear()
         tet_map = {}
-
         for ts in state.get('tets', []):
             try:
-                # FIX: Explicitly force float64 for position
                 pos = np.array(ts['pos'], dtype=np.float64)
                 t = Tetrahedron(pos)
                 t.id = ts['id']
                 t.pos_prev = np.array(ts.get('pos_prev', pos), dtype=np.float64)
-
-                if 'local' in ts:
-                    t.local = np.array(ts['local'], dtype=np.float64)
-                    t.local_prev = np.array(ts.get('local_prev', t.local), dtype=np.float64)
-
+                if 'local' in ts: t.local = np.array(ts['local'], dtype=np.float64); t.local_prev = np.array(ts.get('local_prev', t.local), dtype=np.float64)
                 t.battery = float(ts.get('battery', 0.5))
-
-                if 'colors' in ts and ts['colors']:
-                    t.colors = [tuple(c) for c in ts['colors']]
-                else:
-                    t.colors = None
-
+                if 'colors' in ts and ts['colors']: t.colors = [tuple(c) for c in ts['colors']]
+                else: t.colors = None
                 t.label = ts.get('label', "")
-
-                # CRITICAL FIX: Force orientation_bias to be float64
-                # (The default [0,0,0] caused it to be Int32, crashing Numba physics)
                 t.orientation_bias = np.array(ts.get('orientation_bias', [0, 0, 0]), dtype=np.float64)
-
-                # Reset physics flags
-                t.is_magnetized = False
-                t.magnetism = 0
-                t.magnetic_strength = 0.0
-                t.locked_faces = []
-                t.molecule_type = None
-                t.aura_color = None
-                t.polarity_face_idx = None
-                t.last_reaction_time = 0.0
-                t.synthesis_count = 0
-                t.is_catalyst = False
-
+                t.is_magnetized = False; t.magnetism = 0; t.magnetic_strength = 0.0; t.locked_faces = []
+                t.molecule_type = None; t.aura_color = None; t.polarity_face_idx = None
+                t.last_reaction_time = 0.0; t.synthesis_count = 0; t.is_catalyst = False
                 self.tets.append(t); tet_map[t.id] = t
             except (KeyError, TypeError, ValueError): continue
-
         for js in state.get('joints', []):
             try:
                 if js['A_id'] in tet_map and js['B_id'] in tet_map:
                     self.joints.append(VertexJoint(tet_map[js['A_id']], js['ia'], tet_map[js['B_id']], js['ib']))
             except (KeyError, TypeError): continue
-
-        if 'center_of_mass' in state:
-            self.center_of_mass = np.array(state['center_of_mass'], dtype=np.float64)
-        else:
-            self.center_of_mass = self.calculate_dynamic_center()
-
-        print(f"Loaded {len(self.tets)} tets and {len(self.joints)} joints.")
+        if 'center_of_mass' in state: self.center_of_mass = np.array(state['center_of_mass'], dtype=np.float64)
+        else: self.center_of_mass = self.calculate_dynamic_center()
 
 net_avatars = {}; net_messages = deque(maxlen=5); game_mode = 'single_player'; host_instance, guest_instance = None, None
+
 def prime_jit_functions(cam):
     num_dummy = 4; dummy_pos = np.random.rand(num_dummy, 3) * 100; dummy_pos_prev = dummy_pos.copy()
     dummy_locals = np.random.rand(num_dummy, 4, 3); dummy_locals_prev = dummy_locals.copy(); dummy_batteries = np.random.rand(num_dummy)
@@ -1823,9 +1512,7 @@ def show_intro(screen, cam):
 def show_name_input_screen(screen):
     global WIDTH, HEIGHT, PLAYER_NAME, SAVE_FILENAME
     if ON_HUGGINGFACE:
-        PLAYER_NAME = "Host_Traveler"
-        SAVE_FILENAME = "Host_Traveler.json"
-        return
+        PLAYER_NAME = "Host_Traveler"; SAVE_FILENAME = "Host_Traveler.json"; return
     font_lg = pygame.font.SysFont('Georgia', 40); font_sm = pygame.font.SysFont('Arial', 24); active = True; input_text = ""
     while active:
         for e in pygame.event.get():
@@ -1845,10 +1532,7 @@ def show_name_input_screen(screen):
 def show_void_screen(screen, world):
     global WIDTH, HEIGHT
     if ON_HUGGINGFACE:
-        # FIX: Ensure world is not empty on start for HF
-        if not world.tets:
-             world.spawn()
-             world.tets[0].label = "Me"
+        if not world.tets: world.spawn(); world.tets[0].label = "Me"
         return
     font_lg = pygame.font.SysFont('Georgia', min(WIDTH, HEIGHT)//15); font_sm = pygame.font.SysFont('Arial', min(WIDTH, HEIGHT)//25)
     waiting = True
@@ -1890,6 +1574,22 @@ def draw_standard_black_hole_jit(target_surf, cam, flags, tl, center_pos, world)
     pygame.draw.circle(target_surf, (0,0,0), (cx, cy), int(shadow_radius))
     pygame.draw.circle(target_surf, (255, 240, 200), (cx, cy), int(shadow_radius * 1.05), 2)
 
+def draw_bot_thought_bubble(screen, cam, tetra, font):
+    if tetra.mind:
+        thought = tetra.mind.thought_bubble()
+        if thought:
+            sp = cam.project(tetra.pos)
+            if sp[0] > -10000:
+                try:
+                    surf = font.render(thought, True, (255, 255, 200))
+                    screen.blit(surf, (sp[0] + 10, sp[1] - 20))
+                except UnicodeEncodeError:
+                    # Fallback for systems without emoji support
+                    clean_thought = thought.encode('ascii', 'ignore').decode('ascii')
+                    if clean_thought:
+                        surf = font.render(clean_thought, True, (255, 255, 200))
+                        screen.blit(surf, (sp[0] + 10, sp[1] - 20))
+
 def draw_player_avatar(screen, cam, pos, color, label_id, name=None):
     base_verts = Tetrahedron.REST_NP * 2.0; verts1 = base_verts + pos; verts2 = (base_verts * np.array([1, -1, 1])) + pos
     all_verts = np.vstack((verts1, verts2)); all_screen_pts = [cam.project(v) for v in all_verts]
@@ -1919,6 +1619,7 @@ def get_user_input(screen, prompt, initial_text=""):
         screen.fill((10,10,20)); prompt_surf = font.render(prompt, True, (255,255,255)); input_surf = font.render(input_text, True, (255,255,0))
         screen.blit(prompt_surf, (WIDTH//2 - prompt_surf.get_width()//2, HEIGHT//2 - 50)); screen.blit(input_surf, (WIDTH//2 - input_surf.get_width()//2, HEIGHT//2)); pygame.display.flip(); clock.tick(30)
     return input_text
+
 def send_msg(sock, msg_dict):
     try: msg_json = json.dumps(msg_dict, cls=NumpyEncoder).encode('utf-8'); sock.sendall(len(msg_json).to_bytes(4, 'big') + msg_json)
     except (ConnectionResetError, BrokenPipeError, OSError): pass
@@ -1936,420 +1637,198 @@ def recv_msg(sock):
 
 class Host:
     def __init__(self, world, add_msg_fn, sound, port=None):
-        self.world = world
-        self.add_msg = add_msg_fn
-        self.clients = {}
-        self.lock = threading.RLock()
-        self.server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        self.port = 0
-        self.running = True
-        self.sound = sound
-        self.blacklist = set()
-        self.message_queue = queue.Queue()  # Queue for outgoing messages
-
-        # Load blacklist
+        self.world, self.add_msg, self.clients, self.lock, self.server = world, add_msg_fn, {}, threading.RLock(), socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        self.port, self.running, self.sound, self.blacklist, self.message_queue = 0, True, sound, set(), queue.Queue()
         try:
-            with open("blacklist.cfg", "r") as f:
-                self.blacklist = {line.strip() for line in f if line.strip()}
-            if self.blacklist:
-                print(f"### Blacklist loaded with {len(self.blacklist)} entries.")
-        except FileNotFoundError:
-            print("### blacklist.cfg not found.")
-
-        # Set socket options
+            with open("blacklist.cfg", "r") as f: self.blacklist = {line.strip() for line in f if line.strip()}
+        except FileNotFoundError: pass
         self.server.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-
-        # Find available port
         for p in ([port] if port else PORT_RANGE):
-            try:
-                self.server.bind(('', p))
-                self.port = p
-                break
-            except OSError:
-                continue
-        if self.port == 0:
-            self.server.bind(('', 0))
-            self.port = self.server.getsockname()[1]
-
-        # Start threads
+            try: self.server.bind(('', p)); self.port = p; break
+            except OSError: continue
+        if self.port == 0: self.server.bind(('', 0)); self.port = self.server.getsockname()[1]
         threading.Thread(target=self.discovery_thread, daemon=True).start()
         threading.Thread(target=self.accept_thread, daemon=True).start()
         threading.Thread(target=self.send_thread, daemon=True).start()
 
-
     def send_thread(self):
-        """Separate thread for sending data to clients - NEVER blocks"""
         while self.running:
-            with self.lock:
-                clients_to_check = list(self.clients.items())
-
+            with self.lock: clients_to_check = list(self.clients.items())
             for sock, client_data in clients_to_check:
                 try:
-                    # Process write queue with non-blocking sends
                     messages_to_retry = []
-
                     while True:
+                        try: msg = client_data['write_queue'].get_nowait()
+                        except queue.Empty: break
                         try:
-                            msg = client_data['write_queue'].get_nowait()
-                        except queue.Empty:
-                            break
-
-                        try:
-                            # Use non-blocking send
                             sent = sock.send(msg)
-                            if sent < len(msg):
-                                # Partial send - queue remainder
-                                messages_to_retry.append(msg[sent:])
-                        except BlockingIOError:
-                            # Socket buffer full - retry later
-                            messages_to_retry.append(msg)
-                        except (ConnectionResetError, BrokenPipeError, OSError) as e:
-                            # Connection dead - mark for cleanup
-                            print(f"Client write error: {e}")
-                            self.mark_for_cleanup(sock)
-                            break
-
-                    # Re-queue messages that need retry (at front of queue)
+                            if sent < len(msg): messages_to_retry.append(msg[sent:])
+                        except BlockingIOError: messages_to_retry.append(msg)
+                        except (ConnectionResetError, BrokenPipeError, OSError): self.mark_for_cleanup(sock); break
                     for msg in reversed(messages_to_retry):
                         try:
-                            # If queue full, drop oldest messages
-                            if client_data['write_queue'].full():
-                                try:
-                                    client_data['write_queue'].get_nowait()
-                                except queue.Empty:
-                                    pass
+                            if client_data['write_queue'].full(): client_data['write_queue'].get_nowait()
                             client_data['write_queue'].put_nowait(msg)
-                        except queue.Full:
-                            # Client too slow - will be cleaned up next iteration
-                            pass
-
-                except Exception as e:
-                    print(f"Send thread error: {e}")
-
-            time.sleep(0.001)  # Small sleep to prevent CPU spinning
+                        except (queue.Full, queue.Empty): pass
+                except Exception: pass
+            time.sleep(0.001)
 
     def discovery_thread(self):
         udp_sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         udp_sock.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
         udp_sock.bind(('', DISCOVERY_PORT))
-        udp_sock.settimeout(0.5)  # Non-blocking with timeout
-
+        udp_sock.settimeout(0.5)
         while self.running:
             try:
                 data, addr = udp_sock.recvfrom(1024)
-                if data == b"DISCOVER_TETCRAFT_HOST":
-                    udp_sock.sendto(f"TETCRAFT_HOST_HERE:{self.port}".encode('utf-8'), addr)
-            except socket.timeout:
-                continue
-            except OSError:
-                break
+                if data == b"DISCOVER_TETCRAFT_HOST": udp_sock.sendto(f"TETCRAFT_HOST_HERE:{self.port}".encode('utf-8'), addr)
+            except (socket.timeout, OSError): continue
 
     def accept_thread(self):
-        """Separate thread for accepting connections"""
-        self.server.listen(5)
-        self.server.settimeout(0.5)  # Non-blocking accept
-        print(f"### HOSTING on port {self.port} ###")
-
+        self.server.listen(5); self.server.settimeout(0.5)
         while self.running:
             try:
                 client_sock, addr = self.server.accept()
-                if addr[0] in self.blacklist:
-                    print(f"### Rejected blacklisted IP: {addr[0]}")
-                    client_sock.close()
-                    continue
-
-                # Set socket to non-blocking
+                if addr[0] in self.blacklist: client_sock.close(); continue
                 client_sock.setblocking(False)
-
                 client_id = f"guest_{addr[0]}:{addr[1]}"
                 with self.lock:
-                    self.clients[client_sock] = {
-                        'id': client_id,
-                        'addr': addr,
-                        'name': 'Unknown',
-                        'read_buffer': b'',
-                        'write_queue': queue.Queue(maxsize=100)  # Per-client write queue
-                    }
-                    net_avatars[client_id] = {
-                        'pos': [0, 0, 0],
-                        'color': [random.randint(50, 200) for _ in range(3)],
-                        'name': 'Unknown'
-                    }
-
+                    self.clients[client_sock] = {'id': client_id, 'addr': addr, 'name': 'Unknown', 'read_buffer': b'', 'write_queue': queue.Queue(maxsize=100)}
+                    net_avatars[client_id] = {'pos': [0, 0, 0], 'color': [random.randint(50, 200) for _ in range(3)], 'name': 'Unknown'}
                 threading.Thread(target=self.handle_client, args=(client_sock, client_id), daemon=True).start()
-
-            except socket.timeout:
-                continue
-            except OSError:
-                break
+            except (socket.timeout, OSError): continue
 
     def handle_client(self, sock, client_id):
-        """Handle client in separate thread - only for reading"""
         while self.running:
             try:
-                # Non-blocking read
                 ready_to_read, _, _ = select.select([sock], [], [], 0.1)
-                if not ready_to_read:
-                    time.sleep(0.01)
-                    continue
-
+                if not ready_to_read: time.sleep(0.01); continue
                 data = sock.recv(4096)
-                if not data:
-                    break
-
-                # Process received data
+                if not data: break
                 with self.lock:
-                    if sock not in self.clients:
-                        break
-
+                    if sock not in self.clients: break
                     client_data = self.clients[sock]
                     client_data['read_buffer'] += data
-
-                    # Process complete messages
                     while len(client_data['read_buffer']) >= 4:
                         msg_len = int.from_bytes(client_data['read_buffer'][:4], 'big')
-                        if len(client_data['read_buffer']) < 4 + msg_len:
-                            break
-
+                        if len(client_data['read_buffer']) < 4 + msg_len: break
                         msg_json = client_data['read_buffer'][4:4 + msg_len]
                         client_data['read_buffer'] = client_data['read_buffer'][4 + msg_len:]
-
-                        try:
-                            msg = json.loads(msg_json.decode('utf-8'))
-                            self.process_message(sock, client_id, client_data, msg)
-                        except (json.JSONDecodeError, UnicodeDecodeError):
-                            print(f"Malformed message from {client_id}")
-
-            except (socket.timeout, BlockingIOError):
-                continue
-            except (ConnectionResetError, BrokenPipeError, OSError):
-                break
-
-        # Cleanup on disconnect
+                        try: self.process_message(sock, client_id, client_data, json.loads(msg_json.decode('utf-8')))
+                        except: pass
+            except (socket.timeout, BlockingIOError): continue
+            except: break
         with self.lock:
             if sock in self.clients:
-                client_name = self.clients[sock]['name']
-                self.clients.pop(sock, None)
-                net_avatars.pop(client_id, None)
-                self.add_msg(f"{client_name} disconnected.")
-
-        try:
-            sock.close()
-        except OSError:
-            pass
+                self.clients.pop(sock, None); net_avatars.pop(client_id, None); self.add_msg(f"{client_id} disconnected.")
+        try: sock.close()
+        except: pass
 
     def process_message(self, sock, client_id, client_data, msg):
-        """Process incoming messages - runs in client thread"""
         if msg['type'] == 'identify':
-            client_data['name'] = msg['name']
-            net_avatars[client_id]['name'] = msg['name']
-            self.add_msg(f"{msg['name']} joined.")
-
-            # Broadcast welcome
-            welcome = {'type': 'chat', 'data': f"{msg['name']} joined the kleinverse."}
-            self.broadcast_message(welcome, exclude=sock)
-
+            client_data['name'] = msg['name']; net_avatars[client_id]['name'] = msg['name']; self.add_msg(f"{msg['name']} joined.")
+            self.broadcast_message({'type': 'chat', 'data': f"{msg['name']} joined."}, exclude=sock)
         elif msg['type'] == 'cam_update':
-            if client_id in net_avatars:
-                net_avatars[client_id]['pos'] = np.array(msg['data']['pan'])
-
+            if client_id in net_avatars: net_avatars[client_id]['pos'] = np.array(msg['data']['pan'])
         elif msg['type'] == 'chat':
-            if self.sound and AUDIO_ENABLED:
-                self.sound.play()
-
-            sender_name = client_data.get('name', client_id)
-            if isinstance(msg['data'], str) and msg['data'].startswith('<'):
-                message = msg['data']
-            else:
-                message = f"<{sender_name}>: {msg['data']}"
-
-            self.add_msg(message)
-
-            # Broadcast to other clients
-            broadcast_msg = {'type': 'chat', 'data': message}
-            self.broadcast_message(broadcast_msg, exclude=sock)
-
-        elif msg['type'] == 'set_label':
-            # Update world state in main thread via queue
-            self.message_queue.put(('set_label', msg['id'], msg['label']))
+            if self.sound and AUDIO_ENABLED: self.sound.play()
+            msg_str = msg['data'] if isinstance(msg['data'], str) and msg['data'].startswith('<') else f"<{client_data.get('name', client_id)}>: {msg['data']}"
+            self.add_msg(msg_str); self.broadcast_message({'type': 'chat', 'data': msg_str}, exclude=sock)
+        elif msg['type'] == 'set_label': self.message_queue.put(('set_label', msg['id'], msg['label']))
 
     def broadcast_message(self, msg_dict, exclude=None):
-        """Queue message for broadcast - non-blocking"""
         try:
-            msg_json = json.dumps(msg_dict, cls=NumpyEncoder).encode('utf-8')
-            msg_len = len(msg_json)
-            full_msg = msg_len.to_bytes(4, 'big') + msg_json
-
+            full_msg = len(json.dumps(msg_dict, cls=NumpyEncoder).encode('utf-8')).to_bytes(4, 'big') + json.dumps(msg_dict, cls=NumpyEncoder).encode('utf-8')
             with self.lock:
                 for sock, client_data in list(self.clients.items()):
-                    if sock == exclude:
-                        continue
-
-                    try:
-                        # Put in per-client queue (non-blocking)
-                        client_data['write_queue'].put_nowait(full_msg)
-                    except queue.Full:
-                        # Drop message if queue full (client too slow)
-                        print(f"Dropping message for slow client {client_data['name']}")
-                        # Mark slow client for disconnect
-                        self.mark_for_cleanup(sock)
-
-        except Exception as e:
-            print(f"Error in broadcast_message: {e}")
+                    if sock == exclude: continue
+                    try: client_data['write_queue'].put_nowait(full_msg)
+                    except queue.Full: self.mark_for_cleanup(sock)
+        except: pass
 
     def broadcast_state(self):
-        """Non-blocking state broadcast using write queues - NEVER blocks main thread"""
         try:
-            # Simple protection: skip if too many TETs (state too large)
-            if len(self.world.tets) > 500:
-                print("Warning: Too many TETs, skipping state broadcast to prevent lag")
-                return
+            if len(self.world.tets) > 500: return
+            out_avatars = net_avatars.copy(); out_avatars['host'] = {'name': PLAYER_NAME, 'pos': [0.0, 0.0, 0.0], 'color': [200, 200, 255]}
+            self.broadcast_message({'type': 'world_state', 'data': {'world': self.world.get_state(), 'avatars': out_avatars}})
+        except: pass
 
-            state = self.world.get_state()
-            out_avatars = net_avatars.copy()
-            out_avatars['host'] = {
-                'name': PLAYER_NAME,
-                'pos': [0.0, 0.0, 0.0],    # Fix: Added default position
-                'color': [200, 200, 255]   # Fix: Added default color
-            }
-            full_state = {'type': 'world_state', 'data': {'world': state, 'avatars': out_avatars}}
-
-            # Use broadcast_message which uses the non-blocking queue system
-            self.broadcast_message(full_state)
-        except Exception as e:
-            print(f"Error preparing broadcast: {e}")
-
-    def mark_for_cleanup(self, sock):
-        """Mark socket for cleanup (handled in main thread)"""
-        self.message_queue.put(('cleanup', sock))
-
+    def mark_for_cleanup(self, sock): self.message_queue.put(('cleanup', sock))
     def stop(self):
-        """Clean shutdown"""
         self.running = False
-
         with self.lock:
             for sock in self.clients:
-                try:
-                    sock.close()
-                except OSError:
-                    pass
+                try: sock.close()
+                except: pass
             self.clients.clear()
-
-        try:
-            self.server.close()
-        except OSError:
-            pass
+        try: self.server.close()
+        except: pass
 
 class Guest:
     def __init__(self, host_ip, port, world, cam, add_msg_fn, sound):
         self.world, self.cam, self.add_msg, self.sock = world, cam, add_msg_fn, socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        self.host_id = f"host_{host_ip}:{port}"
-        self.running = True
-        self.world_state_queue = queue.Queue(maxsize=1)
-        self.latest_avatars = {}
-
-        # Set socket to non-blocking
-        self.sock.settimeout(2.0)  # 2 second timeout
-
+        self.host_id, self.running, self.world_state_queue, self.latest_avatars = f"host_{host_ip}:{port}", True, queue.Queue(maxsize=1), {}
+        self.sock.settimeout(2.0)
         try:
-            self.sock.connect((host_ip, port))
-            self.sock.setblocking(False)  # Non-blocking after connect
+            self.sock.connect((host_ip, port)); self.sock.setblocking(False)
             send_msg(self.sock, {'type': 'identify', 'name': PLAYER_NAME})
             threading.Thread(target=self.listen, daemon=True).start()
-        except Exception as e:
-            add_msg_fn(f"Connection failed: {e}")
-            self.running = False
+        except Exception as e: add_msg_fn(f"Connection failed: {e}"); self.running = False
 
     def listen(self):
         while self.running:
             try:
-                # Use select to check if data is available
                 ready_to_read, _, _ = select.select([self.sock], [], [], 0.1)
-                if not ready_to_read:
-                    time.sleep(0.001)  # Small sleep to prevent CPU spinning
-                    continue
-
+                if not ready_to_read: time.sleep(0.001); continue
                 msg = recv_msg(self.sock)
-                if msg is None:
-                    self.add_msg("Disconnected from host.")
-                    self.running = False
-                    break
-
+                if msg is None: self.add_msg("Disconnected."); self.running = False; break
                 if msg['type'] == 'world_state':
-                    try:
-                        self.world_state_queue.put_nowait(msg['data']['world'])
-                    except queue.Full:
-                        # Discard old state if queue is full
-                        try:
-                            self.world_state_queue.get_nowait()
-                            self.world_state_queue.put_nowait(msg['data']['world'])
-                        except queue.Empty:
-                            pass
-
-                    # Update avatars
-                    if 'avatars' in msg['data']:
-                        self.latest_avatars = msg['data']['avatars'].copy()
-
-                elif msg['type'] == 'chat':
-                    if isinstance(msg['data'], str):
-                        self.add_msg(msg['data'])
-                    else:
-                        self.add_msg(f"<Host>: {msg['data']}")
-
-            except (socket.timeout, BlockingIOError):
-                continue
-            except Exception as e:
-                print(f"Guest listen error: {e}")
-                time.sleep(0.1)
+                    try: self.world_state_queue.put_nowait(msg['data']['world'])
+                    except queue.Full: self.world_state_queue.get_nowait(); self.world_state_queue.put_nowait(msg['data']['world'])
+                    if 'avatars' in msg['data']: self.latest_avatars = msg['data']['avatars'].copy()
+                elif msg['type'] == 'chat': self.add_msg(msg['data'] if isinstance(msg['data'], str) else f"<Host>: {msg['data']}")
+            except (socket.timeout, BlockingIOError): continue
+            except: self.running = False; break
 
     def get_latest_world_state(self):
-        try:
-            return self.world_state_queue.get_nowait()
-        except queue.Empty:
-            return None
-
+        try: return self.world_state_queue.get_nowait()
+        except queue.Empty: return None
     def send_cam_update(self):
-        try:
-            send_msg(self.sock, {'type': 'cam_update', 'data': self.cam.get_state()})
-        except Exception:
-            pass
-
+        try: send_msg(self.sock, {'type': 'cam_update', 'data': self.cam.get_state()})
+        except: pass
     def send_chat(self, text):
-        try:
-            send_msg(self.sock, {'type': 'chat', 'data': f"<{PLAYER_NAME}>: {text}"})
-        except Exception:
-            pass
-
+        try: send_msg(self.sock, {'type': 'chat', 'data': f"<{PLAYER_NAME}>: {text}"})
+        except: pass
     def send_label(self, tet_id, label):
-        try:
-            send_msg(self.sock, {'type': 'set_label', 'id': tet_id, 'label': label})
-        except Exception:
-            pass
-
+        try: send_msg(self.sock, {'type': 'set_label', 'id': tet_id, 'label': label})
+        except: pass
     def stop(self):
         self.running = False
-        try:
-            self.sock.shutdown(socket.SHUT_RDWR)
-            self.sock.close()
-        except OSError:
-            pass
+        try: self.sock.shutdown(socket.SHUT_RDWR); self.sock.close()
+        except: pass
 
 def stop_all_networking():
     global host_instance, guest_instance
     if host_instance: host_instance.stop(); host_instance = None
     if guest_instance: guest_instance.stop(); guest_instance = None
-
 atexit.register(stop_all_networking)
 
-# FIX FOR INVALID FILE DESCRIPTOR ON HUGGING FACE SHUTDOWN
 def shutdown_handler(signum, frame):
     global GAME_RUNNING
     GAME_RUNNING = False
     stop_all_networking()
     sys.exit(0)
-
 signal.signal(signal.SIGTERM, shutdown_handler)
 signal.signal(signal.SIGINT, shutdown_handler)
+
+def safe_world_update(world, new_state, last_hash=""):
+    try:
+        import hashlib
+        state_str = json.dumps(new_state, sort_keys=True, cls=NumpyEncoder)
+        current_hash = hashlib.md5(state_str.encode()).hexdigest()
+        if current_hash != last_hash: world.set_state(new_state)
+        return current_hash
+    except: return last_hash
 
 def main(threaded=False):
     print("\n\nIf needed create and fill with 1 IP per line blacklist.cfg\n\nCLI Options:\n  -connect <ip>:<port> (Initiate guest mode)\n  -listen <port> (Initiate host mode port)\n  -file <filename> (Load saved instant [json])\n  -t <scale> -z <zoom> -o <x,y,z>\n\nTET~CRAFT Initializing...\n\n")
@@ -2361,66 +1840,42 @@ def main(threaded=False):
         elif args[i] == '-listen':
             cli_listen_port = DEFAULT_PORT
             if i + 1 < len(args) and args[i+1].isdigit(): cli_listen_port = int(args[i+1]); i += 1
-        elif args[i] == '-file' and i + 1 < len(args): cli_load_file = args[i+1]; i += 1
-        elif args[i] == '-t' and i + 1 < len(args):
-            try: cli_time_scale = float(args[i+1]); i += 1
-            except ValueError: print(f"Invalid value for -t: {args[i+1]}")
-        elif args[i] == '-z' and i + 1 < len(args):
-            try: cli_zoom_factor = float(args[i+1]); i += 1
-            except ValueError: print(f"Invalid value for -z: {args[i+1]}")
-        elif args[i] == '-o' and i + 1 < len(args):
-            try:
-                coords = [float(c) for c in args[i+1].split(',')]
-                if len(coords) == 3: cli_cam_pan = coords; i += 1
-                else: print(f"Invalid format for -o: must be x,y,z. Got: {args[i+1]}")
-            except ValueError: print(f"Invalid coordinates for -o: {args[i+1]}")
+        elif args[i] == '-file' and i + 1 < len(args):
+            cli_load_file = args[i+1]; i += 1
+            cli_time_scale = .000001
+        elif args[i] == '-t' and i + 1 < len(args): cli_time_scale = float(args[i+1]); i += 1
+        elif args[i] == '-z' and i + 1 < len(args): cli_zoom_factor = float(args[i+1]); i += 1
+        elif args[i] == '-o' and i + 1 < len(args): cli_cam_pan = [float(c) for c in args[i+1].split(',')]; i += 1
         i += 1
 
-    if ON_HUGGINGFACE and cli_load_file is None:
-        # Try to find the specific file
-        if os.path.exists("nothing.json"):
-            cli_load_file = "nothing.json"
-            print("### HF Mode: Found nothing.json - Auto-loading... ###")
-        else:
-            # If not found, do nothing (cli_load_file stays None, standard Void logic triggers)
-            print("### HF Mode: nothing.json not found - Starting fresh in Void. ###")
-
     global WIDTH, HEIGHT, clock, game_mode, host_instance, guest_instance, net_avatars, net_messages, AUDIO_ENABLED, GRADIO_FRAME_BUFFER, GAME_RUNNING
-
     pygame.init()
+    try: pygame.mixer.init(44100, -16, 2, 512); AUDIO_ENABLED = True
+    except: print("Sound Init Failed. Running Silent."); AUDIO_ENABLED = False
 
-    try:
-        pygame.mixer.init(44100, -16, 2, 512)
-        AUDIO_ENABLED = True
-    except Exception:
-        print("Sound Init Failed. Running Silent.")
-        AUDIO_ENABLED = False
+    # Initialize sounds AFTER mixer init
+    ping_sound = generate_ping_sound()
+    boing_sound = generate_boing_sound()
 
-    if ON_HUGGINGFACE:
-        WIDTH, HEIGHT = 800, 600
-        screen = pygame.display.set_mode((WIDTH, HEIGHT))
-    else:
-        screen = pygame.display.set_mode((WIDTH, HEIGHT), pygame.RESIZABLE)
-
-    pygame.display.set_caption("TET~CRAFT v4 The Fourth Temple - free from DigitizingHumanity.com")
+    if ON_HUGGINGFACE: WIDTH, HEIGHT = 800, 600; screen = pygame.display.set_mode((WIDTH, HEIGHT))
+    else: screen = pygame.display.set_mode((WIDTH, HEIGHT), pygame.RESIZABLE)
+    pygame.display.set_caption("TET~CRAFT v5.0D The Fourth Temple")
     clock = pygame.time.Clock(); font_l = pygame.font.SysFont('Georgia', 32); font_s = pygame.font.SysFont(None, 24)
-    world = World(generate_boing_sound()); cam = Camera()
+    world = World(boing_sound); cam = Camera()
 
     show_intro(screen, cam)
     show_name_input_screen(screen)
-    ping_sound = generate_ping_sound()
 
     flags = {'t0': False, 't1': False, 't2': False, 'j1': False, 't3': False}; msgs = []
-    dragging, rotating, last_mouse = None, False, (0,0); time_scale = 1.0; reset_timer = None
-    locked_sticky_target, sticky_unlock_timer = None, None; frame_count = 0
-    rmb_down_timer, rmb_start_pos = None, None; past_projection = PastProjection4Sphere()
-    animation_state = 'IDLE'
+    dragging, rotating, last_mouse = None, False, (0,0); time_scale = 1.0
+    locked_sticky_target = None; frame_count = 0
+    past_projection = PastProjection4Sphere()
     disk_surf = None
+    last_bot_move = time.time(); last_bot_spawn = time.time() - 3590; last_bot_thought = time.time()
 
-    # Bot Timers - Offset spawn slightly so it happens 10s after boot
-    last_bot_move = time.time()
-    last_bot_spawn = time.time() - 3590
-    last_bot_thought = time.time()
+    # Bot State Machine
+    bot_state = 'IDLE' # IDLE, WAITING_FOR_ANSWER
+    bot_reply_timer = 0.0
 
     if cli_time_scale is not None: time_scale = cli_time_scale
     if cli_zoom_factor is not None: cam.dist = DEFAULT_CAM_DIST / max(0.01, cli_zoom_factor)
@@ -2428,46 +1883,31 @@ def main(threaded=False):
 
     def stop_guest_mode():
         global guest_instance, game_mode
-        if guest_instance:
-            guest_instance.stop()
-            guest_instance = None
-            game_mode = 'single_player'
-            net_avatars.clear()
-            add_timed_message("Disconnected from host.", duration=3)
-            return True
+        if guest_instance: guest_instance.stop(); guest_instance = None; game_mode = 'single_player'; net_avatars.clear(); add_timed_message("Disconnected.", duration=3); return True
         return False
     def add_timed_message(text, y_offset=0, duration=4): msgs.append([text, y_offset, pygame.time.get_ticks() + duration * 1000])
     def add_network_message(text): net_messages.append([text, time.time() + 8])
     def reset_simulation(show_message=True):
-        nonlocal flags, time_scale, world, cam, dragging, rotating, locked_sticky_target, sticky_unlock_timer, animation_state
+        nonlocal flags, time_scale, dragging, rotating, locked_sticky_target
         global game_mode, host_instance, guest_instance, net_avatars, net_messages
-
-        # Stop networking
-        if host_instance:
-            host_instance.stop()
-            host_instance = None
-        if guest_instance:
-            stop_guest_mode()  # Use the function instead of direct access
-
-        # Clear world state
+        if host_instance: host_instance.stop(); host_instance = None
+        if guest_instance: stop_guest_mode()
         world.tets.clear(); world.joints.clear(); world.sticky_pairs.clear(); past_projection.points.clear()
         net_avatars.clear(); net_messages.clear(); flags = {k: False for k in flags}
-
-        # Reset camera and other states
         cam.__init__(); time_scale = 1.0; game_mode = 'single_player'; dragging, rotating = None, False
-        locked_sticky_target, sticky_unlock_timer = None, None; animation_state = 'IDLE'
+        world.tech_tree = TechTree()
     def save_world_to_file():
-        if not world.tets: add_timed_message("Cannot save an empty kleinverse.", duration=3); return
+        if not world.tets: add_timed_message("Cannot save empty.", duration=3); return
         try:
             with open(SAVE_FILENAME, 'w') as f: json.dump(world.get_state(), f, cls=NumpyEncoder, indent=2)
-            add_timed_message(f"Saved Instant to {SAVE_FILENAME}", duration=3)
-        except IOError as e: add_timed_message(f"Error saving file: {e}", duration=4)
+            add_timed_message(f"Saved to {SAVE_FILENAME}", duration=3)
+        except IOError as e: add_timed_message(f"Error saving: {e}", duration=4)
     def connect_as_guest(host_ip, port):
         global guest_instance, game_mode
         try:
             save_world_to_file(); guest_instance, game_mode = Guest(host_ip, int(port), world, cam, add_network_message, ping_sound), 'guest'
-            add_timed_message(f"Connected to {host_ip}:{port}", duration=3); world.tets.clear(); world.joints.clear(); world.sticky_pairs.clear(); return True
-        except Exception as e: add_timed_message(f"Failed to connect: {e}", duration=4); return False
+            add_timed_message(f"Connected {host_ip}:{port}", duration=3); world.tets.clear(); world.joints.clear(); world.sticky_pairs.clear(); return True
+        except Exception as e: add_timed_message(f"Failed connect: {e}", duration=4); return False
     def discover_and_join():
         global guest_instance, game_mode
         if game_mode != 'single_player': return
@@ -2481,29 +1921,12 @@ def main(threaded=False):
         except socket.timeout: pass
         if host_addr: connect_as_guest(host_addr[0], host_addr[1])
         else:
-            user_input = get_user_input(screen, "Enter Host IP:Port (e.g., 192.168.1.5:65420):")
-            if user_input:
-                parts = user_input.split(':'); ip = parts[0]; port = int(parts[1]) if len(parts) > 1 else DEFAULT_PORT
-                connect_as_guest(ip, port)
-
+            user_input = get_user_input(screen, "Enter IP:Port:")
+            if user_input: parts = user_input.split(':'); connect_as_guest(parts[0], int(parts[1]) if len(parts) > 1 else DEFAULT_PORT)
     def initiate_host_mode(port=None):
         global host_instance, game_mode
-        if game_mode == 'single_player':
-            host_instance, game_mode = Host(world, add_network_message, ping_sound, port), 'host'
-            add_timed_message(f"Hosting on port {host_instance.port}", duration=3)
-        elif game_mode == 'host':
-            # Second H press stops hosting
-            if stop_host_mode():
-                add_timed_message("Host mode stopped. All clients disconnected.", duration=3)
-
-    def stop_host_mode():
-        global host_instance, game_mode
-        if host_instance:
-            host_instance.stop()
-            host_instance = None
-            game_mode = 'single_player'
-            return True
-        return False
+        if game_mode == 'single_player': host_instance, game_mode = Host(world, add_network_message, ping_sound, port), 'host'; add_timed_message(f"Hosting port {host_instance.port}", duration=3)
+        elif game_mode == 'host' and host_instance: host_instance.stop(); host_instance = None; game_mode = 'single_player'; add_timed_message("Host stopped", duration=3)
 
     loaded_from_save = False
     if cli_connect_addr: connect_as_guest(*(cli_connect_addr.split(':') if ':' in cli_connect_addr else (cli_connect_addr, DEFAULT_PORT)))
@@ -2511,49 +1934,20 @@ def main(threaded=False):
     if cli_load_file:
         if os.path.exists(cli_load_file):
             try:
-                # FIX 1: 'utf-8-sig' handles the BOM (hidden characters) in your save file
-                with open(cli_load_file, 'r', encoding='utf-8-sig') as f:
-                    state = json.load(f)
-                    world.set_state(state)
-
-                loaded_from_save = True
-                print(f"### SUCCESS: Loaded {cli_load_file} ###")
-
-                if world.tets:
-                    world.center_of_mass = world.calculate_dynamic_center()
-                    cam.pan = world.center_of_mass.copy()
-
-                    max_dist = 0
-                    for t in world.tets:
-                        d = np.linalg.norm(t.pos - world.center_of_mass)
-                        if d > max_dist: max_dist = d
-
-                    if max_dist > 100:
-                        cam.dist = max_dist * 2.5
-                        print(f"### Auto-Zoomed to fit Universe (Radius: {max_dist:.1f}) ###")
-
-            except Exception as e:
-                print(f"### ERROR LOADING FILE: {e} ###")
-                # Force a message so you see it in the void screen logic if possible
-                msgs.append([f"Load Error: {e}", 0, pygame.time.get_ticks() + 10000])
-        else:
-            print(f"### FILE NOT FOUND: {cli_load_file} ###")
-            print(f"### Current Directory: {os.getcwd()} ###")
+                with open(cli_load_file, 'r', encoding='utf-8-sig') as f: world.set_state(json.load(f)); loaded_from_save = True
+                if world.tets: cam.pan = world.center_of_mass.copy()
+            except Exception as e: print(f"Load Error: {e}")
     if not (loaded_from_save or cli_connect_addr or cli_listen_port): show_void_screen(screen, world)
 
-    if ON_HUGGINGFACE:
-        host_instance = Host(world, lambda x: net_messages.append([x, time.time()+8]), ping_sound, DEFAULT_PORT)
-        game_mode = 'host'
+    if ON_HUGGINGFACE: host_instance = Host(world, lambda x: net_messages.append([x, time.time()+8]), ping_sound, DEFAULT_PORT); game_mode = 'host'
 
     while GAME_RUNNING:
         unscaled_dt = min(0.1, clock.tick(FPS) / 1000.0)
         now = time.time()
         scaled_dt, frame_count, fps = unscaled_dt * time_scale, frame_count + 1, clock.get_fps()
         if 0 < fps < 45 and time_scale > 1.0: time_scale = max(1.0, time_scale * 0.99)
-
         is_interactive = (game_mode in ['single_player', 'host']) and not ON_HUGGINGFACE
         hovered_vertex = None
-
         mx, my = pygame.mouse.get_pos()
         mouse_arr = np.array([mx, my], dtype=np.float64)
 
@@ -2562,132 +1956,63 @@ def main(threaded=False):
             curr_verts_screen = cam.project_many(curr_verts_world)
             if is_interactive and not rotating:
                 dist_sq = np.sum((curr_verts_screen - mouse_arr)**2, axis=1)
-                min_dist_sq_val = np.min(dist_sq) if dist_sq.size > 0 else float('inf')
-                if min_dist_sq_val < SELECTION_RADIUS**2:
+                if dist_sq.size > 0 and np.min(dist_sq) < SELECTION_RADIUS**2:
                     min_idx = np.argmin(dist_sq)
-                    if curr_verts_screen[min_idx][0] > -9000:
-                        hovered_vertex = (world.tets[min_idx // 4], min_idx % 4)
-        else:
-            curr_verts_world = np.empty((0,3)); curr_verts_screen = np.empty((0,2))
+                    if curr_verts_screen[min_idx][0] > -9000: hovered_vertex = (world.tets[min_idx // 4], min_idx % 4)
+        else: curr_verts_screen = np.empty((0,2))
 
         if is_interactive and hovered_vertex and not dragging:
             h_tet = hovered_vertex[0]; h_tet.pos_prev[:] = h_tet.pos[:]; h_tet.local_prev[:] = h_tet.local[:]
 
-        # 3. Thoughts (moved from inside bot vision section, hugging face only)
-        if now - last_bot_thought > 61:
-            if len(world.tets) > 1:
-                 # --- Helper: Find physical neighbors ---
-                def get_neighbors(target_tet, exclude_id=None):
-                    nb = []
-                    # 1. Check Joints (Strongest link)
-                    for j in world.joints:
-                        if j.A.id == target_tet.id and j.B.id != exclude_id: nb.append(j.B)
-                        elif j.B.id == target_tet.id and j.A.id != exclude_id: nb.append(j.A)
-                    # 2. Check Sticky Pairs (Desire)
-                    if not nb:
-                        for p in world.sticky_pairs:
-                            if p[0].id == target_tet.id and p[2].id != exclude_id: nb.append(p[2])
-                            elif p[2].id == target_tet.id and p[0].id != exclude_id: nb.append(p[0])
-                    # 3. Check Proximity (Loose association)
-                    if not nb:
-                        for t in world.tets:
-                            if t.id == target_tet.id or t.id == exclude_id: continue
-                            if np.linalg.norm(t.pos - target_tet.pos) < EDGE_LEN * 4:
-                                nb.append(t)
-                    return nb
-
-                # 1. Pick Subject (T1)
+        # -----------------------------------------------------
+        # BOT THOUGHT & QUANTUM REPLY LOGIC (STATE MACHINE)
+        # -----------------------------------------------------
+        if len(world.tets) > 1:
+            # 1. Generate Question
+            if bot_state == 'IDLE' and now - last_bot_thought > 60:
                 t1 = random.choice(world.tets)
-                label1 = t1.label if t1.label else "Unknown"
+                # Find neighbors
+                neighbors = [t for t in world.tets if t.id != t1.id and np.linalg.norm(t.pos - t1.pos) < EDGE_LEN*5]
+                t2 = random.choice(neighbors) if neighbors else random.choice([t for t in world.tets if t.id != t1.id])
 
-                # 2. Pick Object (T2) - Neighbor of T1
-                n1 = get_neighbors(t1)
-                # If no neighbors, pick random, but not T1
-                t2 = random.choice(n1) if n1 else random.choice([t for t in world.tets if t.id != t1.id])
+                label1 = t1.label if t1.label else "Entity"
                 label2 = t2.label if t2.label else "Void"
+                sym = get_thought_symbol(t1, t2, world)
 
-                # 3. Pick Context (T3) - Neighbor of T2
-                # Try to avoid going back to T1 immediately to avoid A=B=A loops unless necessary
-                n2 = get_neighbors(t2, exclude_id=t1.id)
+                question = f"{label1} {sym} {label2} ?"
+                net_messages.append([f"[Bot]: {question}", time.time() + 15])
+                print(f"[Bot Question]: {question}")
 
-                if n2:
-                    t3 = random.choice(n2)
+                bot_state = 'WAITING_FOR_ANSWER'
+                bot_reply_timer = now + 3.0 # 3 second delay for reply
+                last_bot_thought = now
+
+            # 2. Generate Quantum Reply
+            elif bot_state == 'WAITING_FOR_ANSWER' and now > bot_reply_timer:
+                t1 = random.choice(world.tets) # Pick new random context
+                quantum_terms = ["ERD∇", "Ψ-coherence", "OBA⊗", "QuantumFold", "EntropicBridge", "∞", "∅"]
+
+                # Biased random choice based on tech tree or physics
+                if t1.quantum_state != "ground":
+                    reply_sym = "TUNNEL"
                 else:
-                    # If T2 has no forward neighbors, check if there are other TETS available
-                    others = [t for t in world.tets if t.id != t1.id and t.id != t2.id]
-                    if others:
-                        t3 = random.choice(others) # Jump to a new disconnected idea
-                    else:
-                        t3 = t1 # Forced loop (A -> B -> A)
+                    reply_sym = random.choice(quantum_terms)
 
-                label3 = t3.label if t3.label else "Mystery"
+                reply = f"Because {reply_sym} !"
+                net_messages.append([f"[Quantum]: {reply}", time.time() + 15])
+                print(f"[Quantum Reply]: {reply}")
 
-                # 4. Get Symbols
-                sym1 = get_thought_symbol(t1, t2, world)
-                sym2 = get_thought_symbol(t2, t3, world)
+                bot_state = 'IDLE'
+                last_bot_thought = now # Reset timer loop start
 
-                # 5. Formulate Trinary Thought
-                thought = f"{label1} {sym1} {label2} {sym2} {label3} ?"
-
-                # Add to chat log
-                net_messages.append([f"[Thought]: {thought}", time.time() + 15])
-                print(f"[Bot Thought]: {thought}")
-
-                #Stage 5 Quantum thoughts
-                def get_neighbors(target_tet, exclude_id=None):
-                    nb = []
-                    for j in world.joints:
-                        if j.A.id == target_tet.id and j.B.id != exclude_id: nb.append(j.B)
-                        elif j.B.id == target_tet.id and j.A.id != exclude_id: nb.append(j.A)
-                    if not nb:
-                        for p in world.sticky_pairs:
-                            if p[0].id == target_tet.id and p[2].id != exclude_id: nb.append(p[2])
-                            elif p[2].id == target_tet.id and p[0].id != exclude_id: nb.append(p[0])
-                    if not nb:
-                        for t in world.tets:
-                            if t.id == target_tet.id or t.id == exclude_id: continue
-                            if np.linalg.norm(t.pos - target_tet.pos) < EDGE_LEN * 4: nb.append(t)
-                    return nb
-
-                t1 = random.choice(world.tets)
-                label1 = t1.label if t1.label else "Unknown"
-
-                n1 = get_neighbors(t1)
-                t2 = random.choice(n1) if n1 else random.choice([t for t in world.tets if t.id != t1.id])
-                label2 = t2.label if t2.label else "Void"
-
-                n2 = get_neighbors(t2, exclude_id=t1.id)
-                t3 = random.choice(n2) if n2 else t1
-                label3 = t3.label if t3.label else "Mystery"
-
-                sym1 = get_thought_symbol(t1, t2, world)
-                sym2 = get_thought_symbol(t2, t3, world)
-
-                # PHASE 5: Inject Quantum Ontology
-                quantum_terms = ["ERD∇", "Ψ-coherence", "OBA⊗", "QuantumFold", "EntropicBridge"]
-
-                if t1.quantum_state != "ground" or t1.erd_coherence > 0.8:
-                    sym1 = random.choice(quantum_terms)
-
-                thought = f"{label1} {sym1} {label2} {sym2} {label3} !"
-                net_messages.append([f"[Quantum Reply]: {thought}", time.time() + 15])
-                print(f"[Quantum Reply]: {thought}")
-            last_bot_thought = now
         pygame.event.pump()
 
-        # Event Handling
         if not ON_HUGGINGFACE:
-            loaded_from_save = False
-            last_world_hash = ""  # ADD THIS LINE
-            if cli_connect_addr: connect_as_guest(*(cli_connect_addr.split(':') if ':' in cli_connect_addr else (cli_connect_addr, DEFAULT_PORT)))
+            last_world_hash = ""
             for e in pygame.event.get():
                 if e.type == pygame.QUIT: GAME_RUNNING = False
                 if e.type == pygame.VIDEORESIZE: WIDTH, HEIGHT = e.w, e.h; screen = pygame.display.set_mode((WIDTH, HEIGHT), pygame.RESIZABLE); disk_surf = None
-
-                keys = pygame.key.get_pressed()
-                mods = pygame.key.get_mods()
-                ctrl_held = (mods & pygame.KMOD_CTRL)
-                alt_held = (mods & pygame.KMOD_ALT)
+                keys = pygame.key.get_pressed(); mods = pygame.key.get_mods(); ctrl_held = (mods & pygame.KMOD_CTRL); alt_held = (mods & pygame.KMOD_ALT)
 
                 if e.type == pygame.KEYDOWN:
                     if e.key == pygame.K_v and is_interactive: save_world_to_file()
@@ -2696,74 +2021,40 @@ def main(threaded=False):
                     if e.key == pygame.K_x: cam.pan = world.center_of_mass.copy()
                     if e.key == pygame.K_c: time_scale = min(10.0, time_scale + 0.5)
                     if e.key == pygame.K_z: time_scale = max(0.1, time_scale - 0.5)
-                    # FIX: Add Tab key for client mode
-                    if e.key == pygame.K_TAB and is_interactive and game_mode == 'single_player':
-                        discover_and_join()
-                    elif game_mode == 'guest':
-                        stop_guest_mode()
-                        add_timed_message("Disconnected from host.", duration=3)
-                    # FIX: Improved H key - press once to host, press again to exit host mode
-                    if e.key == pygame.K_h and is_interactive:
-                        if game_mode == 'single_player':
-                            initiate_host_mode()
-                        elif game_mode == 'host':
-                            reset_simulation(show_message=True)
+                    if e.key == pygame.K_TAB: (discover_and_join() if game_mode == 'single_player' else stop_guest_mode())
+                    if e.key == pygame.K_h and is_interactive: initiate_host_mode()
 
-                # Client mode: Only allow camera interaction, no TET manipulation
                 if game_mode == 'guest':
                     if guest_instance:
                         world_state = guest_instance.get_latest_world_state()
-                        if world_state:
-                            # Only update if world state has changed significantly
-                            last_world_hash = safe_world_update(world, world_state, last_world_hash)
-                            world.set_state(world_state)
-
-                        # Update avatars from guest instance
+                        if world_state: last_world_hash = safe_world_update(world, world_state, last_world_hash)
                         net_avatars = guest_instance.latest_avatars.copy()
-
-                        # Send camera update periodically (less frequent)
-                        if frame_count % 30 == 0:  # Every 0.5 seconds at 60fps
-                            guest_instance.send_cam_update()
+                        if frame_count % 30 == 0: guest_instance.send_cam_update()
 
                     if e.type == pygame.MOUSEBUTTONDOWN and e.button == 3:
-                        # Check if clicking on an avatar (host)
+                        # GUEST CLICKING HOST AVATAR
                         clicked_avatar = None
-                        for avatar_id, avatar_data in net_avatars.items():
-                            avatar_screen_pos = cam.project(np.array(avatar_data['pos']))
-                            if avatar_screen_pos[0] > -10000:
-                                dist = math.sqrt((avatar_screen_pos[0] - mx)**2 + (avatar_screen_pos[1] - my)**2)
-                                if dist < 30:  # Click radius
-                                    clicked_avatar = (avatar_id, avatar_data)
-                                    break
+                        for av_id, av_data in list(net_avatars.items()):
+                            # Skip own avatar if in list
+                            if av_id == f"guest_{guest_instance.sock.getsockname()[0]}:{guest_instance.sock.getsockname()[1]}": continue
+
+                            av_pos = np.array(av_data['pos'])
+                            av_screen = cam.project(av_pos)
+                            if av_screen[0] > -10000:
+                                d = math.sqrt((av_screen[0]-mx)**2 + (av_screen[1]-my)**2)
+                                if d < 30: clicked_avatar = (av_id, av_data); break
 
                         if clicked_avatar and not alt_held:
-                            # Send message to host
-                            recipient_id, recipient_data = clicked_avatar
-                            recipient_name = recipient_data.get('name', recipient_id)
-                            message = get_user_input(screen, f"Message to {recipient_name}:", "")
-                            if message:
-                                guest_instance.send_chat(f"<{PLAYER_NAME}>: {message}")
-                                add_network_message(f"<You to {recipient_name}>: {message}")
+                            msg = get_user_input(screen, f"Msg to {clicked_avatar[1].get('name','Host')}:")
+                            if msg: guest_instance.send_chat(msg) # Guest sends normal chat, Host sees it
                         else:
-                            # Camera orbit for guest
-                            if not alt_held:
-                                rotating, last_mouse = True, e.pos
+                            rotating, last_mouse = True, e.pos
 
-                    if e.type == pygame.MOUSEBUTTONUP and e.button == 3:
-                        rotating = False
-
+                    if e.type == pygame.MOUSEBUTTONUP and e.button == 3: rotating = False
                     if e.type == pygame.MOUSEWHEEL:
-                        if ctrl_held:
-                            factor = 1.1 if e.y > 0 else 0.9
-                            time_scale = np.clip(time_scale * factor, 0.1, 10.0)
-                            msgs.append([f"Time Scale: {time_scale:.1f}x", 0, pygame.time.get_ticks() + 1000])
-                        elif alt_held:
-                            pan_dir = np.array([math.cos(cam.yaw), 0, -math.sin(cam.yaw)])
-                            cam.pan += pan_dir * (e.y * 20.0 * unscaled_dt)
-                        else:
-                            cam.zoom(ZOOM_SPEED if e.y < 0 else 1/ZOOM_SPEED)
+                        if alt_held: cam.pan += np.array([math.cos(cam.yaw), 0, -math.sin(cam.yaw)]) * (e.y * 20.0 * unscaled_dt)
+                        else: cam.zoom(ZOOM_SPEED if e.y < 0 else 1/ZOOM_SPEED)
 
-                # Host and single-player mode: Full interaction
                 elif is_interactive:
                     if e.type == pygame.MOUSEBUTTONDOWN:
                         if e.button == 1 and hovered_vertex:
@@ -2772,168 +2063,51 @@ def main(threaded=False):
                             dragging = (hovered_vertex[0], hovered_vertex[1], cam.get_transformed_z(hovered_vertex[0].verts()[hovered_vertex[1]]))
                             locked_sticky_target = None
                         if e.button == 3:
-                            if alt_held:
-                                cam.pan = world.center_of_mass.copy()
+                            if alt_held: cam.pan = world.center_of_mass.copy()
+                            elif hovered_vertex:
+                                t = hovered_vertex[0]; new_l = get_user_input(screen, f"Rename '{t.label}':", t.label)
+                                if new_l: t.label = new_l
                             else:
-                                if hovered_vertex:
-                                    target_tet = hovered_vertex[0]
-                                    # Pause game and get input
-                                    new_label = get_user_input(screen, f"Rename '{target_tet.label}':", target_tet.label)
-                                    if new_label:
-                                        target_tet.label = new_label
-                                        # If we are a Guest, tell the Host we changed a label
-                                        if game_mode == 'guest' and guest_instance:
-                                            guest_instance.send_label(target_tet.id, new_label)
-                                        # If we are Host, the change is already local,
-                                        # and will be broadcast in the next world state update.
-
-                                # Check if clicking on an avatar
+                                # HOST CLICKING GUEST AVATARS
                                 clicked_avatar = None
-                                for avatar_id, avatar_data in net_avatars.items():
-                                    avatar_screen_pos = cam.project(np.array(avatar_data['pos']))
-                                    if avatar_screen_pos[0] > -10000:
-                                        dist = math.sqrt((avatar_screen_pos[0] - mx)**2 + (avatar_screen_pos[1] - my)**2)
-                                        if dist < 30:  # Click radius
-                                            clicked_avatar = (avatar_id, avatar_data)
-                                            break
+
+                                if host_instance:
+                                    for av_id, av_data in list(net_avatars.items()):
+                                        if av_id == 'host': continue # Don't click self
+                                        av_pos = np.array(av_data['pos'])
+                                        av_screen = cam.project(av_pos)
+                                        if av_screen[0] > -10000:
+                                            d = math.sqrt((av_screen[0]-mx)**2 + (av_screen[1]-my)**2)
+                                            if d < 30: clicked_avatar = (av_id, av_data); break
 
                                 if clicked_avatar:
-                                    # Send message to this avatar
-                                    recipient_id, recipient_data = clicked_avatar
-                                    recipient_name = recipient_data.get('name', recipient_id)
-                                    message = get_user_input(screen, f"Message to {recipient_name}:", "")
-                                    if message:
-                                        if game_mode == 'host':
-                                            # Host sends to specific client
-                                            for sock, client_data in host_instance.clients.items():
-                                                if client_data['id'] == recipient_id:
-                                                    send_msg(sock, {'type': 'chat', 'data': f"<{PLAYER_NAME}>: {message}"})
-                                                    add_network_message(f"<You to {recipient_name}>: {message}")
-                                                    break
+                                    msg = get_user_input(screen, f"Msg to {clicked_avatar[1].get('name','Guest')}:")
+                                    if msg:
+                                        # Find socket
+                                        target_sock = None
+                                        for s, d in host_instance.clients.items():
+                                            if d['id'] == clicked_avatar[0]: target_sock = s; break
+                                        if target_sock:
+                                            send_msg(target_sock, {'type': 'chat', 'data': f"<{PLAYER_NAME}>: {msg}"})
+                                            add_network_message(f"<To {clicked_avatar[1].get('name')}: {msg}")
                                 else:
                                     rotating, last_mouse = True, e.pos
 
                     if e.type == pygame.MOUSEBUTTONUP:
                         if e.button == 1 and dragging and locked_sticky_target:
                             t1, i1 = dragging[0], dragging[1]; t2, i2 = locked_sticky_target[0], locked_sticky_target[1]
-                            current_binds = 0
-                            for j in world.joints:
-                                if (j.A.id == t1.id and j.ia == i1) or (j.B.id == t1.id and j.ib == i1): current_binds += 1
-                            if current_binds < 8: world.sticky_pairs.append((t1, i1, t2, i2))
+                            cnt = sum(1 for j in world.joints if (j.A.id == t1.id and j.ia == i1) or (j.B.id == t1.id and j.ib == i1))
+                            if cnt < 8: world.sticky_pairs.append((t1, i1, t2, i2))
                         if e.button == 1: dragging, locked_sticky_target = None, None
                         if e.button == 3: rotating = False
-
                     if e.type == pygame.MOUSEWHEEL:
-                        if ctrl_held:
-                            factor = 1.1 if e.y > 0 else 0.9
-                            time_scale = np.clip(time_scale * factor, 0.1, 10.0)
-                            msgs.append([f"Time Scale: {time_scale:.1f}x", 0, pygame.time.get_ticks() + 1000])
-                        elif alt_held:
-                            pan_dir = np.array([math.cos(cam.yaw), 0, -math.sin(cam.yaw)])
-                            cam.pan += pan_dir * (e.y * 20.0 * unscaled_dt)
-                        else:
-                            cam.zoom(ZOOM_SPEED if e.y < 0 else 1/ZOOM_SPEED)
-
-            # Keyboard controls (for all modes)
-            keys = pygame.key.get_pressed()
-            # Restore hold-to-scale behavior for Z/C
-            if keys[pygame.K_c]: time_scale = min(10.0, time_scale + 2.0 * unscaled_dt)
-            if keys[pygame.K_z]: time_scale = max(0.1, time_scale - 2.0 * unscaled_dt)
-
-            # Camera controls (for all modes)
-            cam.pitch += ORBIT_SPEED * unscaled_dt * (int(keys[pygame.K_w]) - int(keys[pygame.K_s]))
-            cam.yaw += ORBIT_SPEED * unscaled_dt * (int(keys[pygame.K_d]) - int(keys[pygame.K_a]))
-            if keys[pygame.K_r]: cam.zoom(1/ZOOM_SPEED)
-            if keys[pygame.K_f]: cam.zoom(ZOOM_SPEED)
-            cam.pan += np.array([math.cos(cam.yaw), 0, -math.sin(cam.yaw)]) * (int(keys[pygame.K_q]) - int(keys[pygame.K_e])) * PAN_SPEED * unscaled_dt * (cam.dist / DEFAULT_CAM_DIST)
-
-            if rotating: mx, my = pygame.mouse.get_pos(); cam.yaw += (mx - last_mouse[0]) * 0.005; cam.pitch = np.clip(cam.pitch - (my - last_mouse[1]) * 0.005, -1.57, 1.57); last_mouse = (mx, my)
-
-            # Only allow dragging in single-player or host mode (not guest)
-            if game_mode != 'guest' and dragging:
-                t_drag, i_drag, dd = dragging; m3d = cam.unproject(pygame.mouse.get_pos(), dd); delta = m3d - t_drag.verts()[i_drag]
-                t_drag.local[i_drag] += delta * MOUSE_PULL_STRENGTH * (DEFAULT_CAM_DIST / cam.dist); t_drag.pos += delta * BODY_PULL_STRENGTH * (DEFAULT_CAM_DIST / cam.dist)
-                avs = curr_verts_screen; best_dist_sq = SELECTION_RADIUS**2; current_hover_target = None
-                for tidx, tt in enumerate(world.tets):
-                    if tt.id == t_drag.id: continue
-                    for vidx in range(4):
-                        idx_flat = tidx * 4 + vidx; pt = avs[idx_flat]; d_sq = np.sum((pt - mouse_arr)**2)
-                        if d_sq < best_dist_sq: best_dist_sq = d_sq; current_hover_target = (tt, vidx)
-                locked_sticky_target = current_hover_target
-
-                if e.type == pygame.MOUSEBUTTONDOWN and is_interactive:
-                    if e.button == 1 and hovered_vertex:
-                        start_tet, start_idx = hovered_vertex
-                        world.sticky_pairs = [p for p in world.sticky_pairs if not ((p[0].id == start_tet.id and p[1] == start_idx) or (p[2].id == start_tet.id and p[3] == start_idx))]
-                        dragging = (hovered_vertex[0], hovered_vertex[1], cam.get_transformed_z(hovered_vertex[0].verts()[hovered_vertex[1]]))
-                        locked_sticky_target = None
-                    if e.button == 3:
-                        if alt_held:
-                            cam.pan = world.center_of_mass.copy()
-                        else:
-                            # Check if clicking on an avatar
-                            clicked_avatar = None
-                            for avatar_id, avatar_data in net_avatars.items():
-                                # Skip own avatar
-                                if game_mode == 'guest' and avatar_id == 'host':
-                                    continue
-                                if game_mode == 'host' and avatar_id == f'host_{socket.gethostbyname(socket.gethostname())}:{host_instance.port if host_instance else DEFAULT_PORT}':
-                                    continue
-
-                                avatar_screen_pos = cam.project(np.array(avatar_data['pos']))
-                                if avatar_screen_pos[0] > -10000:
-                                    dist = math.sqrt((avatar_screen_pos[0] - mx)**2 + (avatar_screen_pos[1] - my)**2)
-                                    if dist < 30:  # Click radius
-                                        clicked_avatar = (avatar_id, avatar_data)
-                                        break
-
-                            if clicked_avatar:
-                                # Send message to this avatar
-                                recipient_id, recipient_data = clicked_avatar
-                                recipient_name = recipient_data.get('name', recipient_id)
-                                message = get_user_input(screen, f"Message to {recipient_name}:", "")
-                                if message:
-                                    if game_mode == 'host':
-                                        # Host sends to specific client
-                                        for sock, client_data in host_instance.clients.items():
-                                            if client_data['id'] == recipient_id:
-                                                send_msg(sock, {'type': 'chat', 'data': f"<{PLAYER_NAME}>: {message}"})
-                                                add_network_message(f"<You to {recipient_name}>: {message}")
-                                                break
-                                    elif game_mode == 'guest':
-                                        # Guest sends to host
-                                        guest_instance.send_chat(f"<{PLAYER_NAME}>: {message}")
-                                        add_network_message(f"<You to {recipient_name}>: {message}")
-                            else:
-                                # No avatar clicked, do camera orbit
-                                rotating, last_mouse = True, e.pos
-
-                if e.type == pygame.MOUSEBUTTONUP:
-                    if e.button == 1 and dragging and locked_sticky_target:
-                        t1, i1 = dragging[0], dragging[1]; t2, i2 = locked_sticky_target[0], locked_sticky_target[1]
-                        current_binds = 0
-                        for j in world.joints:
-                            if (j.A.id == t1.id and j.ia == i1) or (j.B.id == t1.id and j.ib == i1): current_binds += 1
-                        if current_binds < 8: world.sticky_pairs.append((t1, i1, t2, i2))
-                    if e.button == 1: dragging, locked_sticky_target = None, None
-                    if e.button == 3: rotating = False
-
-                if e.type == pygame.MOUSEWHEEL:
-                    if ctrl_held:
-                        factor = 1.1 if e.y > 0 else 0.9
-                        time_scale = np.clip(time_scale * factor, 0.1, 10.0)
-                        msgs.append([f"Time Scale: {time_scale:.1f}x", 0, pygame.time.get_ticks() + 1000])
-                    elif alt_held:
-                        pan_dir = np.array([math.cos(cam.yaw), 0, -math.sin(cam.yaw)])
-                        cam.pan += pan_dir * (e.y * 20.0 * unscaled_dt)
-                    else:
-                        cam.zoom(ZOOM_SPEED if e.y < 0 else 1/ZOOM_SPEED)
+                        if ctrl_held: time_scale = np.clip(time_scale * (1.1 if e.y > 0 else 0.9), 0.1, 10.0)
+                        elif alt_held: cam.pan += np.array([math.cos(cam.yaw), 0, -math.sin(cam.yaw)]) * (e.y * 20.0 * unscaled_dt)
+                        else: cam.zoom(ZOOM_SPEED if e.y < 0 else 1/ZOOM_SPEED)
 
             keys = pygame.key.get_pressed()
-            # Restore hold-to-scale behavior for Z/C
             if keys[pygame.K_c]: time_scale = min(10.0, time_scale + 2.0 * unscaled_dt)
             if keys[pygame.K_z]: time_scale = max(0.1, time_scale - 2.0 * unscaled_dt)
-
             cam.pitch += ORBIT_SPEED * unscaled_dt * (int(keys[pygame.K_w]) - int(keys[pygame.K_s]))
             cam.yaw += ORBIT_SPEED * unscaled_dt * (int(keys[pygame.K_d]) - int(keys[pygame.K_a]))
             if keys[pygame.K_r]: cam.zoom(1/ZOOM_SPEED)
@@ -2944,109 +2118,58 @@ def main(threaded=False):
             if dragging:
                 t_drag, i_drag, dd = dragging; m3d = cam.unproject(pygame.mouse.get_pos(), dd); delta = m3d - t_drag.verts()[i_drag]
                 t_drag.local[i_drag] += delta * MOUSE_PULL_STRENGTH * (DEFAULT_CAM_DIST / cam.dist); t_drag.pos += delta * BODY_PULL_STRENGTH * (DEFAULT_CAM_DIST / cam.dist)
-                avs = curr_verts_screen; best_dist_sq = SELECTION_RADIUS**2; current_hover_target = None
+                best_dist_sq = SELECTION_RADIUS**2; current_hover_target = None
                 for tidx, tt in enumerate(world.tets):
                     if tt.id == t_drag.id: continue
                     for vidx in range(4):
-                        idx_flat = tidx * 4 + vidx; pt = avs[idx_flat]; d_sq = np.sum((pt - mouse_arr)**2)
+                        idx_flat = tidx * 4 + vidx; pt = curr_verts_screen[idx_flat]; d_sq = np.sum((pt - mouse_arr)**2)
                         if d_sq < best_dist_sq: best_dist_sq = d_sq; current_hover_target = (tt, vidx)
                 locked_sticky_target = current_hover_target
         else:
-            # AUTO BOT VISION (HEADLESS)
             now = time.time()
-            # 1. Camera Move + Auto Center (Every 5s)
             if now - last_bot_move > 5:
                 cam.yaw += 0.1; cam.pitch = max(-1, min(1, cam.pitch + random.uniform(-1, 1)))
-                if world.tets: cam.pan = world.center_of_mass.copy() # Auto-Center
+                if world.tets: cam.pan = world.center_of_mass.copy()
                 last_bot_move = now
-            else:
-                cam.yaw += 0.05 * unscaled_dt
-
-            # Oscillating Zoom
-            target_zoom = DEFAULT_CAM_DIST + 5.0 * math.sin(time.time() * 0.1) # 1Hz
-            cam.dist += (target_zoom - cam.dist) * 0.005
-
-            # 2. Spawn & Label (Every hour)
+            else: cam.yaw += 0.05 * unscaled_dt
+            cam.dist += (DEFAULT_CAM_DIST + 5.0 * math.sin(time.time() * 0.1) - cam.dist) * 0.005
             if now - last_bot_spawn > 3600:
                 world.spawn_polar_pair()
-                if len(world.tets) >= 2:
-                    l1, l2 = random.choice(MYSTIC_WORDS), random.choice(MYSTIC_WORDS)
-                    world.tets[-1].label = l1
-                    world.tets[-2].label = l2
-                    print(f"[BOT] Spawned Pair: {l1} & {l2}")
+                if len(world.tets) >= 2: world.tets[-1].label = random.choice(MYSTIC_WORDS); world.tets[-2].label = random.choice(MYSTIC_WORDS)
                 last_bot_spawn = now
 
         if game_mode == 'host' and host_instance:
-            # Process queued operations from client threads
             while not host_instance.message_queue.empty():
                 try:
-                    msg_type, *args = host_instance.message_queue.get_nowait()
-                    if msg_type == 'set_label':
-                        tet_id, label = args
+                    msg = host_instance.message_queue.get_nowait()
+                    if msg[0] == 'set_label':
                         for t in world.tets:
-                            if t.id == tet_id:
-                                t.label = label
-                                break
-                    elif msg_type == 'cleanup':
-                        sock = args[0]
+                            if t.id == msg[1]: t.label = msg[2]; break
+                    elif msg[0] == 'cleanup':
                         with host_instance.lock:
-                            if sock in host_instance.clients:
-                                client_id = host_instance.clients[sock]['id']
-                                host_instance.clients.pop(sock, None)
-                                net_avatars.pop(client_id, None)
-                                try:
-                                    sock.close()
-                                except OSError:
-                                    pass
-                except queue.Empty:
-                    break
+                            if msg[1] in host_instance.clients:
+                                host_instance.clients.pop(msg[1], None)
+                                try: msg[1].close()
+                                except: pass
+                except: break
+            if frame_count % (2 + len(host_instance.clients)) == 0: host_instance.broadcast_state()
 
-            # Broadcast world state periodically (non-blocking)
-            broadcast_interval = 2 + len(host_instance.clients)  # Every 2-10 frames depending on clients
-            if frame_count % broadcast_interval == 0:
-                host_instance.broadcast_state()
-
-        # Physics
         if game_mode != 'guest':
-            if game_mode == 'host' and host_instance and frame_count % 2 == 0:
-                host_instance.broadcast_state()
-
-            # ENHANCED: Calculate singularity spin based on zoom level
-            zoom_factor = DEFAULT_CAM_DIST / cam.dist
-            spin_multiplier = np.clip(1/np.log(zoom_factor + 1) + 1, 0.1, 2.0)
-
-            world.update(scaled_dt, unscaled_dt, time_scale, lambda t, duration=2: msgs.append([t, 0, pygame.time.get_ticks() + duration * 1000]), spin_multiplier)
-
+            zf = DEFAULT_CAM_DIST / cam.dist; spin = np.clip(1/np.log(zf + 1) + 1, 0.1, 2.0)
+            world.update(scaled_dt, unscaled_dt, time_scale, lambda t, duration=2: msgs.append([t, 0, pygame.time.get_ticks() + duration * 1000]), spin)
             if len(world.tets) == 1 and not flags['t0']: flags['t0'] = True
             if len(world.tets) >= 2 and not flags['t2']: flags['t2'] = True; world.sticky_pairs.extend([(world.tets[0], v, world.tets[1], v) for v in range(4)])
             if len(world.tets) >= 2 and world.joints and not flags['j1']: flags['j1'] = True
             if len(world.tets) >= 3 and flags['j1'] and not flags['t3']: flags['t3'] = True
-        else:
-            # Guest mode: Update camera position to host
-            if guest_instance and frame_count % 10 == 0:
-                guest_instance.send_cam_update()
+        elif guest_instance:
+             if frame_count % 10 == 0: guest_instance.send_cam_update()
+             s = guest_instance.get_latest_world_state();
+             if s: world.set_state(s)
 
-            # Guest mode: Sync world from host
-            if guest_instance:
-                world_state = guest_instance.get_latest_world_state()
-                if world_state is not None:
-                    world.set_state(world_state)
-
-        # ENHANCED: Calculate singularity spin based on zoom level
-        # Zoomed in = faster spin, zoomed out = slower spin
-        zoom_factor = DEFAULT_CAM_DIST / cam.dist  # 1.0 at default, >1 when zoomed in, <1 when zoomed out
-        spin_multiplier = np.clip(1/np.log(zoom_factor + 1) + 1, 0.1, 2.0)  # Range: 0.1x to 2.0x spin
-
-        world.update(scaled_dt, unscaled_dt, time_scale, lambda t, duration=2: msgs.append([t, 0, pygame.time.get_ticks() + duration * 1000]), spin_multiplier)
-        if len(world.tets) == 1 and not flags['t0']: flags['t0'] = True
-        if len(world.tets) >= 2 and not flags['t2']: flags['t2'] = True; world.sticky_pairs.extend([(world.tets[0], v, world.tets[1], v) for v in range(4)])
-        if len(world.tets) >= 2 and world.joints and not flags['j1']: flags['j1'] = True
-        if len(world.tets) >= 3 and flags['j1'] and not flags['t3']: flags['t3'] = True
-
-        # Render
+        # Rendering
         tl = np.clip((time_scale - 0.1) / 9.9, 0, 1)
-        bg_color = tuple(np.array([30,0,0]) * (1-tl) + np.array([5,5,10]) * tl if flags['t3'] else ((255,255,255) if flags['j1'] else (10,10,20)))
-        screen.fill(bg_color)
+        bg = tuple(np.array([30,0,0]) * (1-tl) + np.array([5,5,10]) * tl if flags['t3'] else ((255,255,255) if flags['j1'] else (10,10,20)))
+        screen.fill(bg)
 
         if flags['t3']:
             past_projection.update_and_draw(screen, cam, world.center_of_mass, len(world.tets), time_scale, WIDTH, HEIGHT)
@@ -3081,98 +2204,72 @@ def main(threaded=False):
                 cc = list(t.colors) if t.colors else list(Tetrahedron.FACE_COLORS)
                 if t.is_magnetized: cc = [(0,0,0)]*4; cc[2 if t.magnetism==1 else 3] = Tetrahedron.FACE_COLORS[2 if t.magnetism==1 else 3]
 
-                # ENHANCED: Calculate fading based on distance
                 dist_from_cam = np.linalg.norm(t.pos - (cam.pan + cam.forward * cam.dist))
                 dist_from_origin = np.linalg.norm(t.pos - world.center_of_mass)
+                combined_alpha = min(np.clip(1.0 - (dist_from_cam / 500.0), 0.2, 1.0), np.clip(1.0 - (dist_from_origin / 300.0), 0.3, 1.0)) * t.battery
 
-                # Fade by camera distance (closer = more opaque)
-                cam_alpha = np.clip(1.0 - (dist_from_cam / 500.0), 0.2, 1.0)  # Adjust 500.0 for range
-
-                # Fade by origin distance (closer to singularity = more opaque)
-                origin_alpha = np.clip(1.0 - (dist_from_origin / 300.0), 0.3, 1.0)  # Adjust 300.0 for range
-
-                # Combine both (or choose one)
-                combined_alpha = min(cam_alpha, origin_alpha)  # Use most restrictive
-
-                face_z = np.mean(cam.get_transformed_z_many(world_verts[Tetrahedron.FACES_NP]), axis=1)
-
-                battery_alpha = t.battery  # 0.0-1.0 already
-                combined_alpha = min(cam_alpha, origin_alpha) * battery_alpha
-
-                # PHASE 1: Draw molecule aura if identified
                 if t.aura_color and t.magnetic_strength > 0:
                     center_screen = cam.project(t.pos)
                     if center_screen[0] > -10000:
+                        aura_col = get_molecule_color(t.label if t.label else t.molecule_type, time.time())
+                        if not aura_col: aura_col = t.aura_color
                         aura_radius = int(EDGE_LEN * 8 * t.magnetic_strength)
                         aura_alpha = int(80 * t.magnetic_strength * combined_alpha)
                         aura_surf = pygame.Surface((WIDTH, HEIGHT), pygame.SRCALPHA)
-                        for ring in range(3):
-                            ring_radius = aura_radius - ring * 3
-                            ring_alpha = aura_alpha // (ring + 1)
-                            pygame.draw.circle(aura_surf, (*t.aura_color, ring_alpha), center_screen, ring_radius, 2)
-                        screen.blit(aura_surf, (0, 0))
-
-                        # PHASE 4: Extra sparkle for catalysts
+                        for ring in range(3): pygame.draw.circle(aura_surf, (*aura_col, aura_alpha // (ring + 1)), center_screen, aura_radius - ring * 3, 2)
                         if t.is_catalyst:
-                            sparkle_radius = aura_radius + 5
-                            sparkle_alpha = int(40 * combined_alpha)
                             for i in range(4):
-                                angle = (time.time() * 2 + i * 1.57) % 6.28
-                                sx = center_screen[0] + int(math.cos(angle) * sparkle_radius)
-                                sy = center_screen[1] + int(math.sin(angle) * sparkle_radius)
-                                pygame.draw.circle(aura_surf, (255, 255, 0, sparkle_alpha), (sx, sy), 3)
+                                a = (time.time() * 2 + i * 1.57) % 6.28
+                                sx = center_screen[0] + int(math.cos(a) * (aura_radius + 5))
+                                sy = center_screen[1] + int(math.sin(a) * (aura_radius + 5))
+                                pygame.draw.circle(aura_surf, (255, 255, 0, int(40 * combined_alpha)), (sx, sy), 3)
                         screen.blit(aura_surf, (0, 0))
 
+                face_z = np.mean(cam.get_transformed_z_many(world_verts[Tetrahedron.FACES_NP]), axis=1)
                 for fidx in np.argsort(face_z)[::-1]:
                     points = screen_pts[Tetrahedron.FACES_NP[fidx]]
                     if not np.any(points < -100):
-                        # Apply alpha to colors
-                        faded_color = tuple(int(c * combined_alpha) for c in cc[fidx])
-                        pygame.draw.polygon(screen, faded_color, points)
+                        pygame.draw.polygon(screen, tuple(int(c * combined_alpha) for c in cc[fidx]), points)
 
                 for i, j in t.EDGES_NP: pygame.draw.line(screen, (0,0,0), screen_pts[i], screen_pts[j], 1)
                 vert_color = (0,0,0) if (flags['j1'] and not flags['t3']) else (255,255,255)
                 for p in screen_pts: pygame.draw.circle(screen, vert_color, p, 1)
-                if t.label: surf = font_s.render(t.label, True, (255,255,0)); screen.blit(surf, surf.get_rect(center=cam.project(t.pos + [0, 8, 0])))
 
-        # PHASE 4: Draw reaction particles
+                draw_bot_thought_bubble(screen, cam, t, font_s)
+
+                if t.label:
+                    surf = font_s.render(t.label, True, (255,255,0)); screen.blit(surf, surf.get_rect(center=cam.project(t.pos + [0, 8, 0])))
+
         if hasattr(world, 'reaction_particles'):
-            # Get recent synthesis reactions for particles
-            recent_synth = getattr(world, '_last_synth_reactions', [])
-            world.spawn_reaction_particles(screen, cam, recent_synth, WIDTH, HEIGHT)
-            world._last_synth_reactions = []  # Clear after rendering
-
-        # PHASE 5: Draw quantum visuals
+            world.spawn_reaction_particles(screen, cam, world._last_synth_reactions, WIDTH, HEIGHT)
+            world._last_synth_reactions = []
         if hasattr(world, 'quantum_particles'):
-            recent_quantum = getattr(world, '_last_quantum_events', [])
-            world.spawn_quantum_visuals(screen, cam, recent_quantum, WIDTH, HEIGHT)
+            world.spawn_quantum_visuals(screen, cam, world._last_quantum_events, WIDTH, HEIGHT)
             world._last_quantum_events = []
 
-        for avatar_id, avatar_data in net_avatars.items():
+# Fix: Use list() to create a copy, preventing crash if thread modifies dict during render
+        for avatar_id, avatar_data in list(net_avatars.items()):
             draw_player_avatar(screen, cam, np.array(avatar_data['pos']), avatar_data['color'], avatar_id, name=avatar_data.get('name'))
 
-        # UI Overlay - ALWAYS DRAW TO SURFACE (So Gradio sees it)
         now_ticks = pygame.time.get_ticks(); text_color = (0,0,0) if (flags['j1'] and not flags['t3']) else (200,200,200)
         msgs = [m for m in msgs if now_ticks < m[2]]
         for ts, yo, et in msgs:
             s = font_l.render(ts, True, text_color); s.set_alpha(max(0, min(255, (et - now_ticks) * 255 / 1000)))
             screen.blit(s, s.get_rect(center=(WIDTH//2, HEIGHT//2 + yo)))
-        net_messages = deque([m for m in net_messages if time.time() < m[1]], maxlen=5)
-        for i, (txt, et) in enumerate(list(net_messages)):
+        for i, (txt, et) in enumerate([m for m in net_messages if time.time() < m[1]]):
             s = font_s.render(txt, True, (255,200,100)); s.set_alpha(max(0, min(255, (et - time.time()) * 100))); screen.blit(s, (10, 40+i*25))
 
-        # Uptime Calculation
-        uptime_sec = int(time.time() - START_TIME)
-        uptime_str = str(datetime.timedelta(seconds=uptime_sec))
+        stage_surf = font_s.render(f"Era: {world.tech_tree.current_stage}", True, (200, 100, 255))
+        screen.blit(stage_surf, (WIDTH - stage_surf.get_width() - 10, HEIGHT - 60))
 
-        zf = DEFAULT_CAM_DIST / cam.dist; zoom_text = f"{zf:.1f}x" if zf > 10 else f"{zf:.4f}x" if zf < 0.1 else f"{zf:.2f}x"
+        zf = DEFAULT_CAM_DIST / cam.dist; zoom_text = f"{zf:.1f}x" if zf > 10 else f"{zf:.2f}x"
         status_text = f"Mode: {game_mode.replace('_',' ').title()} | TETs: {len(world.tets)} | Unions: {len(world.joints)} | Desires: {len(world.sticky_pairs)} | Zoom: {zoom_text} | Time: {time_scale:.1f}x"
         top_leg = font_s.render(status_text, True, (0,255,255))
         screen.blit(top_leg, top_leg.get_rect(center=(WIDTH//2, 20)))
 
         if not ON_HUGGINGFACE:
             screen.blit(font_s.render(f"FPS: {int(fps)}", True, (255, 255, 0)), (10, 10))
-            uptime_surf = font_s.render(f"Up: {uptime_str}", True, (255, 255, 255))
+            uptime_surf = font_s.render(f"v5.0 Up: {str(datetime.timedelta(seconds=int(time.time() - START_TIME)))}", True, (255, 255, 255))
             screen.blit(uptime_surf, (WIDTH - uptime_surf.get_width() - 10, 10))
             bot_leg1 = font_s.render("RMB Label | LMB Pull/Join TETs | WASD/RMB Orbit | X/Alt+RMB Center | V Save Instant", True, (0,255,255))
             bot_leg2 = font_s.render("H Host Mode | TAB Client Mode | R/F/Scroll Zoom | Q/E/Alt+Scroll Pan | Z/C/Ctrl+Scroll Timescale", True, (0,255,255))
@@ -3181,90 +2278,25 @@ def main(threaded=False):
             pygame.display.flip()
 
         if ON_HUGGINGFACE and GRADIO_AVAILABLE:
-            # Show FPS and uptime at the bottom for HF
-            fps_surf = font_s.render(f"FPS: {int(fps)}", True, (255, 255, 0))
-            screen.blit(fps_surf, (10, HEIGHT - 20))
-            uptime_surf = font_s.render(f"Up: {uptime_str}", True, (255, 255, 255))
-            screen.blit(uptime_surf, (WIDTH - uptime_surf.get_width() - 10, HEIGHT - 20))
+            try: GRADIO_FRAME_BUFFER = np.transpose(pygame.surfarray.array3d(screen), (1, 0, 2))
+            except: pass
 
-            try:
-                array = pygame.surfarray.array3d(screen)
-                GRADIO_FRAME_BUFFER = np.transpose(array, (1, 0, 2))
-            except Exception: pass
-
-    stop_all_networking()
-    pygame.quit()
-
-def safe_world_update(world, new_state, last_hash=""):
-    """Safely update world state with change detection"""
-    try:
-        # Convert state to string for simple change detection
-        import hashlib
-        state_str = json.dumps(new_state, sort_keys=True, cls=NumpyEncoder)
-        current_hash = hashlib.md5(state_str.encode()).hexdigest()
-
-        if current_hash != last_hash:
-            world.set_state(new_state)
-
-        return current_hash
-    except Exception as e:
-        print(f"World update error: {e}")
-        return last_hash
-
-def connect_as_guest(host_ip, port):
-    global guest_instance, game_mode
-    try:
-        # Add timeout
-        timeout = 5
-        save_world_to_file()
-
-        # Show connecting message
-        add_timed_message(f"Connecting to {host_ip}:{port}...", duration=2)
-
-        guest_instance = Guest(host_ip, int(port), world, cam, add_network_message, ping_sound)
-
-        # Wait a moment for connection to establish
-        time.sleep(0.5)
-
-        if guest_instance.running:
-            game_mode = 'guest'
-            world.tets.clear()
-            world.joints.clear()
-            world.sticky_pairs.clear()
-            add_timed_message(f"Connected to {host_ip}:{port}", duration=3)
-            return True
-        else:
-            add_timed_message(f"Failed to connect", duration=3)
-            return False
-
-    except Exception as e:
-        add_timed_message(f"Failed to connect: {e}", duration=4)
-        return False
+    stop_all_networking(); pygame.quit()
 
 def gradio_interface_loop():
     def get_frame():
         if GRADIO_FRAME_BUFFER is not None: return GRADIO_FRAME_BUFFER
         return np.zeros((HEIGHT, WIDTH, 3), dtype=np.uint8)
-    with gr.Interface(
-        fn=get_frame,
-        inputs=None,
-        outputs=gr.Image(label="Live Simulation! Hit the 'Generate' button!"),
-        live=True,
-        title="PLEASE, for humanity's sake! (copy/localify - from the ^^ app ^^ menu - very easy!) TET~CRAFT",
-        description="DigitizingHumanity.com's Gamified, Decentralized, Salted, 5D Communication Manifold and Physics/Chemistry Simulator... or DGDS-5D-CMPS? (uh, work acronym in progress!) #opWorldPeace END CENSORSHIP!!!  (A simulated player is working, 1 rotation every 5 seconds, 1 thought ever min, 2 new random 'facts' (TET) added each hour to be misunderstood!)"
-    ) as demo:
-        # Crucial for HF Spaces health check: bind to 0.0.0.0
+    with gr.Interface(fn=get_frame, inputs=None, outputs=gr.Image(label="Live Simulation! v5.0 Hit the 'Generate' button!"), live=True, title="TET~CRAFT", description="DigitizingHumanity.com's Gamified, Decentralized, Salted, 5D Communication Manifold and Physics/Chemistry Simulator") as demo:
         demo.launch(server_name="0.0.0.0", server_port=7860)
 
 if __name__ == "__main__":
     if ON_HUGGINGFACE:
-        t = threading.Thread(target=main, kwargs={'threaded': True}, daemon=True)
-        t.start()
+        t = threading.Thread(target=main, kwargs={'threaded': True}, daemon=True); t.start()
         if GRADIO_AVAILABLE:
             gradio_interface_loop()
             while True: time.sleep(1)
         else:
-            print("Gradio not installed. Headless loop.")
+            print("Gradio not installed. Headless loop.");
             while True: time.sleep(1)
-    else:
-        main()
+    else: main()
