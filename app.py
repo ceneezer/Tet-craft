@@ -398,7 +398,7 @@ MYSTIC_WORDS = [
 MATH_SYMBOLS = ["+", "-", "=", "*", "∫", "∂", "∇", "≈", "≠", "∞", "∅"]
 
 RELATIONSHIP_MAP = {
-    'correlates': '=', 'desires': '*', 'approaches': '+', 'negates': '¬',
+    'correlates': ':.', 'desires': '*', 'approaches': '+', 'negates': '¬',
     'integrates': '∫', 'diverges': '∂', 'cycles': '○', 'unknown': '?'
 }
 
