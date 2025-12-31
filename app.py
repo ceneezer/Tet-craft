@@ -1830,6 +1830,13 @@ def safe_world_update(world, new_state, last_hash=""):
         return current_hash
     except: return last_hash
 
+def gradio_interface_loop():
+    def get_frame():
+        if GRADIO_FRAME_BUFFER is not None: return GRADIO_FRAME_BUFFER
+        return np.zeros((HEIGHT, WIDTH, 3), dtype=np.uint8)
+    with gr.Interface(fn=get_frame, inputs=None, outputs=gr.Image(label="Live Simulation! v5.0 Hit the 'Generate' button!"), live=True, title="TET~CRAFT", description="DigitizingHumanity.com's Gamified, Decentralized, Salted, 5D Communication Manifold and Physics/Chemistry Simulator") as demo:
+        demo.launch(server_name="0.0.0.0", server_port=7860)
+
 def main(threaded=False):
     print("\n\nIf needed create and fill with 1 IP per line blacklist.cfg\n\nCLI Options:\n  -connect <ip>:<port> (Initiate guest mode)\n  -listen <port> (Initiate host mode port)\n  -file <filename> (Load saved instant [json])\n  -t <scale> -z <zoom> -o <x,y,z>\n\nTET~CRAFT Initializing...\n\n")
     cli_connect_addr, cli_listen_port, cli_load_file = None, None, None
@@ -1842,7 +1849,7 @@ def main(threaded=False):
             if i + 1 < len(args) and args[i+1].isdigit(): cli_listen_port = int(args[i+1]); i += 1
         elif args[i] == '-file' and i + 1 < len(args):
             cli_load_file = args[i+1]; i += 1
-            cli_time_scale = .000001
+            cli_time_scale = .001
         elif args[i] == '-t' and i + 1 < len(args): cli_time_scale = float(args[i+1]); i += 1
         elif args[i] == '-z' and i + 1 < len(args): cli_zoom_factor = float(args[i+1]); i += 1
         elif args[i] == '-o' and i + 1 < len(args): cli_cam_pan = [float(c) for c in args[i+1].split(',')]; i += 1
@@ -1857,7 +1864,11 @@ def main(threaded=False):
     ping_sound = generate_ping_sound()
     boing_sound = generate_boing_sound()
 
-    if ON_HUGGINGFACE: WIDTH, HEIGHT = 800, 600; screen = pygame.display.set_mode((WIDTH, HEIGHT))
+    if ON_HUGGINGFACE:
+        WIDTH, HEIGHT = 1200, 600; screen = pygame.display.set_mode((WIDTH, HEIGHT))
+        cli_load_file = "nothing.json"
+
+
     else: screen = pygame.display.set_mode((WIDTH, HEIGHT), pygame.RESIZABLE)
     pygame.display.set_caption("TET~CRAFT v5.0D The Fourth Temple")
     clock = pygame.time.Clock(); font_l = pygame.font.SysFont('Georgia', 32); font_s = pygame.font.SysFont(None, 24)
@@ -1867,7 +1878,7 @@ def main(threaded=False):
     show_name_input_screen(screen)
 
     flags = {'t0': False, 't1': False, 't2': False, 'j1': False, 't3': False}; msgs = []
-    dragging, rotating, last_mouse = None, False, (0,0); time_scale = 1.0
+    dragging, rotating, last_mouse = None, False, (0,0); time_scale = 0.0001
     locked_sticky_target = None; frame_count = 0
     past_projection = PastProjection4Sphere()
     disk_surf = None
@@ -1964,9 +1975,23 @@ def main(threaded=False):
         if is_interactive and hovered_vertex and not dragging:
             h_tet = hovered_vertex[0]; h_tet.pos_prev[:] = h_tet.pos[:]; h_tet.local_prev[:] = h_tet.local[:]
 
-        # -----------------------------------------------------
-        # BOT THOUGHT & QUANTUM REPLY LOGIC (STATE MACHINE)
-        # -----------------------------------------------------
+
+
+
+
+
+
+
+# -----------------------------------------------------
+# BOT THOUGHT & QUANTUM REPLY LOGIC (STATE MACHINE)
+# -----------------------------------------------------
+
+
+
+
+
+
+
         if len(world.tets) > 1:
             # 1. Generate Question
             if bot_state == 'IDLE' and now - last_bot_thought > 60:
@@ -2126,13 +2151,26 @@ def main(threaded=False):
                         if d_sq < best_dist_sq: best_dist_sq = d_sq; current_hover_target = (tt, vidx)
                 locked_sticky_target = current_hover_target
         else:
+
+
+
+
+
+
+# AUTOBOT PANORAMIC VIEW
+
+
+
+
+
+
             now = time.time()
-            if now - last_bot_move > 5:
+            if now - last_bot_move > 59:
                 cam.yaw += 0.1; cam.pitch = max(-1, min(1, cam.pitch + random.uniform(-1, 1)))
                 if world.tets: cam.pan = world.center_of_mass.copy()
                 last_bot_move = now
             else: cam.yaw += 0.05 * unscaled_dt
-            cam.dist += (DEFAULT_CAM_DIST + 5.0 * math.sin(time.time() * 0.1) - cam.dist) * 0.005
+            cam.dist += (DEFAULT_CAM_DIST + 5.0 * math.sin(time.time() * 0.01) - cam.dist) * 0.05
             if now - last_bot_spawn > 3600:
                 world.spawn_polar_pair()
                 if len(world.tets) >= 2: world.tets[-1].label = random.choice(MYSTIC_WORDS); world.tets[-2].label = random.choice(MYSTIC_WORDS)
@@ -2267,28 +2305,20 @@ def main(threaded=False):
         top_leg = font_s.render(status_text, True, (0,255,255))
         screen.blit(top_leg, top_leg.get_rect(center=(WIDTH//2, 20)))
 
-        if not ON_HUGGINGFACE:
-            screen.blit(font_s.render(f"FPS: {int(fps)}", True, (255, 255, 0)), (10, 10))
-            uptime_surf = font_s.render(f"v5.0 Up: {str(datetime.timedelta(seconds=int(time.time() - START_TIME)))}", True, (255, 255, 255))
-            screen.blit(uptime_surf, (WIDTH - uptime_surf.get_width() - 10, 10))
-            bot_leg1 = font_s.render("RMB Label | LMB Pull/Join TETs | WASD/RMB Orbit | X/Alt+RMB Center | V Save Instant", True, (0,255,255))
-            bot_leg2 = font_s.render("H Host Mode | TAB Client Mode | R/F/Scroll Zoom | Q/E/Alt+Scroll Pan | Z/C/Ctrl+Scroll Timescale", True, (0,255,255))
-            screen.blit(bot_leg1, bot_leg1.get_rect(center=(WIDTH//2, HEIGHT-35)))
-            screen.blit(bot_leg2, bot_leg2.get_rect(center=(WIDTH//2, HEIGHT-15)))
-            pygame.display.flip()
+        screen.blit(font_s.render(f"FPS: {int(fps)}", True, (255, 255, 0)), (10, 10))
+        uptime_surf = font_s.render(f"v5.0 Up: {str(datetime.timedelta(seconds=int(time.time() - START_TIME)))}", True, (255, 255, 255))
+        screen.blit(uptime_surf, (WIDTH - uptime_surf.get_width() - 10, 10))
+        bot_leg1 = font_s.render("RMB Label | LMB Pull/Join TETs | WASD/RMB Orbit | X/Alt+RMB Center | V Save Instant", True, (0,255,255))
+        bot_leg2 = font_s.render("H Host Mode | TAB Client Mode | R/F/Scroll Zoom | Q/E/Alt+Scroll Pan | Z/C/Ctrl+Scroll Timescale", True, (0,255,255))
+        screen.blit(bot_leg1, bot_leg1.get_rect(center=(WIDTH//2, HEIGHT-35)))
+        screen.blit(bot_leg2, bot_leg2.get_rect(center=(WIDTH//2, HEIGHT-15)))
+        pygame.display.flip()
 
         if ON_HUGGINGFACE and GRADIO_AVAILABLE:
             try: GRADIO_FRAME_BUFFER = np.transpose(pygame.surfarray.array3d(screen), (1, 0, 2))
             except: pass
 
     stop_all_networking(); pygame.quit()
-
-def gradio_interface_loop():
-    def get_frame():
-        if GRADIO_FRAME_BUFFER is not None: return GRADIO_FRAME_BUFFER
-        return np.zeros((HEIGHT, WIDTH, 3), dtype=np.uint8)
-    with gr.Interface(fn=get_frame, inputs=None, outputs=gr.Image(label="Live Simulation! v5.0 Hit the 'Generate' button!"), live=True, title="TET~CRAFT", description="DigitizingHumanity.com's Gamified, Decentralized, Salted, 5D Communication Manifold and Physics/Chemistry Simulator") as demo:
-        demo.launch(server_name="0.0.0.0", server_port=7860)
 
 if __name__ == "__main__":
     if ON_HUGGINGFACE:
