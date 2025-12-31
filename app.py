@@ -1866,7 +1866,13 @@ def main(threaded=False):
 
     if ON_HUGGINGFACE:
         WIDTH, HEIGHT = 1200, 600; screen = pygame.display.set_mode((WIDTH, HEIGHT))
-        cli_load_file = "nothing.json"
+        # Try to find the specific file
+        if os.path.exists("nothing.json"):
+            cli_load_file = "nothing.json"
+            print("### HF Mode: Found nothing.json - Auto-loading... ###")
+        else:
+            # If not found, do nothing (cli_load_file stays None, standard Void logic triggers)
+            print("### HF Mode: nothing.json not found - Starting fresh in Void. ###")
 
 
     else: screen = pygame.display.set_mode((WIDTH, HEIGHT), pygame.RESIZABLE)
@@ -1991,45 +1997,106 @@ def main(threaded=False):
 
 
 
+        # 3. Thoughts (moved from inside bot vision section, hugging face only)
+        if now - last_bot_thought > 61:
+            if len(world.tets) > 1:
+                 # --- Helper: Find physical neighbors ---
+                def get_neighbors(target_tet, exclude_id=None):
+                    nb = []
+                    # 1. Check Joints (Strongest link)
+                    for j in world.joints:
+                        if j.A.id == target_tet.id and j.B.id != exclude_id: nb.append(j.B)
+                        elif j.B.id == target_tet.id and j.A.id != exclude_id: nb.append(j.A)
+                    # 2. Check Sticky Pairs (Desire)
+                    if not nb:
+                        for p in world.sticky_pairs:
+                            if p[0].id == target_tet.id and p[2].id != exclude_id: nb.append(p[2])
+                            elif p[2].id == target_tet.id and p[0].id != exclude_id: nb.append(p[0])
+                    # 3. Check Proximity (Loose association)
+                    if not nb:
+                        for t in world.tets:
+                            if t.id == target_tet.id or t.id == exclude_id: continue
+                            if np.linalg.norm(t.pos - target_tet.pos) < EDGE_LEN * 4:
+                                nb.append(t)
+                    return nb
 
-        if len(world.tets) > 1:
-            # 1. Generate Question
-            if bot_state == 'IDLE' and now - last_bot_thought > 60:
+                # 1. Pick Subject (T1)
                 t1 = random.choice(world.tets)
-                # Find neighbors
-                neighbors = [t for t in world.tets if t.id != t1.id and np.linalg.norm(t.pos - t1.pos) < EDGE_LEN*5]
-                t2 = random.choice(neighbors) if neighbors else random.choice([t for t in world.tets if t.id != t1.id])
+                label1 = t1.label if t1.label else "Unknown"
 
-                label1 = t1.label if t1.label else "Entity"
+                # 2. Pick Object (T2) - Neighbor of T1
+                n1 = get_neighbors(t1)
+                # If no neighbors, pick random, but not T1
+                t2 = random.choice(n1) if n1 else random.choice([t for t in world.tets if t.id != t1.id])
                 label2 = t2.label if t2.label else "Void"
-                sym = get_thought_symbol(t1, t2, world)
 
-                question = f"{label1} {sym} {label2} ?"
-                net_messages.append([f"[Bot]: {question}", time.time() + 15])
-                print(f"[Bot Question]: {question}")
+                # 3. Pick Context (T3) - Neighbor of T2
+                # Try to avoid going back to T1 immediately to avoid A=B=A loops unless necessary
+                n2 = get_neighbors(t2, exclude_id=t1.id)
 
-                bot_state = 'WAITING_FOR_ANSWER'
-                bot_reply_timer = now + 3.0 # 3 second delay for reply
-                last_bot_thought = now
-
-            # 2. Generate Quantum Reply
-            elif bot_state == 'WAITING_FOR_ANSWER' and now > bot_reply_timer:
-                t1 = random.choice(world.tets) # Pick new random context
-                quantum_terms = ["ERD∇", "Ψ-coherence", "OBA⊗", "QuantumFold", "EntropicBridge", "∞", "∅"]
-
-                # Biased random choice based on tech tree or physics
-                if t1.quantum_state != "ground":
-                    reply_sym = "TUNNEL"
+                if n2:
+                    t3 = random.choice(n2)
                 else:
-                    reply_sym = random.choice(quantum_terms)
+                    # If T2 has no forward neighbors, check if there are other TETS available
+                    others = [t for t in world.tets if t.id != t1.id and t.id != t2.id]
+                    if others:
+                        t3 = random.choice(others) # Jump to a new disconnected idea
+                    else:
+                        t3 = t1 # Forced loop (A -> B -> A)
 
-                reply = f"Because {reply_sym} !"
-                net_messages.append([f"[Quantum]: {reply}", time.time() + 15])
-                print(f"[Quantum Reply]: {reply}")
+                label3 = t3.label if t3.label else "Mystery"
 
-                bot_state = 'IDLE'
-                last_bot_thought = now # Reset timer loop start
+                # 4. Get Symbols
+                sym1 = get_thought_symbol(t1, t2, world)
+                sym2 = get_thought_symbol(t2, t3, world)
 
+                # 5. Formulate Trinary Thought
+                thought = f"{label1} {sym1} {label2} {sym2} {label3} ?"
+
+                # Add to chat log
+                net_messages.append([f"[Thought]: {thought}", time.time() + 15])
+                print(f"[Bot Thought]: {thought}")
+
+                #Stage 5 Quantum thoughts
+                def get_neighbors(target_tet, exclude_id=None):
+                    nb = []
+                    for j in world.joints:
+                        if j.A.id == target_tet.id and j.B.id != exclude_id: nb.append(j.B)
+                        elif j.B.id == target_tet.id and j.A.id != exclude_id: nb.append(j.A)
+                    if not nb:
+                        for p in world.sticky_pairs:
+                            if p[0].id == target_tet.id and p[2].id != exclude_id: nb.append(p[2])
+                            elif p[2].id == target_tet.id and p[0].id != exclude_id: nb.append(p[0])
+                    if not nb:
+                        for t in world.tets:
+                            if t.id == target_tet.id or t.id == exclude_id: continue
+                            if np.linalg.norm(t.pos - target_tet.pos) < EDGE_LEN * 4: nb.append(t)
+                    return nb
+
+                t1 = random.choice(world.tets)
+                label1 = t1.label if t1.label else "Unknown"
+
+                n1 = get_neighbors(t1)
+                t2 = random.choice(n1) if n1 else random.choice([t for t in world.tets if t.id != t1.id])
+                label2 = t2.label if t2.label else "Void"
+
+                n2 = get_neighbors(t2, exclude_id=t1.id)
+                t3 = random.choice(n2) if n2 else t1
+                label3 = t3.label if t3.label else "Mystery"
+
+                sym1 = get_thought_symbol(t1, t2, world)
+                sym2 = get_thought_symbol(t2, t3, world)
+
+                # PHASE 5: Inject Quantum Ontology
+                quantum_terms = ["ERD∇", "Ψ-coherence", "OBA⊗", "QuantumFold", "EntropicBridge"]
+
+                if t1.quantum_state != "ground" or t1.erd_coherence > 0.8:
+                    sym1 = random.choice(quantum_terms)
+
+                thought = f"{label1} {sym1} {label2} {sym2} {label3} !"
+                net_messages.append([f"[Quantum Reply]: {thought}", time.time() + 15])
+                print(f"[Quantum Reply]: {thought}")
+            last_bot_thought = now
         pygame.event.pump()
 
         if not ON_HUGGINGFACE:
