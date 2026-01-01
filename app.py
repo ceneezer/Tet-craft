@@ -2018,7 +2018,7 @@ def gradio_interface_loop():
     def get_frame():
         if GRADIO_FRAME_BUFFER is not None: return GRADIO_FRAME_BUFFER
         return np.zeros((HEIGHT, WIDTH, 3), dtype=np.uint8)
-    with gr.Interface(fn=get_frame, inputs=None, outputs=gr.Image(label="Live Simulation! v5.0 Hit the 'Generate' button!"), live=True, title="TET~CRAFT", description="DigitizingHumanity.com's Gamified, Decentralized, Salted, 5D Communication Manifold and Physics/Chemistry Simulator") as demo:
+    with gr.Interface(fn=get_frame, inputs=None, outputs=gr.Image(label="Hit the 'Generate' button!"), live=True, title="TET~CRAFT: The Fourth Temple v5.0D", description="Live simulation of DigitizingHumanity.com's Gamified, Decentralized, Salted, 5D Communication Manifold and Physics/Chemistry Simulator <br /> (A simulated player is adding one new TET/fact each hour to be misunderstood, warping time for the 15 min before that, has a thought and new perspective plain each minute, while each second it orbits)<br />Hit the 'Generate' button bellow for a fresh screenshot") as demo:
         demo.launch(server_name="0.0.0.0", server_port=7860)
 
 def main(threaded=False):
@@ -2077,6 +2077,7 @@ def main(threaded=False):
     # Bot State Machine
     bot_state = 'IDLE' # IDLE, WAITING_FOR_ANSWER
     bot_reply_timer = 0.0
+    last_timescale_surge = time.time() - 2000
 
     if cli_time_scale is not None: time_scale = cli_time_scale
     if cli_zoom_factor is not None: cam.dist = DEFAULT_CAM_DIST / max(0.01, cli_zoom_factor)
@@ -2141,7 +2142,6 @@ def main(threaded=False):
     if not (loaded_from_save or cli_connect_addr or cli_listen_port): show_void_screen(screen, world)
 
     if ON_HUGGINGFACE: host_instance = Host(world, lambda x: net_messages.append([x, time.time()+8]), ping_sound, DEFAULT_PORT); game_mode = 'host'
-    last_timescale_surge = time.time() - 2000
     while GAME_RUNNING:
         unscaled_dt = min(0.1, clock.tick(FPS) / 1000.0)
         now = time.time()
@@ -2407,7 +2407,7 @@ def main(threaded=False):
                 last_timescale_surge = time.time()
                 if host_instance:
                     host_instance.broadcast_message({'type': 'chat', 'data': '<System>: ⚡ Temporal Surge to 10x.'})
-            else:
+            elif (now - last_timescale_surge > 500):
                 time_scale = 0.001
 
 
@@ -2424,15 +2424,19 @@ def main(threaded=False):
 
             now = time.time()
             if now - last_bot_move > 59:
-                cam.yaw += 0.1; cam.pitch = max(-1, min(1, cam.pitch + random.uniform(-1, 1)))
+                cam.pitch = max(-1, min(1, cam.pitch + random.uniform(-1, 1)))
                 if world.tets: cam.pan = world.center_of_mass.copy()
                 last_bot_move = now
-            else: cam.yaw += 0.05 * unscaled_dt
-            cam.dist += (DEFAULT_CAM_DIST + 5.0 * math.sin(time.time() * 0.01) - cam.dist) * 0.05
+            else:
+                cam.yaw += 0.005 * unscaled_dt
+                zoom_scalar = 10.0 ** (math.sin(time.time() * 0.01) * 2.0)
+                target_dist = DEFAULT_CAM_DIST * zoom_scalar
+                cam.dist += (target_dist - cam.dist) * 0.05
             if now - last_bot_spawn > 3600:
                 world.spawn_polar_pair()
                 if len(world.tets) >= 2: world.tets[-1].label = random.choice(MYSTIC_WORDS); world.tets[-2].label = random.choice(MYSTIC_WORDS)
                 last_bot_spawn = now
+                print(f"TET pair created: {world.tets[-2].label,world.tets[-1].label}")
 
         if game_mode == 'host' and host_instance:
             while not host_instance.message_queue.empty():
@@ -2561,14 +2565,14 @@ def main(threaded=False):
         # Genesis Field Display
         field_txt = f"Ψ: {world.cached_psi:.2f} | Φ: {world.cached_phi:.2f} | Ω: {world.cached_omega:.2f}"
         field_surf = font_s.render(field_txt, True, (100, 255, 150))
-        screen.blit(field_surf, (WIDTH - field_surf.get_width() - 10, HEIGHT - 90))
+        screen.blit(field_surf, (10, HEIGHT - 60))
 
         zf = DEFAULT_CAM_DIST / cam.dist; zoom_text = f"{zf:.1f}x" if zf > 10 else f"{zf:.2f}x"
         status_text = f"Mode: {game_mode.replace('_',' ').title()} | TETs: {len(world.tets)} | Unions: {len(world.joints)} | Desires: {len(world.sticky_pairs)} | Zoom: {zoom_text} | Time: {time_scale:.1f}x"
         top_leg = font_s.render(status_text, True, (0,255,255))
         screen.blit(top_leg, top_leg.get_rect(center=(WIDTH//2, 20)))
 
-        screen.blit(font_s.render(f"FPS: {int(fps)}", True, (255, 255, 0)), (10, 10))
+        screen.blit(font_s.render(f"FPS: {int(fps)}", True, (255, 255, 0)), (10, HEIGHT-35))
         uptime_surf = font_s.render(f"v5.0 Up: {str(datetime.timedelta(seconds=int(time.time() - START_TIME)))}", True, (255, 255, 255))
         screen.blit(uptime_surf, (WIDTH - uptime_surf.get_width() - 10, 10))
         bot_leg1 = font_s.render("RMB Label | LMB Pull/Join TETs | WASD/RMB Orbit | X/Alt+RMB Center | V Save Instant", True, (0,255,255))
