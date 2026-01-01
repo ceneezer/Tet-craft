@@ -315,6 +315,13 @@ FIELD_LINEAR_DECAY = 0.0001
 FIELD_QUADRATIC_DECAY = 0.000001
 ENERGY_EQUILIBRIUM_RATE = 0.05
 
+# --- GENESIS PROTOCOL CONSTANTS ---
+METABOLISM_THRESHOLD = 0.01  # Net gain required for growth
+BOND_COST_PER_TICK = 0.000001 # Cost to maintain a joint
+FIELD_PSI_THRESHOLD_QUANTUM = 0.1
+FIELD_PHI_THRESHOLD_FACE_LOCK = 0.3
+FIELD_OMEGA_THRESHOLD_TRANSCENDENCE = 0.9
+
 # --- ENHANCED COLORS & MOLECULES ---
 COLORS = {
     'fire': (255, 89, 34),
@@ -499,6 +506,28 @@ def get_ambient_energy_field(dist_from_origin):
     linear_decay = FIELD_LINEAR_DECAY * dist_from_origin
     quadratic_decay = FIELD_QUADRATIC_DECAY * dist_from_origin**2
     return exp_term - linear_decay - quadratic_decay
+
+@njit(fastmath=True, cache=True)
+def calculate_fields_jit(positions, batteries, coherences, sample_pos):
+    """
+    Computes Psi (Awareness) and Phi (Metabolic) fields at a specific point.
+    Layer 2 of Genesis Protocol.
+    """
+    psi = 0.0
+    phi = 0.0
+    for i in range(positions.shape[0]):
+        delta = positions[i] - sample_pos
+        dist_sq = np.sum(delta**2)
+        if dist_sq < 1e-6: dist_sq = 1e-6
+        dist = np.sqrt(dist_sq)
+
+        # Phi (Metabolic) = Sum(battery / dist)
+        phi += batteries[i] / dist
+
+        # Psi (Awareness) = Sum(coherence / dist^2)
+        psi += coherences[i] / dist_sq
+
+    return psi, phi
 
 @njit(fastmath=True, cache=True)
 def project_many_jit(vecs, pan, yaw, pitch, dist, width, height):
@@ -863,20 +892,48 @@ class TechTree:
     ]
     def __init__(self):
         self.stage_idx = 0; self.progress = 0; self.peak_stage = 0; self.collapsed_from = []
+        # Genesis Protocol Fields
+        self.avg_psi = 0.0
+        self.avg_phi = 0.0
+        self.omega_pressure = 0.0
+
+    def update_fields(self, psi, phi, omega):
+        self.avg_psi = psi
+        self.avg_phi = phi
+        self.omega_pressure = omega
+
+    def check_thresholds(self):
+        """Phase 4 & 6: Era-based field requirements"""
+        if self.stage_idx == 1 and self.avg_psi > 0.1: # Fluctuation -> Condensation Requirement
+             pass
+        if self.stage_idx == 2 and self.avg_phi > 0.3: # Condensation -> Chemistry Requirement
+             pass
+        if self.stage_idx == 6 and self.omega_pressure > 0.9: # Transcendence
+             pass
+
     def add_progress(self, amount):
         self.progress += amount
         if self.stage_idx < len(self.STAGES) - 1:
-            if self.progress >= self.STAGES[self.stage_idx + 1][1]:
+            next_threshold = self.STAGES[self.stage_idx + 1][1]
+            # Genesis Protocol: Field Gates
+            gate_passed = True
+            if self.stage_idx == 1 and self.avg_psi < FIELD_PSI_THRESHOLD_QUANTUM: gate_passed = False
+            if self.stage_idx == 2 and self.avg_phi < FIELD_PHI_THRESHOLD_FACE_LOCK: gate_passed = False
+
+            if self.progress >= next_threshold and gate_passed:
                 self.stage_idx += 1; self.peak_stage = max(self.peak_stage, self.stage_idx)
                 return f"Evolved to: {self.current_stage}"
         return None
+
     def collapse(self, severity=1):
-        if self.stage_idx > 0:
+        # Genesis Protocol: Collapse Mechanics
+        # Triggered if TET population drops below 5 while in Chemistry+ era
+        if self.stage_idx >= 3: # Chemistry or higher
             lost = self.STAGES[self.stage_idx][0]
             self.collapsed_from.append(lost)
             self.stage_idx = max(0, self.stage_idx - severity)
             self.progress = self.STAGES[self.stage_idx][1]
-            return f"Collapsed from {lost}! Lost forever."
+            return f"Collapsed from {lost}! Complexity unstable."
         return None
     @property
     def current_stage(self): return self.STAGES[self.stage_idx][0]
@@ -889,6 +946,7 @@ class TechTree:
 class BotMind:
     def __init__(self, tetra_id):
         self.id = tetra_id; self.memory = []; self.goal = None; self.mood = 0.5; self.friends = set()
+
     def perceive(self, nearby_tetras, nearby_molecules):
         mol_counts = {}
         for t in nearby_tetras:
@@ -900,15 +958,42 @@ class BotMind:
             if len(self.memory) > 10: self.memory.pop(0)
         if len(nearby_tetras) > 10: self.mood = min(1, self.mood + 0.05)
         else: self.mood = max(0, self.mood - 0.02)
-    def decide_goal(self):
+
+    def decide_goal(self, world_fields_func=None, my_pos=None):
+        # Genesis Protocol: Layer 5 Predictive Choice
+        # goal = argmax(field_value_of_target - energy_cost)
+        if world_fields_func and my_pos is not None:
+             # Sample field gradient
+             d = 1.0
+             p0, phi0 = world_fields_func(my_pos)
+             p_x, phi_x = world_fields_func(my_pos + np.array([d,0,0]))
+             p_y, phi_y = world_fields_func(my_pos + np.array([0,d,0]))
+             p_z, phi_z = world_fields_func(my_pos + np.array([0,0,d]))
+
+             # Gradient descent/ascent on Phi (Metabolic field)
+             grad_phi = np.array([phi_x - phi0, phi_y - phi0, phi_z - phi0])
+             if np.linalg.norm(grad_phi) > 0.001:
+                 self.goal = "seek_energy"
+                 self.grad_vector = grad_phi / np.linalg.norm(grad_phi)
+                 return
+
+        # Fallback to legacy logic
         seen = {}
         for event, mol in self.memory:
             if event == 'saw': seen[mol] = seen.get(mol, 0) + 1
         if not seen: self.goal = None; return
         if self.mood > 0.6: self.goal = min(seen, key=seen.get)
         else: self.goal = max(seen, key=seen.get)
+        self.grad_vector = None
+
     def get_desire_vector(self, my_pos, nearby_tetras):
+        # Predictive choice vector
+        if hasattr(self, 'grad_vector') and self.grad_vector is not None:
+            return self.grad_vector * 0.5
+
         if not self.goal: return np.zeros(3)
+        if self.goal == "seek_energy": return np.zeros(3) # Handled above
+
         best_dist, best_dir = float('inf'), np.zeros(3)
         for t in nearby_tetras:
             if getattr(t, 'molecule_type', None) == self.goal:
@@ -917,6 +1002,8 @@ class BotMind:
         return best_dir * self.mood
     def bond_with(self, other_id): self.friends.add(other_id)
     def thought_bubble(self):
+        if hasattr(self, 'grad_vector') and self.grad_vector is not None:
+            return "⚡" # Seeking energy
         if self.goal:
             emoji = '🔍' if self.mood > 0.6 else '👀'
             return f"{emoji}{self.goal}"
@@ -980,6 +1067,10 @@ class World:
         self.tets, self.joints, self.sticky_pairs = [], [], []; self.center_of_mass, self.sound = np.zeros(3), sound
         self.reaction_particles = []
         self.tech_tree = TechTree()
+        # Genesis Protocol Fields Cache
+        self.cached_psi = 0.0
+        self.cached_phi = 0.0
+        self.cached_omega = 0.0
 
     def get_average_battery(self):
         if not self.tets: return 0.5
@@ -1009,6 +1100,77 @@ class World:
         if len(self.tets) == 4: tet1.label = "Answer"; tet2.label = "Question"
         self.tets.extend([tet1, tet2]); polar_face_idx = random.choice([2, 3]); face_verts = Tetrahedron.FACES_NP[polar_face_idx]
         for i in range(3): self.sticky_pairs.append((tet1, face_verts[i], tet2, face_verts[i]))
+
+    def get_fields_at(self, pos):
+        """Helper to call JIT field calculator"""
+        if not self.tets: return 0.0, 0.0
+        positions = np.array([t.pos for t in self.tets])
+        batteries = np.array([t.battery for t in self.tets])
+        coherences = np.array([t.erd_coherence for t in self.tets])
+        return calculate_fields_jit(positions, batteries, coherences, pos)
+
+    def calculate_global_fields(self):
+        """Layer 2: Fields as Law (Average for TechTree)"""
+        if not self.tets: return 0.0, 0.0, 0.0
+        # Narrative Field Omega
+        max_stage = 7.0
+        global_pressure = len(self.tets) / 200.0 # Arbitrary pressure metric
+        omega = (self.tech_tree.stage_idx / max_stage) * global_pressure
+
+        # Approximate global avg Psi and Phi by sampling center
+        psi, phi = self.get_fields_at(self.center_of_mass)
+
+        # Normalize roughly for tech tree usage
+        avg_phi = phi / (len(self.tets) * 5.0) if self.tets else 0
+        avg_psi = psi / (len(self.tets) * 0.5) if self.tets else 0
+
+        self.cached_psi = avg_psi
+        self.cached_phi = avg_phi
+        self.cached_omega = omega
+        self.tech_tree.update_fields(avg_psi, avg_phi, omega)
+        return avg_psi, avg_phi, omega
+
+    def process_metabolism(self, scaled_dt, add_msg_fn):
+        """
+        Layer 4: Metabolism Loop
+        net_gain = Σ(reaction_energy) - Σ(bond_cost)
+        Triggers mitosis or apoptosis.
+        """
+        if not self.tets: return
+
+        # 1. Energy Accounting
+        # Reaction energy is added during synthesis_reactions, but we track burn here
+        bond_cost = (len(self.joints) + len(self.sticky_pairs)) * BOND_COST_PER_TICK * scaled_dt * 60
+
+        # 2. Distribute cost among bonded TETs
+        for j in self.joints:
+            drain = BOND_COST_PER_TICK * scaled_dt * 30
+            j.A.battery -= drain
+            j.B.battery -= drain
+
+        # 3. Mitosis-like growth check (net gain > threshold)
+        # We approximate net gain by checking if average battery is high
+        avg_bat = self.get_average_battery()
+
+        if avg_bat > 0.8 and self.tech_tree.can_unlock('life') and random.random() < 0.01:
+             # Duplicate weakest link (Growth)
+             # Find a TET with high battery
+             candidates = [t for t in self.tets if t.battery > 0.9]
+             if candidates:
+                 parent = random.choice(candidates)
+                 parent.battery *= 0.5
+                 offset = np.random.uniform(-1, 1, 3) * EDGE_LEN
+                 child = Tetrahedron(parent.pos + offset)
+                 child.battery = 0.4
+                 child.label = parent.label # Inherit info
+                 self.tets.append(child)
+                 add_msg_fn(f"Mitosis: {child.label}")
+
+        # 4. Apoptosis-like death check
+        if avg_bat < 0.2 and len(self.tets) > 5 and random.random() < 0.01:
+            # Break weakest bond
+            if self.sticky_pairs:
+                self.sticky_pairs.pop(random.randint(0, len(self.sticky_pairs)-1))
 
     def check_magnetization(self):
         tet_map = {t.id: t for t in self.tets}
@@ -1080,6 +1242,10 @@ class World:
 
     def apply_corner_desires(self, scaled_dt):
         if len(self.tets) < 2: return
+
+        # Genesis Protocol: Modulate desire by Psi field (Awareness)
+        psi_mod = 1.0 + self.cached_psi
+
         tet_list = list(self.tets)
         all_corners, corner_colors, corner_tets, corner_indices = [], [], [], []
         for idx, t in enumerate(tet_list):
@@ -1102,7 +1268,8 @@ class World:
                 if i == j: continue
                 if (corner_colors[i] == 'R' and corner_colors[j] == 'C') or (corner_colors[i] == 'C' and corner_colors[j] == 'R'):
                     delta = all_corners[j] - all_corners[i]; dist = norm_njit(delta)
-                    forces += dist * (K_CORNER_DESIRE * (1.0 - np.linalg.norm(delta) / CORNER_DESIRE_RANGE))
+                    # Force scaled by Psi
+                    forces += dist * (K_CORNER_DESIRE * psi_mod * (1.0 - np.linalg.norm(delta) / CORNER_DESIRE_RANGE))
             if np.any(forces):
                 t1 = tet_list[corner_tets[i]]; t1.local[corner_indices[i]] += forces * scaled_dt * 0.5; t1.pos += forces * scaled_dt * 0.5
 
@@ -1284,7 +1451,8 @@ class World:
                         self.tets.append(new_tet)
                     decompositions_this_frame.append((old_label, products))
                     add_msg_fn(f"💥 {old_label} decomposed!", duration=3)
-                    if len(self.tets) < 5 and self.tech_tree.stage_idx > 3:
+                    # Genesis Protocol: Collapse Check
+                    if len(self.tets) < 5 and self.tech_tree.stage_idx >= 3:
                          msg = self.tech_tree.collapse()
                          if msg: add_msg_fn(msg, duration=5)
         self.apply_erd_fluctuations(scaled_dt)
@@ -1349,16 +1517,26 @@ class World:
     def update(self, scaled_dt, unscaled_dt, time_scale, add_msg_fn, spin_multiplier=1.0):
         if not self.tets: return
         self.check_magnetization()
+
+        # Genesis Protocol: Update Fields
+        self.calculate_global_fields()
+
         self.update_magnetic_batteries(scaled_dt)
         self.apply_corner_desires(scaled_dt)
         self.apply_same_pole_repulsion(scaled_dt)
         self.apply_negative_pole_orientation(scaled_dt)
 
+        # Genesis Protocol: Metabolism Loop
+        self.process_metabolism(scaled_dt, add_msg_fn)
+
         for t in self.tets:
             if t.mind:
                 nearby = [o for o in self.tets if np.linalg.norm(o.pos - t.pos) < 5]
                 t.mind.perceive(nearby, [])
-                t.mind.decide_goal()
+
+                # Enhanced BotMind: Field gradient following
+                t.mind.decide_goal(world_fields_func=self.get_fields_at, my_pos=t.pos)
+
                 desire = t.mind.get_desire_vector(t.pos, nearby)
                 t.pos += desire * 0.01
 
@@ -1368,7 +1546,12 @@ class World:
         self.center_of_mass = self.calculate_dynamic_center()
 
         positions = np.array([t.pos for t in self.tets])
-        positions_prev = np.array([t.pos_prev for t in self.tets])
+
+        if time_scale < 0.01:
+            positions_prev = positions.copy()
+        else:
+            positions_prev = np.array([t.pos_prev for t in self.tets])
+
         locals_arr = np.array([t.local for t in self.tets])
         locals_prev = np.array([t.local_prev for t in self.tets])
         batteries = np.array([t.battery for t in self.tets])
@@ -1490,6 +1673,7 @@ def prime_jit_functions(cam):
     conserve_momentum_jit(dummy_pos, dummy_pos_prev); resolve_collisions_jit(dummy_pos, np.array([[0, 1], [2, 3]])); resolve_joints_jit(dummy_locals, dummy_joints)
     dist_point_to_line_segment(np.array([1.0, 1.0], dtype=np.float64), np.array([0.0, 0.0], dtype=np.float64), np.array([2.0, 2.0], dtype=np.float64))
     calculate_disk_quads(np.zeros(3), np.zeros(3), 0.0, 0.0, 100.0, 800, 600, 50.0, np.array([1.,0.,0.]), np.array([0.,0.,1.]), np.array([0.,0.,1.]), np.array([255.,255.,255.]), 0.5, 0.0)
+    calculate_fields_jit(dummy_pos, dummy_batteries, dummy_batteries, np.array([0.,0.,0.]))
 
 def show_intro(screen, cam):
     global WIDTH, HEIGHT
@@ -1957,7 +2141,7 @@ def main(threaded=False):
     if not (loaded_from_save or cli_connect_addr or cli_listen_port): show_void_screen(screen, world)
 
     if ON_HUGGINGFACE: host_instance = Host(world, lambda x: net_messages.append([x, time.time()+8]), ping_sound, DEFAULT_PORT); game_mode = 'host'
-
+    last_timescale_surge = time.time() - 2000
     while GAME_RUNNING:
         unscaled_dt = min(0.1, clock.tick(FPS) / 1000.0)
         now = time.time()
@@ -2218,6 +2402,13 @@ def main(threaded=False):
                         if d_sq < best_dist_sq: best_dist_sq = d_sq; current_hover_target = (tt, vidx)
                 locked_sticky_target = current_hover_target
         else:
+            if (now - last_timescale_surge > 2700): # 2700 seconds = 45 minutes
+                time_scale = 10.0
+                last_timescale_surge = time.time()
+                if host_instance:
+                    host_instance.broadcast_message({'type': 'chat', 'data': '<System>: ⚡ Temporal Surge to 10x.'})
+            else:
+                time_scale = 0.001
 
 
 
@@ -2366,6 +2557,11 @@ def main(threaded=False):
 
         stage_surf = font_s.render(f"Era: {world.tech_tree.current_stage}", True, (200, 100, 255))
         screen.blit(stage_surf, (WIDTH - stage_surf.get_width() - 10, HEIGHT - 60))
+
+        # Genesis Field Display
+        field_txt = f"Ψ: {world.cached_psi:.2f} | Φ: {world.cached_phi:.2f} | Ω: {world.cached_omega:.2f}"
+        field_surf = font_s.render(field_txt, True, (100, 255, 150))
+        screen.blit(field_surf, (WIDTH - field_surf.get_width() - 10, HEIGHT - 90))
 
         zf = DEFAULT_CAM_DIST / cam.dist; zoom_text = f"{zf:.1f}x" if zf > 10 else f"{zf:.2f}x"
         status_text = f"Mode: {game_mode.replace('_',' ').title()} | TETs: {len(world.tets)} | Unions: {len(world.joints)} | Desires: {len(world.sticky_pairs)} | Zoom: {zoom_text} | Time: {time_scale:.1f}x"
