@@ -145,6 +145,7 @@ Black hole revised by Gemini 3.0,
 GRadio implemented by Gemini 3.0,
 Chemistry added by Deepseek (~v3.3?)
 Accretion disk and chemical colors beautified by Opus 4.5
+Physics & Thermodynamics Refinement (Whitepaper v1.0) by GPT-4o
 Entire project Vibe coded by ceneezer 20/12/20-Current
 Apache 2.0
 """
@@ -266,14 +267,61 @@ WIDTH, HEIGHT = 800, 600
 FPS = 60
 
 EDGE_LEN = 2.0
-SNAP_DIST = 0.75
+SNAP_DIST = 1.7
 AXIS_LEN = 20
 
-# --- COHESION CONSTANTS ---
-K_STICKY_PULL = 0.06
+# --- INTERFACE CHEMISTRY (The 16 Combinations) ---
+# Map: (FaceIndex_A, FaceIndex_B) -> Element Symbol
+# 0=White, 1=Black, 2=Red(Yellow), 3=Cyan
+# This completely overwrites the tips above.
+INTERFACE_CHEMISTRY = {
+    (0, 0): "C",   # White-White -> Carbon (Structure)
+    (2, 3): "H",   # Red-Cyan    -> Hydrogen (Polarity neutralized)
+    (3, 2): "H",   # Cyan-Red    -> Hydrogen (Symmetry)
+
+    (0, 1): "N",   # White-Black -> Nitrogen
+    (1, 0): "N",
+    (0, 2): "O",   # White-Red   -> Oxygen
+    (2, 0): "O",
+    (0, 3): "F",   # White-Cyan  -> Fluorine
+    (3, 0): "F",
+
+    (1, 1): "He",  # Black-Black -> Helium (Inert/Void)
+    (1, 2): "P",   # Black-Red   -> Phosphorus
+    (2, 1): "P",
+    (1, 3): "S",   # Black-Cyan  -> Sulfur
+    (3, 1): "S",
+
+    (2, 2): "Fe",  # Red-Red     -> Iron (Magnetic repulsion/tension)
+    (3, 3): "Si",  # Cyan-Cyan   -> Silicon (Crystal lattice)
+}
+
+# --- PHYSICS REFINEMENT (Whitepaper v1.0) ---
+# Lennard-Jones-like Potential Parameters
+# F_attract = k_a / r^2
+# F_repel = -k_r / r^12
+# Ratio: Repulsion should be ~100x Attraction for stability at short ranges - not for a playable game!
+K_WP_ATTRACT = 50.0        # Was K_STICKY_PULL (0.06)
+K_WP_REPEL = K_WP_ATTRACT * .12
+WP_EQUILIBRIUM_DIST = EDGE_LEN * 0.9
+
+# Spin/Magnetism: Torque based, not linear pull
+# F_spin = k_spin * dot(orientation_a, orientation_b) / r^3
+K_WP_SPIN = 0.005          # Weak torque bias
+
+# Thermodynamics
+# Entropy leakage per interaction tick
+K_ENTROPY_LOSS = 0.00005
+
+# Arrhenius Kinetics
+ACTIVATION_ENERGY_BASE = 0.6
+BOLTZMANN_K = 1.0
+
+# Legacy fallbacks for compatibility
+K_STICKY_PULL = K_WP_ATTRACT
 STICKY_PULL_HARMONY_SENSITIVITY = 0.1
-STICKY_EXPONENTIAL_THRESHOLD = 100.0 * EDGE_LEN
-NEIGHBOR_DESIRE_THRESHOLD = 1000.0 * EDGE_LEN
+STICKY_EXPONENTIAL_THRESHOLD = 100000.0 * EDGE_LEN
+NEIGHBOR_DESIRE_THRESHOLD = 10000.0 * EDGE_LEN
 
 # --- SINGULARITY CONSTANTS ---
 K_JOINT_STRENGTH = 0.2
@@ -286,10 +334,10 @@ PORT_RANGE = range(DEFAULT_PORT, DEFAULT_PORT + 10)
 DISCOVERY_PORT = 65419
 
 # --- PHYSICS CONSTANTS ---
-DAMPING = 0.995
-MOUSE_PULL_STRENGTH = 0.0005
-BODY_PULL_STRENGTH = 0.0008
-COLLISION_RADIUS = EDGE_LEN * 0.75
+DAMPING = 0.5
+MOUSE_PULL_STRENGTH = 0.8
+BODY_PULL_STRENGTH = 0.008
+COLLISION_RADIUS = EDGE_LEN * 0.9
 
 # --- MAGNETISM CONSTANTS ---
 K_MAGNETIC_TORQUE = 0.05
@@ -305,10 +353,10 @@ FOCAL_LENGTH = 650.0
 DEFAULT_CAM_DIST = 70.0
 MIN_ZOOM_DIST = DEFAULT_CAM_DIST / 10.0
 MAX_ZOOM_DIST = DEFAULT_CAM_DIST / 0.005
-SELECTION_RADIUS = 50.0
+SELECTION_RADIUS = 10.0
 
 # --- UNIFIED LAW OF BALANCE CONSTANTS ---
-K_UNIFIED_FORCE = 0.0000002
+K_UNIFIED_FORCE = 0.00001
 FIELD_AMPLITUDE = 1.2
 FIELD_SCALE = 250.0
 FIELD_LINEAR_DECAY = 0.0001
@@ -559,6 +607,7 @@ def get_transformed_z_many_jit(vecs, pan, yaw, pitch):
     z_final = sp * y + cp * z_rot
     return z_final
 
+# --- WHITEPAPER IMPLEMENTATION: PHYSICS REFINEMENT ---
 @njit(fastmath=True, cache=True)
 def world_update_physics_jit(positions, positions_prev, locals, locals_prev, batteries, scaled_dt, time_scale, edges, sticky_pairs_data, joints_data, spin_multiplier, magnet_indices):
     num_tets = positions.shape[0]
@@ -574,27 +623,54 @@ def world_update_physics_jit(positions, positions_prev, locals, locals_prev, bat
     acc += radial_directions * force_magnitudes[:, np.newaxis]
     energy_transfer = (ambient_energies - batteries) * ENERGY_EQUILIBRIUM_RATE * scaled_dt
     batteries += energy_transfer
+
+    # --- WHITEPAPER: ENTROPY LEAKAGE ---
+    # Global entropy drain on battery (potential) based on movement/existence
+    batteries -= K_ENTROPY_LOSS * scaled_dt * 60.0
     batteries = np.clip(batteries, 0.0, 1.0)
+
+    # --- WHITEPAPER: LENNARD-JONES-LIKE POTENTIAL ---
+    # Replacing simple sticky pull with composite potential for bonded/interacting pairs
+    # F_attract = K_WP_ATTRACT / r^2
+    # F_repel = -K_WP_REPEL / r^12
+    # Applied to 'sticky_pairs' which represent potential or loose bonds
 
     for i in range(sticky_pairs_data.shape[0]):
         idx1, v_idx1, idx2, v_idx2 = sticky_pairs_data[i]
         p1 = positions[idx1] + locals[idx1, v_idx1]
         p2 = positions[idx2] + locals[idx2, v_idx2]
         delta = p2 - p1
-        dist = np.linalg.norm(delta)
-        if dist > 1e-6:
-            battery_diff = abs(batteries[idx1] - batteries[idx2])
-            harmony_factor = 1.0 / (battery_diff + STICKY_PULL_HARMONY_SENSITIVITY)
-            harmony_factor = min(harmony_factor, 1.0 / STICKY_PULL_HARMONY_SENSITIVITY)
-            force_magnitude = K_STICKY_PULL * harmony_factor
-            if dist > STICKY_EXPONENTIAL_THRESHOLD:
-                multiplier = (dist / STICKY_EXPONENTIAL_THRESHOLD)**2
-                multiplier = min(100.0, multiplier)
-                force_magnitude *= multiplier
-            force_vec = delta / dist * force_magnitude
+        dist_sq = np.sum(delta**2)
+        dist = np.sqrt(dist_sq)
+
+        if dist > 0.1: # Avoid singularity at r=0
+            # Normalized direction
+            n_vec = delta / dist
+
+            # Whitepaper Force Law
+            # F_total = k_a/r^2 - k_r/r^12
+            # Note: clamped to avoid explosion at very short distances
+            r2 = dist * dist
+            r4 = r2 * r2
+            r12 = r4 * r4 * r4
+
+            f_attract = K_WP_ATTRACT / (r2 + 0.01)
+            f_repel = K_WP_REPEL / (r12 + 0.0001)
+
+            f_total = f_attract - f_repel
+
+            # Clamp force to prevent physics explosion
+            f_total = max(-10.0, min(10.0, f_total))
+
+            force_vec = n_vec * f_total
             acc[idx1] += force_vec
             acc[idx2] -= force_vec
 
+            # Entropy cost for interaction
+            batteries[idx1] -= K_ENTROPY_LOSS * 0.1 * scaled_dt
+            batteries[idx2] -= K_ENTROPY_LOSS * 0.1 * scaled_dt
+
+    # Joints remain as stiff springs/constraints for formed molecules
     for i in range(joints_data.shape[0]):
         idx1, v_idx1, idx2, v_idx2 = joints_data[i]
         p1 = positions[idx1] + locals[idx1, v_idx1]
@@ -648,32 +724,62 @@ def world_update_physics_jit(positions, positions_prev, locals, locals_prev, bat
                     locals[i, edges[j, 1], :] -= correction[i, j, :]
     return positions, positions_prev, locals, locals_prev, batteries
 
+# --- WHITEPAPER IMPLEMENTATION: MAGNETIC TORQUE REFINEMENT ---
 @njit(fastmath=True, cache=True)
 def update_magnetic_effects_jit(locals_arr, orientation_biases, positions, magnet_indices, magnet_polarities, scaled_dt):
     num_magnets = magnet_indices.shape[0]
     orientation_biases *= MAGNETIC_BIAS_DECAY
     if num_magnets < 2: return locals_arr, orientation_biases
-    for i_idx, tet_idx1 in enumerate(magnet_indices):
-        net_b_field = np.zeros(3)
-        for j_idx, tet_idx2 in enumerate(magnet_indices):
-            if tet_idx1 == tet_idx2: continue
-            delta = positions[tet_idx2] - positions[tet_idx1]
-            dist_sq = np.dot(delta, delta)
-            if dist_sq > 1e-6:
-                field_strength = magnet_polarities[j_idx] / (dist_sq + MAGNETIC_EPSILON_SQ)
-                net_b_field += delta * (field_strength / np.sqrt(dist_sq))
-        bias = orientation_biases[tet_idx1]
-        bias += (net_b_field - bias) * K_MAGNETIC_BIAS_BUILDUP * scaled_dt
-        orientation_biases[tet_idx1] = bias
-        moment_vec = norm_njit(locals_arr[tet_idx1, 0]) * magnet_polarities[i_idx]
-        total_field = net_b_field + bias
-        torque_vec = np.cross(moment_vec, total_field)
-        torque_magnitude = np.linalg.norm(torque_vec)
-        if torque_magnitude > 1e-6:
-            rotation_amount = torque_magnitude * K_MAGNETIC_TORQUE * scaled_dt
+
+    # Whitepaper: Spin Alignment Term
+    # Torque = k_spin * dot(orientation_a, orientation_b) / r^3 * cross(orientation_a, orientation_b)
+    # Effectively aligns orientations without causing translation
+
+    for i in range(num_magnets):
+        idx1 = magnet_indices[i]
+        # Approximate orientation using vertex 0 of the tet (local space)
+        # In a real chemical model this would be the dipole moment vector
+        orient1 = norm_njit(locals_arr[idx1, 0])
+
+        net_torque = np.zeros(3)
+
+        for j in range(num_magnets):
+            if i == j: continue
+            idx2 = magnet_indices[j]
+            orient2 = norm_njit(locals_arr[idx2, 0])
+
+            delta = positions[idx2] - positions[idx1]
+            dist_sq = np.sum(delta**2)
+            dist = np.sqrt(dist_sq)
+
+            if dist > 0.1:
+                # Alignment factor (-1 to 1)
+                alignment = np.dot(orient1, orient2)
+
+                # Torque direction tries to align them
+                torque_dir = np.cross(orient1, orient2)
+
+                # Strength falls off as 1/r^3 (dipole-dipole like)
+                strength = (K_WP_SPIN * alignment) / (dist*dist*dist + 0.1)
+
+                net_torque += torque_dir * strength
+
+        # Apply torque to rotate local frame
+        torque_mag = np.linalg.norm(net_torque)
+        if torque_mag > 1e-9:
+            # Axis-angle rotation
+            axis = net_torque / torque_mag
+            angle = torque_mag * scaled_dt
+
+            # Rotate all vertices of the tetrahedron
+            c = math.cos(angle)
+            s = math.sin(angle)
+            # Rodrigues rotation formula
             for v_idx in range(4):
-                 rotated_vec = locals_arr[tet_idx1, v_idx] + np.cross(torque_vec, locals_arr[tet_idx1, v_idx]) * rotation_amount
-                 locals_arr[tet_idx1, v_idx] = rotated_vec
+                v = locals_arr[idx1, v_idx]
+                v_new = v * c + np.cross(axis, v) * s + axis * np.dot(axis, v) * (1 - c)
+                locals_arr[idx1, v_idx] = v_new
+
     return locals_arr, orientation_biases
 
 @njit(fastmath=True, cache=True)
@@ -1130,16 +1236,16 @@ class World:
         self.tech_tree.update_fields(avg_psi, avg_phi, omega)
         return avg_psi, avg_phi, omega
 
+    # --- WHITEPAPER: THERMODYNAMICS UPDATE ---
     def process_metabolism(self, scaled_dt, add_msg_fn):
         """
         Layer 4: Metabolism Loop
-        net_gain = Σ(reaction_energy) - Σ(bond_cost)
-        Triggers mitosis or apoptosis.
+        Includes Entropy leakage per the Whitepaper.
         """
         if not self.tets: return
 
-        # 1. Energy Accounting
-        # Reaction energy is added during synthesis_reactions, but we track burn here
+        # 1. Energy Accounting (Whitepaper: Local Conservation)
+        # Bond maintenance cost logic
         bond_cost = (len(self.joints) + len(self.sticky_pairs)) * BOND_COST_PER_TICK * scaled_dt * 60
 
         # 2. Distribute cost among bonded TETs
@@ -1149,7 +1255,6 @@ class World:
             j.B.battery -= drain
 
         # 3. Mitosis-like growth check (net gain > threshold)
-        # We approximate net gain by checking if average battery is high
         avg_bat = self.get_average_battery()
 
         if avg_bat > 0.8 and self.tech_tree.can_unlock('life') and random.random() < 0.01:
@@ -1158,68 +1263,104 @@ class World:
              candidates = [t for t in self.tets if t.battery > 0.9]
              if candidates:
                  parent = random.choice(candidates)
+                 # Energy conserved: Parent splits energy with child
+                 child_energy = parent.battery * 0.5
                  parent.battery *= 0.5
+
                  offset = np.random.uniform(-1, 1, 3) * EDGE_LEN
                  child = Tetrahedron(parent.pos + offset)
-                 child.battery = 0.4
+                 child.battery = child_energy
                  child.label = parent.label # Inherit info
                  self.tets.append(child)
                  add_msg_fn(f"Mitosis: {child.label}")
 
         # 4. Apoptosis-like death check
         if avg_bat < 0.2 and len(self.tets) > 5 and random.random() < 0.01:
-            # Break weakest bond
+            # Break weakest bond due to entropy/starvation
             if self.sticky_pairs:
                 self.sticky_pairs.pop(random.randint(0, len(self.sticky_pairs)-1))
 
     def check_magnetization(self):
+        # 1. Reset everyone to "Unknown" state
+        for t in self.tets:
+            t.is_magnetized = False
+            t.magnetism = 0
+            t.magnetic_strength = 0.0
+            t.locked_faces = []
+            t.molecule_type = None # This clears the white label
+            t.aura_color = None
+            t.is_catalyst = False
+
+        # 2. Map connections
+        # We need to find pairs of TETs that share 3+ vertices (A Face Lock)
+        connections = {} # Key: tuple(sorted(id1, id2)), Value: set(shared_vertex_indices)
+
+        for j in self.joints:
+            # Create a unique key for this pair of TETs
+            pair_key = tuple(sorted((j.A.id, j.B.id)))
+            if pair_key not in connections:
+                connections[pair_key] = []
+
+            # Store which local vertex indices are involved
+            # We need to know which vertex on A connects to which on B
+            if j.A.id < j.B.id:
+                connections[pair_key].append((j.ia, j.ib))
+            else:
+                connections[pair_key].append((j.ib, j.ia))
+
+        # 3. Analyze Interfaces
         tet_map = {t.id: t for t in self.tets}
+
+        for (id_a, id_b), links in connections.items():
+            if len(links) >= 3: # 3 connections = A Face Lock
+                tA = tet_map[id_a]
+                tB = tet_map[id_b]
+
+                # Identify which Face on A is involved
+                # We simply check which face definition contains these vertex indices
+                verts_a = {x[0] for x in links}
+                face_idx_a = -1
+                for f_idx, corners in Tetrahedron.FACE_TO_CORNERS.items():
+                    if verts_a.issuperset(corners):
+                        face_idx_a = f_idx
+                        break
+
+                # Identify which Face on B is involved
+                verts_b = {x[1] for x in links}
+                face_idx_b = -1
+                for f_idx, corners in Tetrahedron.FACE_TO_CORNERS.items():
+                    if verts_b.issuperset(corners):
+                        face_idx_b = f_idx
+                        break
+
+                # 4. Apply Chemistry
+                if face_idx_a != -1 and face_idx_b != -1:
+                    # Mark faces as locked so they can't bond again (optional logic)
+                    tA.locked_faces.append(face_idx_a)
+                    tB.locked_faces.append(face_idx_b)
+
+                    # Lookup the Element from the Interface Table
+                    chem_key = (face_idx_a, face_idx_b)
+                    element = INTERFACE_CHEMISTRY.get(chem_key, "??")
+
+                    # Label the TETs
+                    # We store the element name in molecule_type so the renderer picks it up
+                    tA.molecule_type = element
+                    tB.molecule_type = element
+
+                    # Special Properties based on Element
+                    if element == "Fe": # Iron (Red-Red) becomes magnetic
+                        tA.is_magnetized = True; tA.magnetism = 1
+                        tB.is_magnetized = True; tB.magnetism = 1
+                        tA.magnetic_strength = 1.0; tB.magnetic_strength = 1.0
+
+                    if element == "H": # Hydrogen (Red-Cyan) is energetic
+                        tA.battery = min(1.0, tA.battery + 0.001)
+                        tB.battery = min(1.0, tB.battery + 0.001)
+
+        # 5. Fallback for Solitary TETs (Quantum properties)
         for t in self.tets:
-            t.is_magnetized = False; t.magnetism = 0; t.magnetic_strength = 0.0; t.locked_faces = []
-            t.molecule_type = None; t.aura_color = None; t.polarity_face_idx = None
-
-        for t in self.tets:
-            joints_by_partner = {}
-            for j in self.joints:
-                partner_id, my_idx = (j.B.id, j.ia) if j.A.id == t.id else ((j.A.id, j.ib) if j.B.id == t.id else (None, None))
-                if partner_id: joints_by_partner.setdefault(partner_id, set()).add(my_idx)
-
-            for face_idx in range(4):
-                face_verts = set(Tetrahedron.FACES_NP[face_idx])
-                for partner_id, connected_indices in joints_by_partner.items():
-                    if connected_indices.issuperset(face_verts):
-                        t.locked_faces.append(face_idx)
-                        if not t.is_magnetized:
-                            polarity = Tetrahedron.FACE_POLARITY_MAP.get(face_idx, 0)
-                            if polarity != 0:
-                                t.is_magnetized = True; t.magnetism = polarity; t.polarity_face_idx = face_idx
-                                partner_tet = tet_map.get(partner_id)
-                                if partner_tet and not partner_tet.is_magnetized:
-                                    partner_tet.is_magnetized = True; partner_tet.magnetism = polarity; partner_tet.polarity_face_idx = face_idx
-
-            if t.is_magnetized and len(t.locked_faces) > 0: t.magnetic_strength = min(1.0, len(t.locked_faces) * 0.25)
-            if len(t.locked_faces) > 0:
-                color_counts = {'R': 0, 'C': 0, 'W': 0, 'B': 0}
-                for face_idx in range(4):
-                    color = t.colors[face_idx] if t.colors else Tetrahedron.FACE_COLORS[face_idx]
-                    if color == (255,0,0): color_counts['R'] += 1
-                    elif color == (0,255,255): color_counts['C'] += 1
-                    elif color == (255,255,255): color_counts['W'] += 1
-                    elif color == (0,0,0): color_counts['B'] += 1
-                pattern_key = f"F{len(t.locked_faces)}_R{color_counts['R']}_C{color_counts['C']}_W{color_counts['W']}_B{color_counts['B']}"
-                t.molecule_type = pattern_key
-                if pattern_key in MOLECULE_DATABASE:
-                    molecule_data = MOLECULE_DATABASE[pattern_key]
-                    t.aura_color = molecule_data[0]; molecule_name = molecule_data[1]
-                    if not t.label or t.label in ["Time", "Separation", "Light", "Darkness"]: t.label = molecule_name
-                    t.is_catalyst = molecule_name in CATALYSTS
             t.erd_coherence = min(1.0, (len(t.locked_faces) / 4.0) * t.battery)
-            if t.label in [p[0] for p in ENTANGLEMENT_PAIRS] or t.label in [p[1] for p in ENTANGLEMENT_PAIRS]:
-                if t.entangled_partner is None and t.erd_coherence > ERD_COHERENCE_THRESHOLD:
-                    for potential in self.tets:
-                        if potential.id != t.id and potential.label in [pair[1 - pair.index(t.label)] if t.label in pair else None for pair in ENTANGLEMENT_PAIRS]:
-                            if np.linalg.norm(t.pos - potential.pos) < QUANTUM_ENTANGLE_RANGE:
-                                t.entangled_partner = potential.id; potential.entangled_partner = t.id; break
 
     def update_magnetic_batteries(self, scaled_dt):
         if not self.joints: return
@@ -1393,39 +1534,81 @@ class World:
                               torque_axis * np.dot(torque_axis, t.local[v_idx]) * (1 - np.cos(rotation_amount)))
                     t.local[v_idx] = rotated
 
+    # --- WHITEPAPER: ARRHENIUS KINETICS ---
     def attempt_synthesis_reactions(self, scaled_dt, add_msg_fn):
         if len(self.tets) < 2: return []
         current_time = time.time(); positions = np.array([t.pos for t in self.tets])
         tree = cKDTree(positions); reactions_this_frame = []
+
+        # Identify catalysts first
+        catalyst_indices = [i for i, t in enumerate(self.tets) if t.is_catalyst]
+        catalyst_positions = positions[catalyst_indices] if catalyst_indices else np.empty((0,3))
+
         for i, t1 in enumerate(self.tets):
             if not t1.label or t1.label not in MOLECULE_SYMBOLS: continue
             if current_time - t1.last_reaction_time < 5.0: continue
+
             nearby_indices = tree.query_ball_point(positions[i], REACTION_RANGE)
             for j in nearby_indices:
                 if i >= j: continue
                 t2 = self.tets[j]
                 if not t2.label or t2.label not in MOLECULE_SYMBOLS: continue
                 if current_time - t2.last_reaction_time < 5.0: continue
+
                 reaction_key = tuple(sorted([t1.label, t2.label]))
                 if reaction_key in SYNTHESIS_REACTIONS:
                     product = SYNTHESIS_REACTIONS[reaction_key]
-                    base_prob = REACTION_PROBABILITY_BASE * scaled_dt * 60
-                    catalyst_multiplier = 1.0
-                    for t_cat in self.tets:
-                        if t_cat.is_catalyst:
-                            if np.linalg.norm(t_cat.pos - t1.pos) < REACTION_RANGE * 2: catalyst_multiplier = CATALYST_BOOST; break
-                    battery_similarity = 1.0 - abs(t1.battery - t2.battery)
-                    final_prob = base_prob * catalyst_multiplier * (0.5 + battery_similarity * 0.5)
-                    if random.random() < final_prob:
+
+                    # Whitepaper 4.2: Catalytic Activation Energy Reduction
+                    # E_a_effective = E_a * alpha if catalyst present
+                    # alpha ~ 0.3 for FeO4, etc.
+
+                    E_activation = ACTIVATION_ENERGY_BASE
+
+                    # Check for nearby catalyst
+                    has_catalyst = False
+                    if catalyst_positions.size > 0:
+                        cat_dists = np.sum((catalyst_positions - positions[i])**2, axis=1)
+                        if np.min(cat_dists) < (REACTION_RANGE * 2)**2:
+                            has_catalyst = True
+                            E_activation *= 0.3 # Catalyst significantly lowers barrier
+
+                    # Whitepaper 4.1: Arrhenius Equation
+                    # T_eff = local energy density (battery)
+                    # P = A * exp(-E_a / T_eff)
+
+                    T_eff = (t1.battery + t2.battery) * 0.5 * BOLTZMANN_K
+                    if T_eff < 0.01: T_eff = 0.01 # Prevent division by zero
+
+                    # Alignment factor for Pre-exponential factor A
+                    # If faces are aligned or magnetic poles opposite, A increases
+                    alignment_factor = 1.0
+                    if t1.is_magnetized and t2.is_magnetized:
+                        if t1.magnetism != t2.magnetism: alignment_factor = 1.5
+
+                    reaction_prob = alignment_factor * math.exp(-E_activation / T_eff) * scaled_dt * 5.0 # Pre-factor adjusted for dt
+
+                    if random.random() < reaction_prob:
+                        # Reaction Occurs
                         energy_burst = K_REACTION_ENERGY_RELEASE
+
+                        # Energy release to neighbors (Thermodynamics)
                         for t_nearby in self.tets:
                             dist = np.linalg.norm(t_nearby.pos - t1.pos)
-                            if dist < REACTION_RANGE * 1.5: t_nearby.battery = min(1.0, t_nearby.battery + energy_burst * (1.0 - dist / (REACTION_RANGE * 1.5)))
+                            if dist < REACTION_RANGE * 1.5:
+                                t_nearby.battery = min(1.0, t_nearby.battery + energy_burst * (1.0 - dist / (REACTION_RANGE * 1.5)))
+
                         t1.label = product; t1.last_reaction_time = current_time; t1.synthesis_count += 1
                         t1.battery = max(0.1, t1.battery - SYNTHESIS_ENERGY_COST)
                         t2.battery = 0.0; t2.label = ""; t2.last_reaction_time = current_time
+
                         reactions_this_frame.append((t1.label, t2.label, product))
-                        add_msg_fn(f"⚗️ Synthesized {product}!", duration=3)
+
+                        if has_catalyst:
+                             add_msg_fn(f"⚗️ Catalyzed Synthesis: {product}!", duration=3)
+                        else:
+                             add_msg_fn(f"Synthesized {product}", duration=3)
+
                         msg = self.tech_tree.add_progress(1)
                         if msg: add_msg_fn(msg, duration=5)
                         break
@@ -1437,9 +1620,12 @@ class World:
             if not t.label or t.label not in MOLECULE_SYMBOLS: continue
             if current_time - t.last_reaction_time < 10.0: continue
             if t.label in DECOMPOSITION_REACTIONS:
+                # Whitepaper: Entropy driven decomposition
+                # Probability increases with T (instability) and distance from origin (entropy)
                 stress_factor = (1.0 - t.battery) * 2.0
                 dist_from_origin = np.linalg.norm(t.pos - self.center_of_mass)
                 entropy_factor = min(2.0, dist_from_origin / 100.0)
+
                 decomp_prob = REACTION_PROBABILITY_BASE * 0.5 * scaled_dt * 60 * stress_factor * entropy_factor
                 if random.random() < decomp_prob:
                     products = DECOMPOSITION_REACTIONS[t.label]; old_label = t.label
@@ -2165,22 +2351,6 @@ def main(threaded=False):
         if is_interactive and hovered_vertex and not dragging:
             h_tet = hovered_vertex[0]; h_tet.pos_prev[:] = h_tet.pos[:]; h_tet.local_prev[:] = h_tet.local[:]
 
-
-
-
-
-
-
-
-# -----------------------------------------------------
-# BOT THOUGHT & QUANTUM REPLY LOGIC (STATE MACHINE)
-# -----------------------------------------------------
-
-
-
-
-
-
         # 3. Thoughts (moved from inside bot vision section, hugging face only)
         if now - last_bot_thought > 61:
             if len(world.tets) > 1:
@@ -2402,34 +2572,19 @@ def main(threaded=False):
                         if d_sq < best_dist_sq: best_dist_sq = d_sq; current_hover_target = (tt, vidx)
                 locked_sticky_target = current_hover_target
         else:
-            if (now - last_timescale_surge > 2700): # 2700 seconds = 45 minutes
+            if (now - last_bot_spawn > 2700): # 2700 seconds = 45 minutes
                 time_scale = 10.0
-                last_timescale_surge = time.time()
-                if host_instance:
-                    host_instance.broadcast_message({'type': 'chat', 'data': '<System>: ⚡ Temporal Surge to 10x.'})
-            elif (now - last_timescale_surge > 500):
+            elif (now - last_bot_spawn > 500):
                 time_scale = 0.001
 
-
-
-
-
-
-# AUTOBOT PANORAMIC VIEW
-
-
-
-
-
-
             now = time.time()
+            if world.tets: cam.pan = world.center_of_mass.copy()
             if now - last_bot_move > 59:
                 cam.pitch = max(-1, min(1, cam.pitch + random.uniform(-1, 1)))
-                if world.tets: cam.pan = world.center_of_mass.copy()
                 last_bot_move = now
             else:
-                cam.yaw += 0.005 * unscaled_dt
-                zoom_scalar = 10.0 ** (math.sin(time.time() * 0.01) * 2.0)
+                cam.yaw += 0.05 * unscaled_dt
+                zoom_scalar = 0.5*3.0 ** (math.sin(time.time() * 0.05) * 2.0)
                 target_dist = DEFAULT_CAM_DIST * zoom_scalar
                 cam.dist += (target_dist - cam.dist) * 0.05
             if now - last_bot_spawn > 3600:
@@ -2459,8 +2614,12 @@ def main(threaded=False):
             world.update(scaled_dt, unscaled_dt, time_scale, lambda t, duration=2: msgs.append([t, 0, pygame.time.get_ticks() + duration * 1000]), spin)
             if len(world.tets) == 1 and not flags['t0']: flags['t0'] = True
             if len(world.tets) >= 2 and not flags['t2']: flags['t2'] = True; world.sticky_pairs.extend([(world.tets[0], v, world.tets[1], v) for v in range(4)])
-            if len(world.tets) >= 2 and world.joints and not flags['j1']: flags['j1'] = True
-            if len(world.tets) >= 3 and flags['j1'] and not flags['t3']: flags['t3'] = True
+            if len(world.tets) >= 2 and world.joints and not flags['j1']:
+                flags['j1'] = True
+                msgs.append(["Let there be LIGHT!", -50, pygame.time.get_ticks() + 6000])
+            if len(world.tets) >= 3 and flags['j1'] and not flags['t3']:
+                flags['t3'] = True
+                msgs.append(["And God divided the light from the darkness...\nSo it could be seen, and saw that it was good.", 50, pygame.time.get_ticks() + 6000])
         elif guest_instance:
              if frame_count % 10 == 0: guest_instance.send_cam_update()
              s = guest_instance.get_latest_world_state();
@@ -2539,6 +2698,10 @@ def main(threaded=False):
 
                 if t.label:
                     surf = font_s.render(t.label, True, (255,255,0)); screen.blit(surf, surf.get_rect(center=cam.project(t.pos + [0, 8, 0])))
+                if t.molecule_type:
+                    # Get Atom Name (index 1) if known, else show F_R_C code
+                    chem_name = MOLECULE_DATABASE[t.molecule_type][1] if t.molecule_type in MOLECULE_DATABASE else t.molecule_type
+                    s2 = font_s.render(str(chem_name), True, (255, 255, 255)); screen.blit(s2, s2.get_rect(center=cam.project(t.pos + [0, -10, 0])))
 
         if hasattr(world, 'reaction_particles'):
             world.spawn_reaction_particles(screen, cam, world._last_synth_reactions, WIDTH, HEIGHT)
