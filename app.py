@@ -2250,7 +2250,7 @@ def gradio_interface_loop():
     def get_frame():
         if GRADIO_FRAME_BUFFER is not None: return GRADIO_FRAME_BUFFER
         return np.zeros((HEIGHT, WIDTH, 3), dtype=np.uint8)
-    with gr.Interface(fn=get_frame, inputs=None, outputs=gr.Image(label="Hit the 'Generate' button!"), live=True, title="TET~CRAFT: The Fourth Temple v5.0D", description="Live simulation of DigitizingHumanity.com's Gamified, Decentralized, Salted, 5D Communication Manifold and Physics/Chemistry Simulator <br /> (A simulated player is adding one new TET/fact each hour to be misunderstood, warping time for the 15 min before that, has a thought and new perspective plain each minute, while each second it orbits)<br />Hit the 'Generate' button bellow for a fresh screenshot") as demo:
+    with gr.Interface(fn=get_frame, inputs=None, outputs=gr.Image(label="Hit the 'Generate' button!"), live=True, title="TET~CRAFT: The Fourth Temple v5.1D", description="Live simulation of DigitizingHumanity.com's Gamified, Decentralized, Salted, 5D Communication Manifold and Physics/Chemistry Simulator <br /> (A simulated player is adding one new TET/fact each hour to be misunderstood, warping time for the 15 min before that, has a thought and new perspective plain each minute, while each second it orbits)<br />Hit the 'Generate' button bellow for a fresh screenshot") as demo:
         demo.launch(server_name="0.0.0.0", server_port=7860)
 
 def main(threaded=False):
@@ -2292,7 +2292,7 @@ def main(threaded=False):
 
 
     else: screen = pygame.display.set_mode((WIDTH, HEIGHT), pygame.RESIZABLE)
-    pygame.display.set_caption("TET~CRAFT v5.0D The Fourth Temple")
+    pygame.display.set_caption("TET~CRAFT v5.1D The Fourth Temple")
     clock = pygame.time.Clock(); font_l = pygame.font.SysFont('Georgia', 32); font_s = pygame.font.SysFont(None, 24)
     world = World(boing_sound); cam = Camera()
 
@@ -2665,7 +2665,8 @@ def main(threaded=False):
                 msgs.append(["Let there be LIGHT!", -50, pygame.time.get_ticks() + 6000])
             if len(world.tets) >= 3 and flags['j1'] and not flags['t3']:
                 flags['t3'] = True
-                msgs.append(["And God divided the light from the darkness...\nSo it could be seen, and saw that it was good.", 50, pygame.time.get_ticks() + 6000])
+                msgs.append(["And God divided the light from the darkness...", 50, pygame.time.get_ticks() + 6000])
+
         elif guest_instance:
              if frame_count % 10 == 0: guest_instance.send_cam_update()
              s = guest_instance.get_latest_world_state();
