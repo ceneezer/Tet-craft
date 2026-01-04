@@ -297,9 +297,9 @@ INTERFACE_CHEMISTRY = {
 # Lennard-Jones-like Potential Parameters
 # F_attract = k_a / r^2
 # F_repel = -k_r / r^12
-# Ratio: Repulsion should be ~100x Attraction for stability at short ranges - not for a playable game!
-K_WP_ATTRACT = 50.0        # Was K_STICKY_PULL (0.06)
-K_WP_REPEL = K_WP_ATTRACT * 100
+# Ratio: Repulsion ~100x Attraction (Whitepaper Section 6)
+K_WP_ATTRACT = 50.0
+K_WP_REPEL = K_WP_ATTRACT * 100.0
 WP_EQUILIBRIUM_DIST = EDGE_LEN * 0.9
 
 # Spin/Magnetism: Torque based, not linear pull
@@ -606,7 +606,7 @@ def get_transformed_z_many_jit(vecs, pan, yaw, pitch):
 
 # --- WHITEPAPER IMPLEMENTATION: PHYSICS REFINEMENT ---
 @njit(fastmath=True, cache=True)
-def world_update_physics_jit(positions, positions_prev, locals, locals_prev, batteries, scaled_dt, time_scale, edges, sticky_pairs_data, joints_data, spin_multiplier, magnet_indices):
+def world_update_physics_jit(positions, positions_prev, locals, locals_prev, batteries, coherences, scaled_dt, time_scale, edges, sticky_pairs_data, pair_ages, joints_data, spin_multiplier, magnet_indices):
     num_tets = positions.shape[0]
     dt_sq = scaled_dt * scaled_dt
     acc = np.zeros_like(positions)
@@ -651,13 +651,26 @@ def world_update_physics_jit(positions, positions_prev, locals, locals_prev, bat
             r4 = r2 * r2
             r12 = r4 * r4 * r4
 
+            # --- WHITEPAPER FIX: TIME-GATED REPULSION ---
+            # Repulsion is a stabilization constraint, not an approach force;
+            # it activates only after geometric proximity persists in time.
+
+            coh_sum = coherences[idx1] + coherences[idx2]
+            # tau inversely proportional to coherence (more understanding = faster stabilization)
+            tau = 1.0 / (coh_sum + 0.2)
+            age = pair_ages[i]
+
+            time_factor = age / tau
+            if time_factor > 1.0: time_factor = 1.0
+
             f_attract = K_WP_ATTRACT / (r2 + 0.01)
-            f_repel = K_WP_REPEL / (r12 + 0.0001)
+            # Repulsion scales with time_factor
+            f_repel = (K_WP_REPEL / (r12 + 0.0001)) * time_factor
 
             f_total = f_attract - f_repel
 
             # Clamp force to prevent physics explosion
-            f_total = max(-10.0, min(10.0, f_total))
+            f_total = max(-50.0, min(50.0, f_total))
 
             force_vec = n_vec * f_total
             acc[idx1] += force_vec
@@ -1168,6 +1181,7 @@ class PastProjection4Sphere:
 class World:
     def __init__(self, sound):
         self.tets, self.joints, self.sticky_pairs = [], [], []; self.center_of_mass, self.sound = np.zeros(3), sound
+        self.pair_ages = {} # Maps sorted tuple (id1, id2) -> age_seconds
         self.reaction_particles = []
         self.tech_tree = TechTree()
         # Genesis Protocol Fields Cache
@@ -1412,6 +1426,8 @@ class World:
                 t1 = tet_list[corner_tets[i]]; t1.local[corner_indices[i]] += forces * scaled_dt * 0.5; t1.pos += forces * scaled_dt * 0.5
 
     def apply_same_pole_repulsion(self, scaled_dt):
+        # Whitepaper: "Magnetism is weak; electrostatics and spin dominate."
+        # This function provides a very weak bias, relying on JIT torque for main alignment.
         positive_poles = [t for t in self.tets if t.is_magnetized and t.magnetism > 0]
         if len(positive_poles) < 2: return
         pos_array = np.array([t.pos for t in positive_poles])
@@ -1421,7 +1437,8 @@ class World:
             mask = (dists > 1e-6)
             if np.any(mask):
                 unit_deltas = deltas[mask] / dists[mask][:, np.newaxis]
-                repulsions = (K_SAME_POLE_REPULSION / (dists[mask]**2 + 1.0)) * strengths[mask] * strengths[i]
+                # Reduced strength to 10% of previous to act as subtle bias
+                repulsions = (K_SAME_POLE_REPULSION * 0.1 / (dists[mask]**2 + 1.0)) * strengths[mask] * strengths[i]
                 total_force = np.sum(unit_deltas * repulsions[:, np.newaxis], axis=0)
                 positive_poles[i].pos -= total_force * scaled_dt
 
@@ -1712,16 +1729,35 @@ class World:
         # Genesis Protocol: Metabolism Loop
         self.process_metabolism(scaled_dt, add_msg_fn)
 
-        for t in self.tets:
-            if t.mind:
-                nearby = [o for o in self.tets if np.linalg.norm(o.pos - t.pos) < 5]
-                t.mind.perceive(nearby, [])
+        # Update Pair Ages
+        current_pairs = set()
+        for p in self.sticky_pairs:
+            # Sort IDs to make key unique regardless of order
+            pair_key = tuple(sorted((p[0].id, p[2].id)))
+            current_pairs.add(pair_key)
+            self.pair_ages[pair_key] = self.pair_ages.get(pair_key, 0.0) + scaled_dt * 60.0
 
-                # Enhanced BotMind: Field gradient following
-                t.mind.decide_goal(world_fields_func=self.get_fields_at, my_pos=t.pos)
+        # Clean up old ages
+        for k in list(self.pair_ages.keys()):
+            if k not in current_pairs:
+                del self.pair_ages[k]
 
-                desire = t.mind.get_desire_vector(t.pos, nearby)
-                t.pos += desire * 0.01
+        # Optimization: Pre-calc arrays for bot minds & JIT
+        if len(self.tets) > 0:
+            cached_positions = np.array([t.pos for t in self.tets])
+            cached_batteries = np.array([t.battery for t in self.tets])
+            cached_coherences = np.array([t.erd_coherence for t in self.tets])
+
+            def efficient_get_fields(pos):
+                return calculate_fields_jit(cached_positions, cached_batteries, cached_coherences, pos)
+
+            for t in self.tets:
+                if t.mind:
+                    nearby = [o for o in self.tets if np.linalg.norm(o.pos - t.pos) < 5]
+                    t.mind.perceive(nearby, [])
+                    t.mind.decide_goal(world_fields_func=efficient_get_fields, my_pos=t.pos)
+                    desire = t.mind.get_desire_vector(t.pos, nearby)
+                    t.pos += desire * 0.01
 
         synthesis_reactions = self.attempt_synthesis_reactions(scaled_dt, add_msg_fn)
         decomposition_reactions = self.attempt_decomposition_reactions(scaled_dt, add_msg_fn)
@@ -1738,13 +1774,24 @@ class World:
         locals_arr = np.array([t.local for t in self.tets])
         locals_prev = np.array([t.local_prev for t in self.tets])
         batteries = np.array([t.battery for t in self.tets])
+        coherences = np.array([t.erd_coherence for t in self.tets])
         orientation_biases = np.array([t.orientation_bias for t in self.tets])
         id_to_idx = {t.id: i for i, t in enumerate(self.tets)}
 
         if self.sticky_pairs:
-            valid_pairs = [p for p in self.sticky_pairs if p[0].id in id_to_idx and p[2].id in id_to_idx]
-            sticky_pairs_data = np.array([[id_to_idx[p[0].id], p[1], id_to_idx[p[2].id], p[3]] for p in valid_pairs], dtype=np.int32)
-        else: sticky_pairs_data = np.empty((0, 4), dtype=np.int32)
+            valid_pairs = []
+            ages_list = []
+            for p in self.sticky_pairs:
+                if p[0].id in id_to_idx and p[2].id in id_to_idx:
+                    valid_pairs.append([id_to_idx[p[0].id], p[1], id_to_idx[p[2].id], p[3]])
+                    pair_key = tuple(sorted((p[0].id, p[2].id)))
+                    ages_list.append(self.pair_ages.get(pair_key, 0.0))
+
+            sticky_pairs_data = np.array(valid_pairs, dtype=np.int32) if valid_pairs else np.empty((0, 4), dtype=np.int32)
+            pair_ages_data = np.array(ages_list, dtype=np.float64) if ages_list else np.empty(0, dtype=np.float64)
+        else:
+            sticky_pairs_data = np.empty((0, 4), dtype=np.int32)
+            pair_ages_data = np.empty(0, dtype=np.float64)
 
         if self.joints:
             valid_joints = [j for j in self.joints if j.A.id in id_to_idx and j.B.id in id_to_idx]
@@ -1755,8 +1802,8 @@ class World:
         magnet_polarities = np.array([t.magnetism for t in self.tets if t.is_magnetized], dtype=np.float64) if magnet_indices.size > 0 else np.empty(0, dtype=np.float64)
 
         positions, positions_prev, locals_arr, locals_prev, batteries = world_update_physics_jit(
-            positions, positions_prev, locals_arr, locals_prev, batteries,
-            scaled_dt, time_scale, Tetrahedron.EDGES_NP, sticky_pairs_data,
+            positions, positions_prev, locals_arr, locals_prev, batteries, coherences,
+            scaled_dt, time_scale, Tetrahedron.EDGES_NP, sticky_pairs_data, pair_ages_data,
             joints_data_jit, spin_multiplier, magnet_indices
         )
 
@@ -1848,10 +1895,12 @@ net_avatars = {}; net_messages = deque(maxlen=5); game_mode = 'single_player'; h
 def prime_jit_functions(cam):
     num_dummy = 4; dummy_pos = np.random.rand(num_dummy, 3) * 100; dummy_pos_prev = dummy_pos.copy()
     dummy_locals = np.random.rand(num_dummy, 4, 3); dummy_locals_prev = dummy_locals.copy(); dummy_batteries = np.random.rand(num_dummy)
+    dummy_coherences = np.random.rand(num_dummy) # Needed for JIT
     dummy_edges, dummy_sticky_pairs = Tetrahedron.EDGES_NP, np.array([[0, 0, 1, 1], [2, 3, 1, 0]], dtype=np.int32)
+    dummy_pair_ages = np.array([0.0, 1.0], dtype=np.float64)
     dummy_magnet_indices, dummy_magnet_polarities, dummy_orientation_biases, dummy_joints = np.array([0, 1], dtype=np.int32), np.array([1.0, -1.0], dtype=np.float64), np.zeros((num_dummy, 3)), np.array([[0, 2, 3, 1]], dtype=np.int32)
     norm_njit(np.array([1.0, 2.0, 3.0])); norm_axis_njit(dummy_pos); project_many_jit(dummy_pos, cam.pan, cam.yaw, cam.pitch, cam.dist, WIDTH, HEIGHT); get_transformed_z_many_jit(dummy_pos, cam.pan, cam.yaw, cam.pitch)
-    world_update_physics_jit(dummy_pos, dummy_pos_prev, dummy_locals, dummy_locals_prev, dummy_batteries, 1/60.0, 1.0, dummy_edges, dummy_sticky_pairs, dummy_joints, 1.0, dummy_magnet_indices)
+    world_update_physics_jit(dummy_pos, dummy_pos_prev, dummy_locals, dummy_locals_prev, dummy_batteries, dummy_coherences, 1/60.0, 1.0, dummy_edges, dummy_sticky_pairs, dummy_pair_ages, dummy_joints, 1.0, dummy_magnet_indices)
     update_magnetic_effects_jit(dummy_locals, dummy_orientation_biases, dummy_pos, dummy_magnet_indices, dummy_magnet_polarities, 1/60.0)
     conserve_momentum_jit(dummy_pos, dummy_pos_prev); resolve_collisions_jit(dummy_pos, np.array([[0, 1], [2, 3]])); resolve_joints_jit(dummy_locals, dummy_joints)
     dist_point_to_line_segment(np.array([1.0, 1.0], dtype=np.float64), np.array([0.0, 0.0], dtype=np.float64), np.array([2.0, 2.0], dtype=np.float64))
