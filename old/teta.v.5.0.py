@@ -299,7 +299,7 @@ INTERFACE_CHEMISTRY = {
 # F_repel = -k_r / r^12
 # Ratio: Repulsion should be ~100x Attraction for stability at short ranges - not for a playable game!
 K_WP_ATTRACT = 50.0        # Was K_STICKY_PULL (0.06)
-K_WP_REPEL = K_WP_ATTRACT * 100
+K_WP_REPEL = K_WP_ATTRACT * .12
 WP_EQUILIBRIUM_DIST = EDGE_LEN * 0.9
 
 # Spin/Magnetism: Torque based, not linear pull
