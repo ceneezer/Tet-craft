@@ -1,10 +1,16 @@
 ﻿NOTES="""
+INVARIANTS: (These Invariants MUST not be violated)
+1. Geometry defines elements
+2. Catalysts cannot transmute without mediators
+3. Physics ≠ Chemistry ≠ Gameplay ... yet
+4. No count-based inference (F*_R*_C*_W*_B* → molecule is obsolete, to be removed)
+
 A tetrahedron has 4 sides, which can be seen as 2 polarities in 2D configurations - likewise it has 9? edges, each with a corner - polarities in in 3D configuration - the center of each TET can then be seen as it's own singularity.'
 
 One way to look at dark mater/energy is a misunderstanding - we don't know what it is - we do know we misunderstand *something - thinking it as the things we do, is the "lie" - not so much that it materialises, just that it is a warping of our view and model.
 
 GPT estimates:
-In a star terk (roughly) kleinverse, it would take 10^142 planets to build the machine capable of holding the kleinverse scientists think they observe around us using this simulation... not impossible.
+In a (roughly) star trek kleinverse, it would take 10^142 planets to build the machine capable of holding the kleinverse scientists think they observe around us using this simulation... not impossible.
 
 It could take as little as 300 planets to simulate the milky way to the star (WOW! - and I bet some races fit that on a thumb drive)
 
@@ -195,6 +201,61 @@ To reach Transcendence:
 3. Place this "Catalyst" in the center of your fuel mix to trigger reactions at lower temperatures.
 """
 
+Gemini_notes="""
+PROGRAM: TET_CRAFT_SIMULATION
+TET~CRAFT: Emergent Chemistry Simulation (v5.1D + Networking Fix + Mute Fix)
+
+OVERVIEW:
+- A kleinverse of tetrahedrons that bond, react, and evolve into complex molecules
+- Each TET represents a quantum fact that can combine with others to form understanding
+- The system simulates chemistry through magnetic bonding and energy exchange
+
+CORE SYSTEMS:
+1. TET PROPERTIES:
+   - 4 faces (White, Black, Red, Cyan)
+   - Battery energy (0-1)
+   - Magnetic polarity (+/-)
+   - Color patterns determine molecule type
+
+2. CHEMISTRY ENGINE (4 PHASES):
+   PHASE 1: Multi-Face Locking
+     - TETs can lock 1-4 faces when vertices connect
+     - Each locked face = +0.25 magnetic strength
+     - Color patterns identify 30+ molecule types (FeO4, H2O, etc.)
+
+   PHASE 2: Battery Oscillation
+     - Magnetic pairs exchange "emptiness" (1 - battery)
+     - Creates energy oscillation between bonded TETs
+
+   PHASE 3: Corner Desires
+     - Red corners seek Cyan corners (and vice versa)
+     - Same polarity (+/+) repels, opposite attracts
+     - Negative poles orient toward origin (singularity)
+
+   PHASE 4: Chemical Reactions
+     - Molecules can combine: A + B → C (synthesis)
+     - Complex molecules break down: C → A + B (decomposition)
+     - Catalysts (FeO4, CuSO4) boost reaction rates
+     - Energy release creates visual particle effects
+
+3. PHYSICS:
+   - Magnetic bonding creates stable connections
+   - Singularity at center creates gravitational pull
+   - Energy fields maintain balance across universe
+
+4. RENDERING:
+   - Molecule auras (colored rings around compounds)
+   - Reaction particles (sparkles during synthesis)
+   - Catalyst sparkles (golden indicators)
+   - 4D past projection as background
+
+5. BOT INTELLIGENCE:
+   - Automates exploration in headless mode
+   - Spawns new TETs with chemical labels
+   - Generates chemical thoughts using molecule names
+   - Tracks synthesis champions (most productive molecules)
+"""
+
 import asyncio.selector_events
 import warnings
 
@@ -268,9 +329,6 @@ SNAP_DIST = 1.7
 AXIS_LEN = 20
 
 # --- INTERFACE CHEMISTRY (The 16 Combinations) ---
-# Map: (FaceIndex_A, FaceIndex_B) -> Element Symbol
-# 0=White, 1=Black, 2=Red(Yellow), 3=Cyan
-# This completely overwrites the tips above.
 INTERFACE_CHEMISTRY = {
     (0, 0): "C",   # White-White -> Carbon (Structure)
     (2, 3): "H",   # Red-Cyan    -> Hydrogen (Polarity neutralized)
@@ -294,20 +352,14 @@ INTERFACE_CHEMISTRY = {
 }
 
 # --- PHYSICS REFINEMENT (Whitepaper v1.0) ---
-# Lennard-Jones-like Potential Parameters
-# F_attract = k_a / r^2
-# F_repel = -k_r / r^12
-# Ratio: Repulsion ~100x Attraction (Whitepaper Section 6)
 K_WP_ATTRACT = 50.0
 K_WP_REPEL = K_WP_ATTRACT * 100.0
 WP_EQUILIBRIUM_DIST = EDGE_LEN * 0.9
 
 # Spin/Magnetism: Torque based, not linear pull
-# F_spin = k_spin * dot(orientation_a, orientation_b) / r^3
 K_WP_SPIN = 0.005          # Weak torque bias
 
 # Thermodynamics
-# Entropy leakage per interaction tick
 K_ENTROPY_LOSS = 0.00005
 
 # Arrhenius Kinetics
@@ -653,19 +705,25 @@ def world_update_physics_jit(positions, positions_prev, locals, locals_prev, bat
 
             # --- WHITEPAPER FIX: TIME-GATED REPULSION ---
             # Repulsion is a stabilization constraint, not an approach force;
-            # it activates only after geometric proximity persists in time.
+            # it activates only after sustained proximity over time.
 
             coh_sum = coherences[idx1] + coherences[idx2]
             # tau inversely proportional to coherence (more understanding = faster stabilization)
-            tau = 1.0 / (coh_sum + 0.2)
+            # using epsilon 0.01 to avoid division by zero
+            tau = 1.0 / (coh_sum + 0.01)
             age = pair_ages[i]
 
             time_factor = age / tau
             if time_factor > 1.0: time_factor = 1.0
+            if time_factor < 0.0: time_factor = 0.0
 
             f_attract = K_WP_ATTRACT / (r2 + 0.01)
-            # Repulsion scales with time_factor
-            f_repel = (K_WP_REPEL / (r12 + 0.0001)) * time_factor
+
+            # Base Repulsion (Lennard-Jones 1/r^12)
+            base_repel = K_WP_REPEL / (r12 + 0.0001)
+
+            # Apply Time Gate
+            f_repel = base_repel * time_factor
 
             f_total = f_attract - f_repel
 
@@ -1153,6 +1211,10 @@ class Tetrahedron:
         self.quantum_state = "ground"
         self.mind = BotMind(self.id) if random.random() < 0.3 else None
 
+        # PROVENANCE TRACKING
+        self.element_source = None  # "interface", "reaction", or None
+        self.is_element = False
+
     def verts(self): return self.local + self.pos
 
 class PastProjection4Sphere:
@@ -1292,34 +1354,34 @@ class World:
                 self.sticky_pairs.pop(random.randint(0, len(self.sticky_pairs)-1))
 
     def check_magnetization(self):
-        # 1. Reset everyone to "Unknown" state
+        # 1. Reset logic sensitive to Element Source (Rule 1)
         for t in self.tets:
-            t.is_magnetized = False
-            t.magnetism = 0
-            t.magnetic_strength = 0.0
-            t.locked_faces = []
-            t.molecule_type = None # This clears the white label
+            # If it's a raw geometry match, reset to check if geometry still holds
+            if t.element_source == "interface" or t.element_source is None:
+                t.is_magnetized = False
+                t.magnetism = 0
+                t.magnetic_strength = 0.0
+                t.locked_faces = []
+                t.molecule_type = None
+                t.element_source = None
+                t.is_element = False
+            # If "reaction", we assume identity persists unless manually broken (not handled here)
             t.aura_color = None
             t.is_catalyst = False
 
         # 2. Map connections
-        # We need to find pairs of TETs that share 3+ vertices (A Face Lock)
-        connections = {} # Key: tuple(sorted(id1, id2)), Value: set(shared_vertex_indices)
+        connections = {}
 
         for j in self.joints:
-            # Create a unique key for this pair of TETs
             pair_key = tuple(sorted((j.A.id, j.B.id)))
             if pair_key not in connections:
                 connections[pair_key] = []
-
-            # Store which local vertex indices are involved
-            # We need to know which vertex on A connects to which on B
             if j.A.id < j.B.id:
                 connections[pair_key].append((j.ia, j.ib))
             else:
                 connections[pair_key].append((j.ib, j.ia))
 
-        # 3. Analyze Interfaces
+        # 3. Analyze Interfaces (Rule 1: Geometry creates elements)
         tet_map = {t.id: t for t in self.tets}
 
         for (id_a, id_b), links in connections.items():
@@ -1327,8 +1389,6 @@ class World:
                 tA = tet_map[id_a]
                 tB = tet_map[id_b]
 
-                # Identify which Face on A is involved
-                # We simply check which face definition contains these vertex indices
                 verts_a = {x[0] for x in links}
                 face_idx_a = -1
                 for f_idx, corners in Tetrahedron.FACE_TO_CORNERS.items():
@@ -1336,7 +1396,6 @@ class World:
                         face_idx_a = f_idx
                         break
 
-                # Identify which Face on B is involved
                 verts_b = {x[1] for x in links}
                 face_idx_b = -1
                 for f_idx, corners in Tetrahedron.FACE_TO_CORNERS.items():
@@ -1346,30 +1405,36 @@ class World:
 
                 # 4. Apply Chemistry
                 if face_idx_a != -1 and face_idx_b != -1:
-                    # Mark faces as locked so they can't bond again (optional logic)
                     tA.locked_faces.append(face_idx_a)
                     tB.locked_faces.append(face_idx_b)
 
-                    # Lookup the Element from the Interface Table
                     chem_key = (face_idx_a, face_idx_b)
                     element = INTERFACE_CHEMISTRY.get(chem_key, "??")
 
-                    # Label the TETs
-                    # We store the element name in molecule_type so the renderer picks it up
-                    tA.molecule_type = element
-                    tB.molecule_type = element
+                    # Rule 1 Implementation: Strict Assignment
+                    if tA.element_source != "reaction":
+                        tA.molecule_type = element
+                        tA.element_source = "interface"
+                        tA.is_element = True
 
-                    # Special Properties based on Element
-                    if element == "Fe": # Iron (Red-Red) becomes magnetic
+                    if tB.element_source != "reaction":
+                        tB.molecule_type = element
+                        tB.element_source = "interface"
+                        tB.is_element = True
+
+                    # Special Properties (Derived from label, not source)
+                    # This allows reaction products to behave like their base elements if needed,
+                    # but typically this block applies to the *result* of the interface check.
+                    if element == "Fe":
                         tA.is_magnetized = True; tA.magnetism = 1
                         tB.is_magnetized = True; tB.magnetism = 1
                         tA.magnetic_strength = 1.0; tB.magnetic_strength = 1.0
 
-                    if element == "H": # Hydrogen (Red-Cyan) is energetic
+                    if element == "H":
                         tA.battery = min(1.0, tA.battery + 0.001)
                         tB.battery = min(1.0, tB.battery + 0.001)
 
-        # 5. Fallback for Solitary TETs (Quantum properties)
+        # 5. Fallback for Solitary TETs
         for t in self.tets:
             t.erd_coherence = min(1.0, (len(t.locked_faces) / 4.0) * t.battery)
 
@@ -1426,8 +1491,6 @@ class World:
                 t1 = tet_list[corner_tets[i]]; t1.local[corner_indices[i]] += forces * scaled_dt * 0.5; t1.pos += forces * scaled_dt * 0.5
 
     def apply_same_pole_repulsion(self, scaled_dt):
-        # Whitepaper: "Magnetism is weak; electrostatics and spin dominate."
-        # This function provides a very weak bias, relying on JIT torque for main alignment.
         positive_poles = [t for t in self.tets if t.is_magnetized and t.magnetism > 0]
         if len(positive_poles) < 2: return
         pos_array = np.array([t.pos for t in positive_poles])
@@ -1437,7 +1500,6 @@ class World:
             mask = (dists > 1e-6)
             if np.any(mask):
                 unit_deltas = deltas[mask] / dists[mask][:, np.newaxis]
-                # Reduced strength to 10% of previous to act as subtle bias
                 repulsions = (K_SAME_POLE_REPULSION * 0.1 / (dists[mask]**2 + 1.0)) * strengths[mask] * strengths[i]
                 total_force = np.sum(unit_deltas * repulsions[:, np.newaxis], axis=0)
                 positive_poles[i].pos -= total_force * scaled_dt
@@ -1569,8 +1631,20 @@ class World:
                 if not t2.label or t2.label not in MOLECULE_SYMBOLS: continue
                 if current_time - t2.last_reaction_time < 5.0: continue
 
+                # Rule 4: Provenance Validation
+                if t1.element_source not in {"interface", "reaction"} or t2.element_source not in {"interface", "reaction"}:
+                    continue
+
                 reaction_key = tuple(sorted([t1.label, t2.label]))
                 if reaction_key in SYNTHESIS_REACTIONS:
+
+                    # Rule 2: Catalytic Mediation Guard
+                    is_iron_involved = (t1.label == "Fe" or t2.label == "Fe")
+                    is_oxygen_present = (t1.label == "O" or t2.label == "O" or t1.label == "O2" or t2.label == "O2")
+                    if is_iron_involved and not is_oxygen_present:
+                        # Block transmutation of catalyst without mediator
+                        continue
+
                     product = SYNTHESIS_REACTIONS[reaction_key]
 
                     # Whitepaper 4.2: Catalytic Activation Energy Reduction
@@ -1614,7 +1688,10 @@ class World:
 
                         t1.label = product; t1.last_reaction_time = current_time; t1.synthesis_count += 1
                         t1.battery = max(0.1, t1.battery - SYNTHESIS_ENERGY_COST)
+                        t1.element_source = "reaction" # Mark result as valid complex molecule
+
                         t2.battery = 0.0; t2.label = ""; t2.last_reaction_time = current_time
+                        t2.element_source = None # Consumed
 
                         reactions_this_frame.append((t1.label, t2.label, product))
 
@@ -1648,6 +1725,7 @@ class World:
                         offset = np.random.uniform(-1, 1, 3) * EDGE_LEN * 3
                         new_tet = Tetrahedron(t.pos + offset)
                         new_tet.label = products[1]; new_tet.battery = t.battery * 0.8; new_tet.colors = list(Tetrahedron.FACE_COLORS)
+                        new_tet.element_source = "reaction" # Product inherits reaction provenance
                         self.tets.append(new_tet)
                     decompositions_this_frame.append((old_label, products))
                     add_msg_fn(f"💥 {old_label} decomposed!", duration=3)
@@ -2254,9 +2332,10 @@ def gradio_interface_loop():
         demo.launch(server_name="0.0.0.0", server_port=7860)
 
 def main(threaded=False):
-    print("\n\nIf needed create and fill with 1 IP per line blacklist.cfg\n\nCLI Options:\n  -connect <ip>:<port> (Initiate guest mode)\n  -listen <port> (Initiate host mode port)\n  -file <filename> (Load saved instant [json])\n  -t <scale> -z <zoom> -o <x,y,z>\n\nTET~CRAFT Initializing...\n\n")
+    print("\n\nIf needed create and fill with 1 IP per line blacklist.cfg\n\nCLI Options:\n  -connect <ip>:<port> (Initiate guest mode)\n  -listen <port> (Initiate host mode port)\n  -file <filename> (Load saved instant [json])\n  -m (Mute sound)\n  -t <scale> -z <zoom> -o <x,y,z>\n\nTET~CRAFT v5.1D Initializing...\n\n")
     cli_connect_addr, cli_listen_port, cli_load_file = None, None, None
     cli_time_scale, cli_zoom_factor, cli_cam_pan = None, None, None
+    cli_mute = False
     args = sys.argv[1:]; i = 0
     while i < len(args):
         if args[i] == '-connect' and i + 1 < len(args): cli_connect_addr = args[i+1]; i += 1
@@ -2269,12 +2348,17 @@ def main(threaded=False):
         elif args[i] == '-t' and i + 1 < len(args): cli_time_scale = float(args[i+1]); i += 1
         elif args[i] == '-z' and i + 1 < len(args): cli_zoom_factor = float(args[i+1]); i += 1
         elif args[i] == '-o' and i + 1 < len(args): cli_cam_pan = [float(c) for c in args[i+1].split(',')]; i += 1
+        elif args[i] == '-m': cli_mute = True
         i += 1
 
     global WIDTH, HEIGHT, clock, game_mode, host_instance, guest_instance, net_avatars, net_messages, AUDIO_ENABLED, GRADIO_FRAME_BUFFER, GAME_RUNNING
     pygame.init()
-    try: pygame.mixer.init(44100, -16, 2, 512); AUDIO_ENABLED = True
-    except: print("Sound Init Failed. Running Silent."); AUDIO_ENABLED = False
+    if not cli_mute:
+        try: pygame.mixer.init(44100, -16, 2, 512); AUDIO_ENABLED = True
+        except: print("Sound Init Failed. Running Silent."); AUDIO_ENABLED = False
+    else:
+        AUDIO_ENABLED = False
+        print("Audio Muted by CLI.")
 
     # Initialize sounds AFTER mixer init
     ping_sound = generate_ping_sound()
@@ -2662,11 +2746,10 @@ def main(threaded=False):
             if len(world.tets) >= 2 and not flags['t2']: flags['t2'] = True; world.sticky_pairs.extend([(world.tets[0], v, world.tets[1], v) for v in range(4)])
             if len(world.tets) >= 2 and world.joints and not flags['j1']:
                 flags['j1'] = True
-                msgs.append(["Let there be LIGHT!", -50, pygame.time.get_ticks() + 6000])
+                msgs.append(["God said: Let there be LIGHT!", -50, pygame.time.get_ticks() + 6000])
             if len(world.tets) >= 3 and flags['j1'] and not flags['t3']:
                 flags['t3'] = True
                 msgs.append(["And God divided the light from the darkness...", 50, pygame.time.get_ticks() + 6000])
-
         elif guest_instance:
              if frame_count % 10 == 0: guest_instance.send_cam_update()
              s = guest_instance.get_latest_world_state();
