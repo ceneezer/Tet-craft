@@ -1180,9 +1180,9 @@ class BotMind:
     def bond_with(self, other_id): self.friends.add(other_id)
     def thought_bubble(self):
         if hasattr(self, 'grad_vector') and self.grad_vector is not None:
-            return "⚡" # Seeking energy
+            return "+" # Seeking energy
         if self.goal:
-            emoji = '🔍' if self.mood > 0.6 else '👀'
+            emoji = '?' if self.mood > 0.6 else '|'
             return f"{emoji}{self.goal}"
         return None
 
@@ -1633,6 +1633,23 @@ class World:
     def attempt_synthesis_reactions(self, scaled_dt, add_msg_fn):
         if len(self.tets) < 2: return []
         current_time = time.time(); positions = np.array([t.pos for t in self.tets])
+
+        if not np.all(np.isfinite(positions)):
+            # Find indices where position contains NaN or Inf
+            mask_bad = ~np.all(np.isfinite(positions), axis=1)
+            bad_indices = np.where(mask_bad)[0]
+
+            # Reset bad positions to random safe spots to prevent crash
+            count = len(bad_indices)
+            safe_replacements = np.random.uniform(-5, 5, (count, 3)) + self.center_of_mass
+            positions[mask_bad] = safe_replacements
+
+            # Update the actual Tetrahedron objects so the bad data doesn't persist
+            for i, idx in enumerate(bad_indices):
+                self.tets[idx].pos = safe_replacements[i]
+                self.tets[idx].pos_prev = safe_replacements[i] # Kill velocity
+                self.tets[idx].local = Tetrahedron.REST_NP.copy() # Reset geometry
+
         tree = cKDTree(positions); reactions_this_frame = []
 
         # Identify catalysts first
@@ -2849,7 +2866,8 @@ def main(threaded=False):
                 draw_bot_thought_bubble(screen, cam, t, font_s)
 
                 if t.label:
-                    surf = font_s.render(t.label, True, (255,255,0)); screen.blit(surf, surf.get_rect(center=cam.project(t.pos + [0, 8, 0])))
+                    surf = font_s.render(t.label, True, (255,255,0), (0,0,0))
+                    screen.blit(surf, surf.get_rect(center=cam.project(t.pos + [0, 8, 0])))
                 if t.molecule_type:
                     # Get Atom Name (index 1) if known, else show F_R_C code
                     chem_name = MOLECULE_DATABASE[t.molecule_type][1] if t.molecule_type in MOLECULE_DATABASE else t.molecule_type
