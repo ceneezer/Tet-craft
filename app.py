@@ -3,7 +3,8 @@ INVARIANTS: (These Invariants MUST not be violated)
 1. Geometry defines elements
 2. Catalysts cannot transmute without mediators
 3. Physics ≠ Chemistry ≠ Gameplay ... yet
-4. No count-based inference (F*_R*_C*_W*_B* → molecule is obsolete, to be removed)
+4. Low energy causes positional drift toward center_of_mass, replacing destructive apoptosis without breaking bonds.
+5. No count-based inference (F*_R*_C*_W*_B* → molecule is obsolete, to be removed)
 
 A tetrahedron has 4 sides, which can be seen as 2 polarities in 2D configurations - likewise it has 9? edges, each with a corner - polarities in in 3D configuration - the center of each TET can then be seen as it's own singularity.'
 
@@ -361,6 +362,8 @@ K_WP_SPIN = 0.005          # Weak torque bias
 
 # Thermodynamics
 K_ENTROPY_LOSS = 0.00005
+BATTERY_AGENCY_THRESHOLD = 0.5
+ORIGIN_DRIFT_RATE = 0.2 * EDGE_LEN
 
 # Arrhenius Kinetics
 ACTIVATION_ENERGY_BASE = 0.6
@@ -1333,7 +1336,7 @@ class World:
         if avg_bat > 0.8 and self.tech_tree.can_unlock('life') and random.random() < 0.01:
              # Duplicate weakest link (Growth)
              # Find a TET with high battery
-             candidates = [t for t in self.tets if t.battery > 0.9]
+             candidates = [t for t in self.tets if t.battery > 0.75]
              if candidates:
                  parent = random.choice(candidates)
                  # Energy conserved: Parent splits energy with child
@@ -1346,12 +1349,24 @@ class World:
                  child.label = parent.label # Inherit info
                  self.tets.append(child)
                  add_msg_fn(f"Mitosis: {child.label}")
+                 print(f"Mitosis: {parent.label,child.label}")
 
-        # 4. Apoptosis-like death check
-        if avg_bat < 0.2 and len(self.tets) > 5 and random.random() < 0.01:
-            # Break weakest bond due to entropy/starvation
-            if self.sticky_pairs:
-                self.sticky_pairs.pop(random.randint(0, len(self.sticky_pairs)-1))
+        # 4. --- quiescence fallback (replaces apoptosis) ---
+        for tet in self.tets:
+            if tet.battery <= BATTERY_AGENCY_THRESHOLD:
+                tet.quiescent = True
+
+                to_origin = self.center_of_mass - tet.pos
+                dist = np.linalg.norm(to_origin)# + 1e-9
+                depletion = 1.0 - (tet.battery / BATTERY_AGENCY_THRESHOLD)
+                tet.battery += 10.0/dist
+                # Gentle drift toward Origin (no bond breaking)
+                tmp=(to_origin / dist) * depletion * ORIGIN_DRIFT_RATE * scaled_dt
+                tet.pos += 10000.0*tmp*dist
+                #print(f"Tet depleted {tet.label, dist,tmp}")
+
+            else:
+                tet.quiescent = False
 
     def check_magnetization(self):
         # 1. Reset logic sensitive to Element Source (Rule 1)
@@ -1385,6 +1400,9 @@ class World:
         tet_map = {t.id: t for t in self.tets}
 
         for (id_a, id_b), links in connections.items():
+#            if len(links) >3:
+#                print("4 verticies cannot lock!")
+#fix error!
             if len(links) >= 3: # 3 connections = A Face Lock
                 tA = tet_map[id_a]
                 tB = tet_map[id_b]
@@ -1422,9 +1440,6 @@ class World:
                         tB.element_source = "interface"
                         tB.is_element = True
 
-                    # Special Properties (Derived from label, not source)
-                    # This allows reaction products to behave like their base elements if needed,
-                    # but typically this block applies to the *result* of the interface check.
                     if element == "Fe":
                         tA.is_magnetized = True; tA.magnetism = 1
                         tB.is_magnetized = True; tB.magnetism = 1
@@ -1489,6 +1504,8 @@ class World:
                     forces += dist * (K_CORNER_DESIRE * psi_mod * (1.0 - np.linalg.norm(delta) / CORNER_DESIRE_RANGE))
             if np.any(forces):
                 t1 = tet_list[corner_tets[i]]; t1.local[corner_indices[i]] += forces * scaled_dt * 0.5; t1.pos += forces * scaled_dt * 0.5
+#                print(f"{t1.label} now desires a tet")
+#Specify which - only for new desires (wrong place)
 
     def apply_same_pole_repulsion(self, scaled_dt):
         positive_poles = [t for t in self.tets if t.is_magnetized and t.magnetism > 0]
@@ -1529,6 +1546,7 @@ class World:
                     partner.battery -= 0.05; partner.quantum_state = "tunneled"; t.quantum_state = "tunneled"
                     tunnel_reactions.append((t.label, partner.label, product))
                     add_msg_fn(f" Quantum Tunnel: {product} formed!", duration=5)
+                    print(f" Quantum Tunnel: {product} formed!")
                     try: QUANTUM_SOUND.play()
                     except: pass
         return tunnel_reactions
@@ -1552,6 +1570,7 @@ class World:
                 t.battery = min(1.0, t.battery + energy_gain); partner.battery = min(1.0, partner.battery + energy_gain)
                 entangled_reactions.append((t.label, partner.label, product))
                 add_msg_fn(f" Entangled Formation: {product}!", duration=5)
+                print(f" Entangled Formation: {product}!")
                 try: QUANTUM_SOUND.play()
                 except: pass
         return entangled_reactions
@@ -1697,8 +1716,10 @@ class World:
 
                         if has_catalyst:
                              add_msg_fn(f"⚗️ Catalyzed Synthesis: {product}!", duration=3)
+                             print(f"⚗️ Catalyzed Synthesis: {product}!")
                         else:
                              add_msg_fn(f"Synthesized {product}", duration=3)
+                             print(f"Synthesized {product}")
 
                         msg = self.tech_tree.add_progress(1)
                         if msg: add_msg_fn(msg, duration=5)
@@ -1729,6 +1750,7 @@ class World:
                         self.tets.append(new_tet)
                     decompositions_this_frame.append((old_label, products))
                     add_msg_fn(f"💥 {old_label} decomposed!", duration=3)
+                    print(f"💥 {old_label} decomposed!")
                     # Genesis Protocol: Collapse Check
                     if len(self.tets) < 5 and self.tech_tree.stage_idx >= 3:
                          msg = self.tech_tree.collapse()
@@ -2714,7 +2736,7 @@ def main(threaded=False):
                 last_bot_move = now
             else:
                 cam.yaw += 0.05 * unscaled_dt
-                zoom_scalar = 0.5*3.0 ** (math.sin(time.time() * 0.05) * 2.0)
+                zoom_scalar = 5.0*3.0 ** (math.sin(time.time() * 0.05) * 2.0)
                 target_dist = DEFAULT_CAM_DIST * zoom_scalar
                 cam.dist += (target_dist - cam.dist) * 0.05
             if now - last_bot_spawn > 3600:
@@ -2866,7 +2888,7 @@ def main(threaded=False):
         screen.blit(top_leg, top_leg.get_rect(center=(WIDTH//2, 20)))
 
         screen.blit(font_s.render(f"FPS: {int(fps)}", True, (255, 255, 0)), (10, HEIGHT-35))
-        uptime_surf = font_s.render(f"v5.0 Up: {str(datetime.timedelta(seconds=int(time.time() - START_TIME)))}", True, (255, 255, 255))
+        uptime_surf = font_s.render(f"v5.1D Up: {str(datetime.timedelta(seconds=int(time.time() - START_TIME)))}", True, (255, 255, 255))
         screen.blit(uptime_surf, (WIDTH - uptime_surf.get_width() - 10, 10))
         bot_leg1 = font_s.render("RMB Label | LMB Pull/Join TETs | WASD/RMB Orbit | X/Alt+RMB Center | V Save Instant", True, (0,255,255))
         bot_leg2 = font_s.render("H Host Mode | TAB Client Mode | R/F/Scroll Zoom | Q/E/Alt+Scroll Pan | Z/C/Ctrl+Scroll Timescale", True, (0,255,255))
