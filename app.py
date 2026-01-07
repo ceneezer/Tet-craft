@@ -1212,7 +1212,10 @@ class Tetrahedron:
         self.synthesis_count = 0; self.is_catalyst = False
         self.erd_coherence = 0.0; self.entangled_partner = None
         self.quantum_state = "ground"
-        self.mind = BotMind(self.id) if random.random() < 0.3 else None
+        self.mind = BotMind(self.id)
+        # [0, 1, 2, 3] are the 4 corners.
+        # If [0, 1] are true, only corners 0 and 1 will seek partners.
+        self.active_corners = [False, False, False, False]
 
         # PROVENANCE TRACKING
         self.element_source = None  # "interface", "reaction", or None
@@ -1242,6 +1245,65 @@ class PastProjection4Sphere:
                 color = (np.clip(int(255 * shift), 50, 255), 20, np.clip(int(255 * (1-shift)), 50, 255))
                 size = max(1, int(4 * (1.0 - abs(p4[3]))))
                 if 0 <= screen_pos[0] < width and 0 <= screen_pos[1] < height: pygame.draw.circle(screen, color, screen_pos, size)
+
+def draw_molecular_labels(screen, cam, world, font):
+    # 1. Build Graph of Connected TETs
+    adj = {t.id: [] for t in world.tets}
+    for j in world.joints:
+        adj[j.A.id].append(j.B)
+        adj[j.B.id].append(j.A)
+
+    visited = set()
+
+    # 2. Find Groups
+    for t in world.tets:
+        if t.id in visited: continue
+
+        # If it's just a lone particle with no label, skip
+        if not t.label and not adj[t.id]:
+            visited.add(t.id)
+            continue
+
+        # DFS Traversal to find the whole molecule
+        group = []
+        stack = [t]
+        visited.add(t.id)
+        while stack:
+            curr = stack.pop()
+            group.append(curr)
+            for neighbor in adj[curr.id]:
+                if neighbor.id not in visited:
+                    visited.add(neighbor.id)
+                    stack.append(neighbor)
+
+        # 3. Calculate Center & Formula
+        if len(group) > 1:
+            # It's a molecule
+            avg_pos = np.mean([atom.pos for atom in group], axis=0)
+            screen_pos = cam.project(avg_pos)
+
+            if screen_pos[0] > -10000:
+                # Count Elements: C:1, H:4
+                counts = {}
+                for atom in group:
+                    # Assume atom.label holds "C", "H", etc.
+                    lbl = atom.label if atom.label in ["C", "H", "O", "N", "Fe"] else "X"
+                    if lbl != "X": counts[lbl] = counts.get(lbl, 0) + 1
+
+                # Build Name (e.g., "CH4")
+                name = ""
+                # Standard sorting: C first, then H, then others
+                if 'C' in counts: name += f"C{counts.pop('C')}" if counts['C']>1 else "C"
+                if 'H' in counts: name += f"H{counts.pop('H')}" if counts['H']>1 else "H"
+                for e in sorted(counts.keys()): name += f"{e}{counts[e]}" if counts[e]>1 else e
+
+                # Common Name Override
+                COMMON = {"H2O": "Water", "CH4": "Methane", "O2": "Oxygen", "CO2": "CO2"}
+                display_txt = COMMON.get(name, name)
+
+                if display_txt:
+                    s = font.render(display_txt, True, (0, 255, 255), (0,0,0,128))
+                    screen.blit(s, s.get_rect(center=screen_pos))
 
 class World:
     def __init__(self, sound):
@@ -1275,14 +1337,52 @@ class World:
     def spawn_polar_pair(self):
         if not self.tets:
             self.spawn()
-            if not self.tets: return
-
-        parent_tet = random.choice(self.tets); pos1 = parent_tet.pos + norm(np.random.rand(3)) * EDGE_LEN * 5
-        pos2 = pos1 + norm(np.random.rand(3)) * EDGE_LEN * 3; tet1, tet2 = Tetrahedron(pos1), Tetrahedron(pos2)
+            return
+        tet1 = Tetrahedron(np.random.uniform(-1.0, 1.0, 3) + self.center_of_mass)
+        tet2 = Tetrahedron(np.random.uniform(-1.0, 1.0, 3) + self.center_of_mass) #Tetrahedron(pos1), Tetrahedron(pos2)
         if len(self.tets) == 2: tet1.label = "Light"; tet2.label = "Darkness"
         if len(self.tets) == 4: tet1.label = "Answer"; tet2.label = "Question"
+        for t in [tet1, tet2]:
+            roll = random.random()
+            if roll < 0.1:
+                # Hydrogen-like (1 active corner)
+                t.active_corners = [True, False, False, False]
+                t.molecule_type = "H"
+                random.shuffle(t.active_corners) # Which corner is random
+            elif roll < 0.3:
+                # Oxygen-like (2 active corners)
+                t.active_corners = [True, True, False, False]
+                t.molecule_type = "O"
+                random.shuffle(t.active_corners)
+            elif roll < 0.5:
+                # Nitrogen-like (3 active corners)
+                t.active_corners = [True, True, True, False]
+                t.molecule_type = "N"
+                random.shuffle(t.active_corners)
+            else:
+                # Carbon-like (4 active corners)
+                t.active_corners = [True, True, True, True]
+                t.molecule_type = "C"
+        # === FIX: Sanity Check ===
+        # Ensure it didn't spawn on a NaN coordinate
+#        if not np.all(np.isfinite(tet1.pos)):
+#             tet1.pos = self.center_of_mass + np.random.uniform(-10, 10, 3)
+#             tet1.pos_prev = tet1.pos.copy()
+#        if not np.all(np.isfinite(tet2.pos)):
+#             tet2.pos = self.center_of_mass + np.random.uniform(-10, 10, 3)
+#             tet2.pos_prev = tet2.pos.copy()
+
         self.tets.extend([tet1, tet2]); polar_face_idx = random.choice([2, 3]); face_verts = Tetrahedron.FACES_NP[polar_face_idx]
-        for i in range(3): self.sticky_pairs.append((tet1, face_verts[i], tet2, face_verts[i]))
+        face_verts = Tetrahedron.FACES_NP[polar_face_idx]
+        for i in range(3):
+            self.sticky_pairs.append((tet1, face_verts[i], tet2, face_verts[i]))
+
+            # === THE CRITICAL FIX ===
+            # Pre-seed the age to 10.0 seconds.
+            # This tells the physics engine: "Repulsion is fully active immediately."
+            # This prevents the Frame 1 collapse and Frame 2 explosion.
+            #pair_key = tuple(sorted((tet1.id, tet2.id)))
+            #self.pair_ages[pair_key] = 10.0
         print(f"{tet1.label} spawned desiring {tet2.label}")
 
     def get_fields_at(self, pos):
@@ -1496,7 +1596,13 @@ class World:
                 corner_colors.append(corner_color or 'N')
         all_corners = np.array(all_corners); tree = cKDTree(all_corners)
         for i in range(len(all_corners)):
-            if corner_colors[i] not in ['R', 'C']: continue
+
+            # NEW CHECK: Is this specific corner active on its parent TET?
+            parent_tet = tet_list[corner_tets[i]]
+            corner_idx = corner_indices[i]
+
+            if not parent_tet.active_corners[corner_idx]:
+                continue # This corner is dormant/inert. No desire.
             nearby_idx = tree.query_ball_point(all_corners[i], CORNER_DESIRE_RANGE)
             forces = np.zeros(3)
             for j in nearby_idx:
@@ -1507,8 +1613,6 @@ class World:
                     forces += dist * (K_CORNER_DESIRE * psi_mod * (1.0 - np.linalg.norm(delta) / CORNER_DESIRE_RANGE))
             if np.any(forces):
                 t1 = tet_list[corner_tets[i]]; t1.local[corner_indices[i]] += forces * scaled_dt * 0.5; t1.pos += forces * scaled_dt * 0.5
-#                print(f"{t1.label} now desires a tet")
-#Specify which - only for new desires (wrong place)
 
     def apply_same_pole_repulsion(self, scaled_dt):
         positive_poles = [t for t in self.tets if t.is_magnetized and t.magnetism > 0]
@@ -1542,7 +1646,7 @@ class World:
 
             # === CRASH FIX 1: Sanitize the subject TET ===
             if not np.all(np.isfinite(t.pos)):
-                t.pos = np.random.uniform(-100, 100, 3) + self.center_of_mass
+                t.pos = np.random.uniform(-1, 1, 3) + self.center_of_mass
                 t.pos_prev = t.pos.copy() # Kill velocity
                 continue
 
@@ -1560,7 +1664,7 @@ class World:
                     bad_indices = np.where(mask_bad)[0]
 
                     # Fix the raw array so cKDTree doesn't crash
-                    safe_replacements = np.random.uniform(-100, 100, (len(bad_indices), 3)) + self.center_of_mass
+                    safe_replacements = np.random.uniform(-1, 1, (len(bad_indices), 3)) + self.center_of_mass
                     positions[mask_bad] = safe_replacements
 
                     # Fix the actual objects so the problem is gone next frame
@@ -1869,6 +1973,7 @@ class World:
         if any((j.A.id, j.ia, j.B.id, j.ib) in [(A.id,ia,B.id,ib), (B.id,ib,A.id,ia)] for j in self.joints): return
         self.joints.append(VertexJoint(A, ia, B, ib))
         if self.sound and AUDIO_ENABLED: self.sound.play()
+# add filled valiance here
 
     def calculate_dynamic_center(self):
         if not self.tets: return np.zeros(3)
@@ -1998,7 +2103,7 @@ class World:
                         stray_tet, neighbor_tet = self.tets[idx], self.tets[indices[idx, 1]]
                         if tuple(sorted((stray_tet.id, neighbor_tet.id))) not in existing_connections:
                             self.sticky_pairs.append((stray_tet, random.randint(0, 3), neighbor_tet, random.randint(0, 3)))
-                            add_msg_fn("Forced Desire to prevent drifting", duration=2)
+                            add_msg_fn("Forced Desire to prevent drifting", duration=10)
                             print(f"{stray_tet.label} now desires {neighbor_tet.label}")
                             break
 
@@ -2018,6 +2123,8 @@ class World:
             if np.linalg.norm(p2 - p1) < SNAP_DIST:
                 self.try_snap(t1, i1, t2, i2)
                 self.sticky_pairs.remove(pair)
+                add_msg_fn(f"{t1.label} joined to {t2.label}", duration=5)
+                print(f"{t1.label} joined to {t2.label}")
 
         for i, t in enumerate(self.tets):
             t.pos, t.pos_prev, t.local, t.local_prev, t.battery, t.orientation_bias = positions[i], positions_prev[i], locals_arr[i], locals_prev[i], batteries[i], orientation_biases[i]
@@ -2130,6 +2237,58 @@ def show_void_screen(screen, world):
         screen.blit(line2, line2.get_rect(center=(WIDTH//2, HEIGHT//2+20)));
         screen.blit(line3, line3.get_rect(center=(WIDTH//2, HEIGHT//2+60)));
         pygame.display.flip(); clock.tick(15)
+
+def find_molecules(world):
+    # 1. Build Adjacency Graph
+    adj = {t.id: [] for t in world.tets}
+    for j in world.joints:
+        adj[j.A.id].append(j.B)
+        adj[j.B.id].append(j.A)
+
+    visited = set()
+    molecules = []
+
+    # 2. Find Connected Components (DFS)
+    for t in world.tets:
+        if t.id in visited: continue
+
+        # Start new molecule
+        group = []
+        stack = [t]
+        visited.add(t.id)
+
+        while stack:
+            curr = stack.pop()
+            group.append(curr)
+            for neighbor in adj[curr.id]:
+                if neighbor.id not in visited:
+                    visited.add(neighbor.id)
+                    stack.append(neighbor)
+
+        molecules.append(group)
+    return molecules
+
+def get_molecule_name(group):
+    # Count atoms
+    counts = {}
+    for t in group:
+        # Assumes t.label is now the Atom Type (C, H, O)
+        elem = t.label
+        counts[elem] = counts.get(elem, 0) + 1
+
+    # Generate Hill System Formula (C first, then H, then others)
+    name = ""
+    if 'C' in counts: name += f"C{counts.pop('C')}" if counts['C']>1 else "C"
+    if 'H' in counts: name += f"H{counts.pop('H')}" if counts['H']>1 else "H"
+    for elem in sorted(counts.keys()):
+        name += f"{elem}{counts[elem]}" if counts[elem]>1 else elem
+
+    # Check Dictionary for Common Names
+    COMMON_NAMES = {
+        "H2O": "Water", "CO2": "Carbon Dioxide", "CH4": "Methane",
+        "O2": "Oxygen Gas", "C2H6": "Ethane"
+    }
+    return COMMON_NAMES.get(name, name)
 
 def draw_standard_black_hole_jit(target_surf, cam, flags, tl, center_pos, world):
     if not flags['t3']: return
@@ -2540,7 +2699,9 @@ def main(threaded=False):
         if os.path.exists(cli_load_file):
             try:
                 with open(cli_load_file, 'r', encoding='utf-8-sig') as f: world.set_state(json.load(f)); loaded_from_save = True
-                if world.tets: cam.pan = world.center_of_mass.copy()
+                if world.tets:
+                    cam.dist = DEFAULT_CAM_DIST
+                    cam.pan = world.center_of_mass.copy()
             except Exception as e: print(f"Load Error: {e}")
     if not (loaded_from_save or cli_connect_addr or cli_listen_port): show_void_screen(screen, world)
 
@@ -2548,7 +2709,15 @@ def main(threaded=False):
     while GAME_RUNNING:
         unscaled_dt = min(0.1, clock.tick(FPS) / 1000.0)
         now = time.time()
-        scaled_dt, frame_count, fps = unscaled_dt * time_scale, frame_count + 1, clock.get_fps()
+
+        # === FIX: Physics Speed Limit ===
+        # Never allow the physics to calculate more than 0.2 seconds of movement in one frame.
+        # This prevents "Teleportation Explosions" at high time scales.
+        raw_scaled_dt = unscaled_dt * time_scale
+        scaled_dt = min(raw_scaled_dt, 0.2)
+        # ================================
+
+        frame_count, fps = frame_count + 1, clock.get_fps()
         if 0 < fps < 45 and time_scale > 1.0: time_scale = max(1.0, time_scale * 0.99)
         is_interactive = (game_mode in ['single_player', 'host']) and not ON_HUGGINGFACE
         hovered_vertex = None
@@ -2681,7 +2850,9 @@ def main(threaded=False):
                     if e.key == pygame.K_v and is_interactive: save_world_to_file()
                     if e.key == pygame.K_BACKQUOTE: world.explode()
                     if is_interactive and e.key == pygame.K_SPACE: (world.spawn() if len(world.tets) < 2 else (world.spawn_polar_pair() if flags['j1'] else None))
-                    if e.key == pygame.K_x: cam.pan = world.center_of_mass.copy()
+                    if e.key == pygame.K_x:
+                        cam.dist = DEFAULT_CAM_DIST
+                        cam.pan = world.center_of_mass.copy()
                     if e.key == pygame.K_c: time_scale = min(10.0, time_scale + 0.5)
                     if e.key == pygame.K_z: time_scale = max(0.1, time_scale - 0.5)
                     if e.key == pygame.K_TAB: (discover_and_join() if game_mode == 'single_player' else stop_guest_mode())
@@ -2726,7 +2897,9 @@ def main(threaded=False):
                             dragging = (hovered_vertex[0], hovered_vertex[1], cam.get_transformed_z(hovered_vertex[0].verts()[hovered_vertex[1]]))
                             locked_sticky_target = None
                         if e.button == 3:
-                            if alt_held: cam.pan = world.center_of_mass.copy()
+                            if alt_held:
+                                cam.dist = DEFAULT_CAM_DIST
+                                cam.pan = world.center_of_mass.copy()
                             elif hovered_vertex:
                                 t = hovered_vertex[0]; new_l = get_user_input(screen, f"Rename '{t.label}':", t.label)
                                 if new_l: t.label = new_l
@@ -2797,7 +2970,9 @@ def main(threaded=False):
                 time_scale = 0.001
 
             now = time.time()
-            if world.tets: cam.pan = world.center_of_mass.copy()
+            if world.tets:
+                cam.dist = DEFAULT_CAM_DIST
+                cam.pan = world.center_of_mass.copy()
             if now - last_bot_move > 59:
                 cam.pitch = max(-1, min(1, cam.pitch + random.uniform(-1, 1)))
                 last_bot_move = now
@@ -2830,7 +3005,26 @@ def main(threaded=False):
 
         if game_mode != 'guest':
             zf = DEFAULT_CAM_DIST / cam.dist; spin = np.clip(1/np.log(zf + 1) + 1, 0.1, 2.0)
-            world.update(scaled_dt, unscaled_dt, time_scale, lambda t, duration=2: msgs.append([t, 0, pygame.time.get_ticks() + duration * 1000]), spin)
+
+            # === FIX: Physics Sub-Stepping ===
+            # Split the massive time jump into safe, bite-sized physics chunks (max 0.03s).
+            # This prevents the "Cannonball Effect" when spawning at high time scale.
+
+            remaining_dt = scaled_dt
+            SAFE_DT = 0.03 # 30ms is the stability limit for this physics model
+
+            # Determine how many steps we need (limit to 20 to prevent CPU freeze)
+            num_steps = int(remaining_dt / SAFE_DT) + 1
+            if num_steps > 20:
+                num_steps = 20
+                remaining_dt = 20 * SAFE_DT # Cap the max simulation speed
+
+            step_size = remaining_dt / num_steps
+
+            for _ in range(num_steps):
+                world.update(step_size, unscaled_dt, time_scale, lambda t, duration=2: msgs.append([t, 0, pygame.time.get_ticks() + duration * 1000]), spin)
+            # =================================
+
             if len(world.tets) == 1 and not flags['t0']: flags['t0'] = True
             if len(world.tets) >= 2 and not flags['t2']: flags['t2'] = True; world.sticky_pairs.extend([(world.tets[0], v, world.tets[1], v) for v in range(4)])
             if len(world.tets) >= 2 and world.joints and not flags['j1']:
@@ -2848,6 +3042,7 @@ def main(threaded=False):
         if len(world.tets) >= 2 and world.joints and not flags['j1']: flags['j1'] = True
         if len(world.tets) >= 3 and flags['j1'] and not flags['t3']: flags['t3'] = True
         if ON_HUGGINGFACE and world.tets:
+             cam.dist = DEFAULT_CAM_DIST
              target_pan = world.center_of_mass.copy()
              # Sanity check to ensure we don't look at Infinity/NaN
              if np.all(np.isfinite(target_pan)):
@@ -2925,12 +3120,13 @@ def main(threaded=False):
                 draw_bot_thought_bubble(screen, cam, t, font_s)
 
                 if t.label:
-                    surf = font_s.render(t.label, True, (255,255,0), (0,0,0))
-                    screen.blit(surf, surf.get_rect(center=cam.project(t.pos + [0, 8, 0])))
-                if t.molecule_type:
-                    # Get Atom Name (index 1) if known, else show F_R_C code
+                    if t.label not in MOLECULE_SYMBOLS:
+                        surf = font_s.render(t.label, True, (255,255,0), (0,0,0))
+                        screen.blit(surf, surf.get_rect(center=cam.project(t.pos + [0, 1, 0])))
+                if t.molecule_type and len(t.molecule_type)<3:
+                    # Get Atom Name (index 1) if known, else show F_R_C code, complex handeled by draw_molecular_labels
                     chem_name = MOLECULE_DATABASE[t.molecule_type][1] if t.molecule_type in MOLECULE_DATABASE else t.molecule_type
-                    s2 = font_s.render(str(chem_name), True, (255, 255, 255)); screen.blit(s2, s2.get_rect(center=cam.project(t.pos + [0, -10, 0])))
+                    s2 = font_s.render(str(chem_name), True, (255, 255, 255)); screen.blit(s2, s2.get_rect(center=cam.project(t.pos + [0, -1, 0])))
 
         if hasattr(world, 'reaction_particles'):
             world.spawn_reaction_particles(screen, cam, world._last_synth_reactions, WIDTH, HEIGHT)
@@ -2970,6 +3166,12 @@ def main(threaded=False):
         bot_leg2 = font_s.render("H Host Mode | TAB Client Mode | R/F/Scroll Zoom | Q/E/Alt+Scroll Pan | Z/C/Ctrl+Scroll Timescale", True, (0,255,255))
         screen.blit(bot_leg1, bot_leg1.get_rect(center=(WIDTH//2, HEIGHT-35)))
         screen.blit(bot_leg2, bot_leg2.get_rect(center=(WIDTH//2, HEIGHT-15)))
+
+        draw_molecular_labels(screen, cam, world, font_l)
+#for g in find_molecules(world): attach get_molecule_name(g) as label @ average_pos(g)
+
+
+        # Render
         pygame.display.flip()
 
         if ON_HUGGINGFACE and GRADIO_AVAILABLE:
