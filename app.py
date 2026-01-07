@@ -1601,22 +1601,48 @@ class World:
                         elif face_color == (0, 255, 255): corner_color = 'C'; break
                 corner_colors.append(corner_color or 'N')
         all_corners = np.array(all_corners); tree = cKDTree(all_corners)
+
         for i in range(len(all_corners)):
-
-            # NEW CHECK: Is this specific corner active on its parent TET?
-            parent_tet = tet_list[corner_tets[i]]
-            corner_idx = corner_indices[i]
-
-            if not parent_tet.active_corners[corner_idx]:
-                continue # This corner is dormant/inert. No desire.
             nearby_idx = tree.query_ball_point(all_corners[i], CORNER_DESIRE_RANGE)
+            t1 = tet_list[corner_tets[i]]
+            idx1 = corner_indices[i]
+
+            # === CRITICAL CHECK ===
+            # Only pull if this corner is ACTIVE (1)
+            if t1.corner_states[idx1] != 1:
+                continue
+            # ======================
+
+            # ... KDTree query ...
             forces = np.zeros(3)
             for j in nearby_idx:
                 if i == j: continue
-                if (corner_colors[i] == 'R' and corner_colors[j] == 'C') or (corner_colors[i] == 'C' and corner_colors[j] == 'R'):
-                    delta = all_corners[j] - all_corners[i]; dist = norm_njit(delta)
+
+                t2 = tet_list[corner_tets[j]]
+                idx2 = corner_indices[j]
+
+                # Check neighbor state too
+                if t2.corner_states[idx2] != 1:
+                    continue
+                delta = all_corners[j] - all_corners[i]; dist = norm_njit(delta)
+                forces += dist * (K_CORNER_DESIRE * psi_mod * (1.0 - np.linalg.norm(delta) / CORNER_DESIRE_RANGE))
+
+#        for i in range(len(all_corners)):
+
+            # NEW CHECK: Is this specific corner active on its parent TET?
+#            parent_tet = tet_list[corner_tets[i]]
+#            corner_idx = corner_indices[i]
+
+#            if not parent_tet.active_corners[corner_idx]:
+#                continue # This corner is dormant/inert. No desire.
+#            nearby_idx = tree.query_ball_point(all_corners[i], CORNER_DESIRE_RANGE)
+#            forces = np.zeros(3)
+#            for j in nearby_idx:
+#                if i == j: continue
+#                if (corner_colors[i] == 'R' and corner_colors[j] == 'C') or (corner_colors[i] == 'C' and corner_colors[j] == 'R'):
+#                    delta = all_corners[j] - all_corners[i]; dist = norm_njit(delta)
                     # Force scaled by Psi
-                    forces += dist * (K_CORNER_DESIRE * psi_mod * (1.0 - np.linalg.norm(delta) / CORNER_DESIRE_RANGE))
+#                    forces += dist * (K_CORNER_DESIRE * psi_mod * (1.0 - np.linalg.norm(delta) / CORNER_DESIRE_RANGE))
             if np.any(forces):
                 t1 = tet_list[corner_tets[i]]; t1.local[corner_indices[i]] += forces * scaled_dt * 0.5; t1.pos += forces * scaled_dt * 0.5
 
