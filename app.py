@@ -1253,6 +1253,7 @@ class World:
         self.cached_psi = 0.0
         self.cached_phi = 0.0
         self.cached_omega = 0.0
+        self.sim_time = time.time()
 
     def get_average_battery(self):
         if not self.tets: return 0.5
@@ -1282,6 +1283,7 @@ class World:
         if len(self.tets) == 4: tet1.label = "Answer"; tet2.label = "Question"
         self.tets.extend([tet1, tet2]); polar_face_idx = random.choice([2, 3]); face_verts = Tetrahedron.FACES_NP[polar_face_idx]
         for i in range(3): self.sticky_pairs.append((tet1, face_verts[i], tet2, face_verts[i]))
+        print(f"{tet1.label} spawned desiring {tet2.label}")
 
     def get_fields_at(self, pos):
         """Helper to call JIT field calculator"""
@@ -1318,6 +1320,7 @@ class World:
         Layer 4: Metabolism Loop
         Includes Entropy leakage per the Whitepaper.
         """
+        if self.sim_time < 1.0: return
         if not self.tets: return
 
         # 1. Energy Accounting (Whitepaper: Local Conservation)
@@ -1530,25 +1533,65 @@ class World:
 
     def attempt_quantum_tunneling(self, scaled_dt, add_msg_fn):
         current_time = time.time(); tunnel_reactions = []
+
+        # Pre-filter: Check if we have enough tets to even bother
+        if len(self.tets) < 2: return []
+
         for t in self.tets:
             if t.erd_coherence < ERD_COHERENCE_THRESHOLD or current_time - t.last_reaction_time < 10.0: continue
+
+            # === CRASH FIX 1: Sanitize the subject TET ===
+            if not np.all(np.isfinite(t.pos)):
+                t.pos = np.random.uniform(-100, 100, 3) + self.center_of_mass
+                t.pos_prev = t.pos.copy() # Kill velocity
+                continue
+
             if random.random() < QUANTUM_TUNNEL_PROB * scaled_dt * 60 * t.erd_coherence:
-                positions = np.array([o.pos for o in self.tets if o.id != t.id])
-                if len(positions) == 0: continue
-                tree = cKDTree(positions)
-                far_indices = tree.query_ball_point(t.pos, QUANTUM_ENTANGLE_RANGE * 2)
-                if not far_indices: continue
-                partner = self.tets[random.choice(far_indices)]
-                if partner.label and (t.label, partner.label) in QUANTUM_REACTIONS:
-                    product = QUANTUM_REACTIONS[(t.label, partner.label)]
-                    t.label = product; t.last_reaction_time = current_time; t.synthesis_count += 1
-                    t.battery -= SYNTHESIS_ENERGY_COST / 2
-                    partner.battery -= 0.05; partner.quantum_state = "tunneled"; t.quantum_state = "tunneled"
-                    tunnel_reactions.append((t.label, partner.label, product))
-                    add_msg_fn(f" Quantum Tunnel: {product} formed!", duration=5)
-                    print(f" Quantum Tunnel: {product} formed!")
-                    try: QUANTUM_SOUND.play()
-                    except: pass
+                # Get neighbors
+                candidates = [o for o in self.tets if o.id != t.id]
+                if not candidates: continue
+
+                positions = np.array([o.pos for o in candidates])
+
+                # === CRASH FIX 2: Sanitize the neighbor cloud ===
+                if not np.all(np.isfinite(positions)):
+                    # Find bad indices
+                    mask_bad = ~np.all(np.isfinite(positions), axis=1)
+                    bad_indices = np.where(mask_bad)[0]
+
+                    # Fix the raw array so cKDTree doesn't crash
+                    safe_replacements = np.random.uniform(-100, 100, (len(bad_indices), 3)) + self.center_of_mass
+                    positions[mask_bad] = safe_replacements
+
+                    # Fix the actual objects so the problem is gone next frame
+                    for i, bad_idx in enumerate(bad_indices):
+                        candidates[bad_idx].pos = safe_replacements[i]
+                        candidates[bad_idx].pos_prev = safe_replacements[i]
+
+                # Now safe to build tree
+                try:
+                    tree = cKDTree(positions)
+                    far_indices = tree.query_ball_point(t.pos, QUANTUM_ENTANGLE_RANGE * 2)
+
+                    if not far_indices: continue
+
+                    # Pick a partner
+                    partner = candidates[random.choice(far_indices)]
+
+                    if partner.label and (t.label, partner.label) in QUANTUM_REACTIONS:
+                        product = QUANTUM_REACTIONS[(t.label, partner.label)]
+                        t.label = product; t.last_reaction_time = current_time; t.synthesis_count += 1
+                        t.battery -= SYNTHESIS_ENERGY_COST / 2
+                        partner.battery -= 0.05; partner.quantum_state = "tunneled"; t.quantum_state = "tunneled"
+                        tunnel_reactions.append((t.label, partner.label, product))
+                        add_msg_fn(f" Quantum Tunnel: {product} formed!", duration=5)
+                        print(f" Quantum Tunnel: {product} formed!")
+                        try: QUANTUM_SOUND.play()
+                        except: pass
+                except ValueError:
+                    # Final safety net for scipy errors
+                    pass
+
         return tunnel_reactions
 
     def process_entangled_reactions(self, scaled_dt, add_msg_fn):
@@ -1641,7 +1684,7 @@ class World:
 
             # Reset bad positions to random safe spots to prevent crash
             count = len(bad_indices)
-            safe_replacements = np.random.uniform(-5, 5, (count, 3)) + self.center_of_mass
+            safe_replacements = np.random.uniform(-100, 100, (count, 3)) + self.center_of_mass
             positions[mask_bad] = safe_replacements
 
             # Update the actual Tetrahedron objects so the bad data doesn't persist
@@ -1829,7 +1872,11 @@ class World:
 
     def calculate_dynamic_center(self):
         if not self.tets: return np.zeros(3)
-        return np.mean(np.array([t.pos for t in self.tets]), axis=0)
+        positions = np.array([t.pos for t in self.tets])
+        center = np.nanmean(positions, axis=0)
+        if np.any(np.isnan(center)):
+            return np.zeros(3)
+        return center
 
     def update(self, scaled_dt, unscaled_dt, time_scale, add_msg_fn, spin_multiplier=1.0):
         if not self.tets: return
@@ -1952,6 +1999,7 @@ class World:
                         if tuple(sorted((stray_tet.id, neighbor_tet.id))) not in existing_connections:
                             self.sticky_pairs.append((stray_tet, random.randint(0, 3), neighbor_tet, random.randint(0, 3)))
                             add_msg_fn("Forced Desire to prevent drifting", duration=2)
+                            print(f"{stray_tet.label} now desires {neighbor_tet.label}")
                             break
 
         pairs = tree.query_pairs(r=COLLISION_RADIUS * 2)
@@ -2712,7 +2760,9 @@ def main(threaded=False):
                         if e.button == 1 and dragging and locked_sticky_target:
                             t1, i1 = dragging[0], dragging[1]; t2, i2 = locked_sticky_target[0], locked_sticky_target[1]
                             cnt = sum(1 for j in world.joints if (j.A.id == t1.id and j.ia == i1) or (j.B.id == t1.id and j.ib == i1))
-                            if cnt < 8: world.sticky_pairs.append((t1, i1, t2, i2))
+                            if cnt < 6:
+                                world.sticky_pairs.append((t1, i1, t2, i2))
+                                print(f"User: {t1.label} desires {t2.label}")
                         if e.button == 1: dragging, locked_sticky_target = None, None
                         if e.button == 3: rotating = False
                     if e.type == pygame.MOUSEWHEEL:
@@ -2793,6 +2843,15 @@ def main(threaded=False):
              if frame_count % 10 == 0: guest_instance.send_cam_update()
              s = guest_instance.get_latest_world_state();
              if s: world.set_state(s)
+
+        if len(world.tets) >= 2 and not flags['t2']: flags['t2'] = True
+        if len(world.tets) >= 2 and world.joints and not flags['j1']: flags['j1'] = True
+        if len(world.tets) >= 3 and flags['j1'] and not flags['t3']: flags['t3'] = True
+        if ON_HUGGINGFACE and world.tets:
+             target_pan = world.center_of_mass.copy()
+             # Sanity check to ensure we don't look at Infinity/NaN
+             if np.all(np.isfinite(target_pan)):
+                 cam.pan = target_pan
 
         # Rendering
         tl = np.clip((time_scale - 0.1) / 9.9, 0, 1)
@@ -2905,9 +2964,8 @@ def main(threaded=False):
         top_leg = font_s.render(status_text, True, (0,255,255))
         screen.blit(top_leg, top_leg.get_rect(center=(WIDTH//2, 20)))
 
-        screen.blit(font_s.render(f"FPS: {int(fps)}", True, (255, 255, 0)), (10, HEIGHT-35))
-        uptime_surf = font_s.render(f"v5.1D Up: {str(datetime.timedelta(seconds=int(time.time() - START_TIME)))}", True, (255, 255, 255))
-        screen.blit(uptime_surf, (WIDTH - uptime_surf.get_width() - 10, 10))
+        uptime_surf = font_s.render(f"v5.1D Up: {str(datetime.timedelta(seconds=int(time.time() - START_TIME)))} FPS: {int(fps)}", True, (100, 255, 150))
+        screen.blit(uptime_surf, (WIDTH - uptime_surf.get_width() - 10, 30))
         bot_leg1 = font_s.render("RMB Label | LMB Pull/Join TETs | WASD/RMB Orbit | X/Alt+RMB Center | V Save Instant", True, (0,255,255))
         bot_leg2 = font_s.render("H Host Mode | TAB Client Mode | R/F/Scroll Zoom | Q/E/Alt+Scroll Pan | Z/C/Ctrl+Scroll Timescale", True, (0,255,255))
         screen.blit(bot_leg1, bot_leg1.get_rect(center=(WIDTH//2, HEIGHT-35)))
