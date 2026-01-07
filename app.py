@@ -1221,6 +1221,13 @@ class Tetrahedron:
         self.element_source = None  # "interface", "reaction", or None
         self.is_element = False
 
+        # CORNER STATES:
+        # 0 = Inert/Dead (No force)
+        # 1 = Active/Desiring (Attracts active neighbors)
+        # 2 = Bonded (Physically locked, no desire)
+        # 3 = Lone Pair (Repels everything - Geometry enforcer)
+        self.corner_states = [1, 1, 1, 1] # Default: Carbon-like (4 Active)
+
     def verts(self): return self.local + self.pos
 
 class PastProjection4Sphere:
@@ -1339,7 +1346,20 @@ class World:
             self.spawn()
             return
         tet1 = Tetrahedron(np.random.uniform(-1.0, 1.0, 3) + self.center_of_mass)
-        tet2 = Tetrahedron(np.random.uniform(-1.0, 1.0, 3) + self.center_of_mass) #Tetrahedron(pos1), Tetrahedron(pos2)
+        tet2 = Tetrahedron(np.random.uniform(-1.0, 1.0, 3) + self.center_of_mass)
+
+        # Define the Standard Model Colors (Fixed)
+        std_colors = [(255,255,255), (0,0,0), (255,0,0), (0,255,255)] # W, B, R, C
+        tet1.colors = std_colors
+        tet2.colors = std_colors
+
+        for t in [tet1, tet2]:
+            # Create mask: [Active, Active, Active, LonePair]
+            states = [1, 1, 1, 3]
+            random.shuffle(states) # Randomize which corners are which
+            t.corner_states = states
+
+
         if len(self.tets) == 2: tet1.label = "Light"; tet2.label = "Darkness"
         if len(self.tets) == 4: tet1.label = "Answer"; tet2.label = "Question"
         for t in [tet1, tet2]:
@@ -1363,26 +1383,12 @@ class World:
                 # Carbon-like (4 active corners)
                 t.active_corners = [True, True, True, True]
                 t.molecule_type = "C"
-        # === FIX: Sanity Check ===
-        # Ensure it didn't spawn on a NaN coordinate
-#        if not np.all(np.isfinite(tet1.pos)):
-#             tet1.pos = self.center_of_mass + np.random.uniform(-10, 10, 3)
-#             tet1.pos_prev = tet1.pos.copy()
-#        if not np.all(np.isfinite(tet2.pos)):
-#             tet2.pos = self.center_of_mass + np.random.uniform(-10, 10, 3)
-#             tet2.pos_prev = tet2.pos.copy()
 
         self.tets.extend([tet1, tet2]); polar_face_idx = random.choice([2, 3]); face_verts = Tetrahedron.FACES_NP[polar_face_idx]
         face_verts = Tetrahedron.FACES_NP[polar_face_idx]
         for i in range(3):
             self.sticky_pairs.append((tet1, face_verts[i], tet2, face_verts[i]))
 
-            # === THE CRITICAL FIX ===
-            # Pre-seed the age to 10.0 seconds.
-            # This tells the physics engine: "Repulsion is fully active immediately."
-            # This prevents the Frame 1 collapse and Frame 2 explosion.
-            #pair_key = tuple(sorted((tet1.id, tet2.id)))
-            #self.pair_ages[pair_key] = 10.0
         print(f"{tet1.label} spawned desiring {tet2.label}")
 
     def get_fields_at(self, pos):
@@ -1971,9 +1977,18 @@ class World:
 
     def try_snap(self, A, ia, B, ib):
         if any((j.A.id, j.ia, j.B.id, j.ib) in [(A.id,ia,B.id,ib), (B.id,ib,A.id,ia)] for j in self.joints): return
+        # Check if already bonded (prevent multi-bond on same vert)
+        if A.corner_states[ia] == 2 or B.corner_states[ib] == 2:
+            return # Block the snap, this port is occupied!
+
+        # Check for existing parallel joints (prevent duplicates)
+        if any((j.A.id, j.ia, j.B.id, j.ib) in [(A.id,ia,B.id,ib), (B.id,ib,A.id,ia)] for j in self.joints):
+            return
+
         self.joints.append(VertexJoint(A, ia, B, ib))
+        A.corner_states[ia] = 2 # Mark as Bonded
+        B.corner_states[ib] = 2 # Mark as Bonded
         if self.sound and AUDIO_ENABLED: self.sound.play()
-# add filled valiance here
 
     def calculate_dynamic_center(self):
         if not self.tets: return np.zeros(3)
@@ -2971,14 +2986,14 @@ def main(threaded=False):
 
             now = time.time()
             if world.tets:
-                cam.dist = DEFAULT_CAM_DIST
                 cam.pan = world.center_of_mass.copy()
             if now - last_bot_move > 59:
                 cam.pitch = max(-1, min(1, cam.pitch + random.uniform(-1, 1)))
+                cam.dist = DEFAULT_CAM_DIST
                 last_bot_move = now
             else:
                 cam.yaw += 0.05 * unscaled_dt
-                zoom_scalar = 5.0*3.0 ** (math.sin(time.time() * 0.05) * 2.0)
+                zoom_scalar = 5.0*3.0 ** (math.sin(now * 0.05) * 2.0)
                 target_dist = DEFAULT_CAM_DIST * zoom_scalar
                 cam.dist += (target_dist - cam.dist) * 0.05
             if now - last_bot_spawn > 3600:
@@ -3042,7 +3057,6 @@ def main(threaded=False):
         if len(world.tets) >= 2 and world.joints and not flags['j1']: flags['j1'] = True
         if len(world.tets) >= 3 and flags['j1'] and not flags['t3']: flags['t3'] = True
         if ON_HUGGINGFACE and world.tets:
-             cam.dist = DEFAULT_CAM_DIST
              target_pan = world.center_of_mass.copy()
              # Sanity check to ensure we don't look at Infinity/NaN
              if np.all(np.isfinite(target_pan)):
