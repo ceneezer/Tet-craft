@@ -1609,7 +1609,7 @@ class World:
                 corner_colors.append(corner_color or 'N')
         all_corners = np.array(all_corners); tree = cKDTree(all_corners)
 
-        if not all_corners: return
+#        if not all_corners: return
 
         all_corners_np = np.array(all_corners)
 
