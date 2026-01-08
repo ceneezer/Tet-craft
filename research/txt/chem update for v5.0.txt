@@ -504,3 +504,37 @@ These refinements do not make Tet‑Craft less imaginative — they make it more
 By correcting force laws, reaction kinetics, catalysis, and thermodynamics while preserving quantum and metaphysical layers, Tet‑Craft becomes:
 
 A universe where understanding is the most stable configuration.
+
+
+
+
+---------------------- Accuracy updates for 5.1
+
+
+3. Fine-Tuning Arrhenius Kinetics
+The simulation uses Battery Energy as a proxy for effective temperature (T
+eff
+​
+ ) within the Arrhenius equation (P=A⋅exp(−E
+a
+​
+ /T
+eff
+​
+ )).
+• Activation Energy (E
+a
+​
+ ): The base barrier is currently set at 0.6. Refinement should involve dynamic E
+a
+​
+  values based on the specific molecular bonds being formed rather than a global constant.
+• The Alignment Factor (A): Accuracy can be improved by increasing the pre-exponential factor when magnetic poles are properly oriented, making reactions more probable for "coherent" reactants even if energy is marginal.
+4. Implementing Strict Catalytic Mediation (Invariant 2)
+One of the most vital rules for accuracy is that catalysts cannot transmute without mediators. Specifically, the Iron (Red-Red) catalyst should be physically barred from triggering synthesis unless a mediator like Oxygen is present in the "fuel mix". This prevents instantaneous, unrealistic transmutations and forces the simulation to model complex, multi-step chemical contexts.
+5. Balancing Entropy Leakage and Metabolism
+To accurately model Era 5 (Life), the "tax on existence" known as Entropy Leakage must be perfectly balanced against synthesis.
+• Bond Maintenance Costs: Higher fidelity would require explicit energy costs to maintain structural joints; if the "battery" fails to pay this tax, the molecule should undergo Entropy-Driven Decomposition.
+• Thermal Feedback: Synthesis must release a calculated energy burst that refills the batteries of nearby units, raising the local "temperature" and allowing for metabolic chain reactions.
+6. Structural Allotropy and Pressure
+The system can distinguish between different forms of the same element based on Multi-Face Pressure. For instance, Diamond requires a four-face lock of white faces (W4), while Graphite results from black faces (B4). Expanding these rules to include more complex crystal lattices would increase the chemical realism of the structural Kingdom (Malkhut).

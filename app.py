@@ -204,7 +204,7 @@ To reach Transcendence:
 
 Gemini_notes="""
 PROGRAM: TET_CRAFT_SIMULATION
-TET~CRAFT: Emergent Chemistry Simulation (v5.1D + Networking Fix + Mute Fix)
+TET~CRAFT: Emergent Chemistry Simulation (v5.2D + Networking Fix + Mute Fix)
 
 OVERVIEW:
 - A kleinverse of tetrahedrons that bond, react, and evolve into complex molecules
@@ -615,6 +615,7 @@ def calculate_fields_jit(positions, batteries, coherences, sample_pos):
     """
     psi = 0.0
     phi = 0.0
+    softener_sq = 4.0
     for i in range(positions.shape[0]):
         delta = positions[i] - sample_pos
         dist_sq = np.sum(delta**2)
@@ -622,10 +623,11 @@ def calculate_fields_jit(positions, batteries, coherences, sample_pos):
         dist = np.sqrt(dist_sq)
 
         # Phi (Metabolic) = Sum(battery / dist)
-        phi += batteries[i] / dist
+        dist_soft = np.sqrt(dist_sq + softener_sq)
+        phi += batteries[i] / dist_soft
 
         # Psi (Awareness) = Sum(coherence / dist^2)
-        psi += coherences[i] / dist_sq
+        psi += coherences[i] / (dist_sq + softener_sq)
 
     return psi, phi
 
@@ -979,6 +981,10 @@ def dist_point_to_line_segment(p, a, b):
     closest = a + t * ab
     return np.linalg.norm(p - closest)
 
+@njit(cache=True)
+def norm(v):
+    n = np.linalg.norm(v); return v / n if n > 1e-9 else np.zeros_like(v)
+
 # ============================
 # CLASSES & CORE
 # ============================
@@ -1029,12 +1035,26 @@ class Camera:
         return zz2
     def project(self, v):
         global WIDTH, HEIGHT
-        v = v - self.pan; cy, sy = math.cos(self.yaw), math.sin(self.yaw); cp, sp = math.cos(self.pitch), math.sin(self.pitch)
+        v = v - self.pan;
+        if not np.all(np.isfinite(v)): return (-10000, -10000)
+        cy, sy = math.cos(self.yaw), math.sin(self.yaw); cp, sp = math.cos(self.pitch), math.sin(self.pitch)
         x, y, z = v; x, z = cy*x - sy*z, sy*x + cy*z; y, z = cp*y - sp*z, sp*y + cp*z
         depth = self.dist + z
         if depth <= 0.1: return (-10000, -10000)
         scale = FOCAL_LENGTH / depth
-        return (WIDTH//2 + int(x * scale), HEIGHT//2 - int(y * scale))
+        # Calculate screen coordinates
+        sx = WIDTH//2 + x * scale
+        sy = HEIGHT//2 - y * scale
+
+        # Final Sanity Check before integer conversion
+        if not (math.isfinite(sx) and math.isfinite(sy)):
+            return (-10000, -10000)
+
+        # Clamp to avoid "OverflowError: cannot convert float infinity to integer"
+        # Pygame drawing breaks if coordinates are too massive (e.g. > 100000)
+        if abs(sx) > 50000 or abs(sy) > 50000:
+             return (-10000, -10000)
+        return (int(sx), int(sy))
     def project_many(self, vecs):
         global WIDTH, HEIGHT
         return project_many_jit(vecs, self.pan, self.yaw, self.pitch, self.dist, WIDTH, HEIGHT)
@@ -1053,65 +1073,68 @@ class Camera:
     def get_state(self): return {'yaw': self.yaw, 'pitch': self.pitch, 'dist': self.dist, 'pan': self.pan}
     def set_state(self, state): self.yaw, self.pitch, self.dist, self.pan = state['yaw'], state['pitch'], state['dist'], np.array(state['pan'])
 
-@njit(cache=True)
-def norm(v):
-    n = np.linalg.norm(v); return v / n if n > 1e-9 else np.zeros_like(v)
-
 class TechTree:
     STAGES = [
         ('Void', 0, 'Nothing yet exists'),
-        ('Fluctuation', 5, 'Quantum foam emerges'),
-        ('Condensation', 15, 'Matter begins to form'),
-        ('Chemistry', 35, 'Molecules react'),
+        ('Mind', 0, 'Awareness flickers'),
+        ('Fluctuation', 1, 'Quantum foam emerges'),
+        ('Condensation', 3, 'Matter begins to form'),
+        ('Chemistry', 7, 'Molecules react'),
         ('Life', 70, 'Self-replication emerges'),
-        ('Mind', 120, 'Awareness flickers'),
-        ('Transcendence', 200, 'Beyond matter'),
+        ('Transcendence', 777, 'Beyond matter'),
     ]
     def __init__(self):
+        self.world = None
         self.stage_idx = 0; self.progress = 0; self.peak_stage = 0; self.collapsed_from = []
         # Genesis Protocol Fields
         self.avg_psi = 0.0
         self.avg_phi = 0.0
         self.omega_pressure = 0.0
 
+    def set_world(self, world_instance):
+        """Link the TechTree to the World it governs."""
+        self.world = world_instance
+
     def update_fields(self, psi, phi, omega):
         self.avg_psi = psi
         self.avg_phi = phi
         self.omega_pressure = omega
 
-    def check_thresholds(self):
-        """Phase 4 & 6: Era-based field requirements"""
-        if self.stage_idx == 1 and self.avg_psi > 0.1: # Fluctuation -> Condensation Requirement
-             pass
-        if self.stage_idx == 2 and self.avg_phi > 0.3: # Condensation -> Chemistry Requirement
-             pass
-        if self.stage_idx == 6 and self.omega_pressure > 0.9: # Transcendence
-             pass
-
     def add_progress(self, amount):
-        self.progress += amount
+        if not self.world: return none
+        molly=find_molecules(self.world)
         if self.stage_idx < len(self.STAGES) - 1:
+            self.progress += amount
+            print(f"\nProgress: {self.progress}\m")
             next_threshold = self.STAGES[self.stage_idx + 1][1]
-            # Genesis Protocol: Field Gates
-            gate_passed = True
-            if self.stage_idx == 1 and self.avg_psi < FIELD_PSI_THRESHOLD_QUANTUM: gate_passed = False
-            if self.stage_idx == 2 and self.avg_phi < FIELD_PHI_THRESHOLD_FACE_LOCK: gate_passed = False
-
-            if self.progress >= next_threshold and gate_passed:
-                self.stage_idx += 1; self.peak_stage = max(self.peak_stage, self.stage_idx)
-                return f"Evolved to: {self.current_stage}"
+            if self.progress >= next_threshold:
+                # Genesis Protocol: Field Gates
+                gate_passed = True
+                if self.stage_idx < 2 and len(self.world.tets) < 3: gate_passed = False
+                if self.stage_idx == 2 and (len(molly) < 3 or self.avg_psi < FIELD_PSI_THRESHOLD_QUANTUM): gate_passed = False
+                if self.stage_idx == 3 and self.avg_phi < FIELD_PHI_THRESHOLD_FACE_LOCK: gate_passed = False
+                if self.stage_idx == 4 and (len(molly) < 7 or len(self.world.tets) < 24): gate_passed = False
+                if self.stage_idx == 5 and (len(molly) < 24 or self.avg_psi < FIELD_PSI_THRESHOLD_QUANTUM or self.avg_phi < FIELD_PHI_THRESHOLD_FACE_LOCK or self.omega_pressure < 0.1): gate_passed = False
+                if self.stage_idx == 6 and self.omega_pressure < FIELD_OMEGA_THRESHOLD_TRANSCENDENCE: gate_passed = False
+                if gate_passed:
+                    self.stage_idx += 1; self.peak_stage = max(self.peak_stage, self.stage_idx)
+                    print(f"Evolved to: {self.current_stage}")
+                    return f"Evolved to: {self.current_stage}"
         return None
 
     def collapse(self, severity=1):
+        if not self.world: return none
+        current_pop = len(self.world.tets)
         # Genesis Protocol: Collapse Mechanics
-        # Triggered if TET population drops below 5 while in Chemistry+ era
-        if self.stage_idx >= 3: # Chemistry or higher
+        # Triggered if TET population drops below 7 while in Chemistry+ era
+        if self.stage_idx >= 4 and current_pop < 7: # Chemistry or higher
             lost = self.STAGES[self.stage_idx][0]
             self.collapsed_from.append(lost)
             self.stage_idx = max(0, self.stage_idx - severity)
             self.progress = self.STAGES[self.stage_idx][1]
             return f"Collapsed from {lost}! Complexity unstable."
         return None
+
     @property
     def current_stage(self): return self.STAGES[self.stage_idx][0]
     @property
@@ -1318,11 +1341,51 @@ class World:
         self.pair_ages = {} # Maps sorted tuple (id1, id2) -> age_seconds
         self.reaction_particles = []
         self.tech_tree = TechTree()
+        self.tech_tree.set_world(self)
         # Genesis Protocol Fields Cache
         self.cached_psi = 0.0
         self.cached_phi = 0.0
         self.cached_omega = 0.0
         self.sim_time = time.time()
+        self._last_synth_reactions = []
+        self._last_quantum_events = []
+
+        # === OPTIMIZATION CACHE ===
+        self.cached_pos = np.zeros((0, 3))
+        self.cached_prev = np.zeros((0, 3))
+        self.cached_local = np.zeros((0, 4, 3))
+        self.cached_local_prev = np.zeros((0, 4, 3))
+        self.cached_bat = np.zeros(0)
+        self.cached_coh = np.zeros(0)
+        self.cached_bias = np.zeros((0, 3))
+
+    def sever_bonds(self, tet_idx):
+        """Cuts all physical and emotional ties for a specific TET index."""
+        if tet_idx >= len(self.tets): return
+
+        target_id = self.tets[tet_idx].id
+
+        # 1. Remove Joints (Physical Bonds)
+        # Iterate backwards to allow safe removal
+        for i in range(len(self.joints) - 1, -1, -1):
+            j = self.joints[i]
+            if j.A.id == target_id or j.B.id == target_id:
+                # Restore valency to the partner before cutting
+                if j.A.id == target_id: j.B.corner_states[j.ib] = 1
+                else: j.A.corner_states[j.ia] = 1
+
+                self.joints.pop(i)
+
+        # 2. Remove Sticky Pairs (Desires)
+        for i in range(len(self.sticky_pairs) - 1, -1, -1):
+            p = self.sticky_pairs[i]
+            if p[0].id == target_id or p[2].id == target_id:
+                self.sticky_pairs.pop(i)
+
+        # 3. Reset the TET's own valency
+        self.tets[tet_idx].corner_states = [1, 1, 1, 1]
+
+        print(f"✂️ Severed bonds for TET {self.tets[tet_idx].label}")
 
     def get_average_battery(self):
         if not self.tets: return 0.5
@@ -1347,7 +1410,8 @@ class World:
             return
         tet1 = Tetrahedron(np.random.uniform(-1.0, 1.0, 3) + self.center_of_mass)
         tet2 = Tetrahedron(np.random.uniform(-1.0, 1.0, 3) + self.center_of_mass)
-
+        tet1.pos_prev = tet1.pos.copy()
+        tet2.pos_prev = tet2.pos.copy()
         # Define the Standard Model Colors (Fixed)
         std_colors = [(255,255,255), (0,0,0), (255,0,0), (0,255,255)] # W, B, R, C
         tet1.colors = std_colors
@@ -1402,23 +1466,32 @@ class World:
     def calculate_global_fields(self):
         """Layer 2: Fields as Law (Average for TechTree)"""
         if not self.tets: return 0.0, 0.0, 0.0
+        if not np.all(np.isfinite(self.center_of_mass)):
+            self.center_of_mass = np.zeros(3) # Emergency reset
         # Narrative Field Omega
         max_stage = 7.0
         global_pressure = len(self.tets) / 200.0 # Arbitrary pressure metric
-        omega = (self.tech_tree.stage_idx / max_stage) * global_pressure
+        target_omega = (self.tech_tree.stage_idx / max_stage) * global_pressure
 
         # Approximate global avg Psi and Phi by sampling center
-        psi, phi = self.get_fields_at(self.center_of_mass)
+        psi_raw, phi_raw = self.get_fields_at(self.center_of_mass)
 
-        # Normalize roughly for tech tree usage
-        avg_phi = phi / (len(self.tets) * 5.0) if self.tets else 0
-        avg_psi = psi / (len(self.tets) * 0.5) if self.tets else 0
+        if math.isnan(psi_raw) or math.isinf(psi_raw): psi_raw = 0.0
+        if math.isnan(phi_raw) or math.isinf(phi_raw): phi_raw = 0.0
 
-        self.cached_psi = avg_psi
-        self.cached_phi = avg_phi
-        self.cached_omega = omega
-        self.tech_tree.update_fields(avg_psi, avg_phi, omega)
-        return avg_psi, avg_phi, omega
+        # Normalize based on population to keep numbers readable
+        # (Divisor adjusted because we added softening)
+        target_phi = phi_raw / (len(self.tets) * 0.2)
+        target_psi = psi_raw / (len(self.tets) * 0.05)
+
+        # === SMOOTHING (Lerp) ===
+        # Blend 5% new value with 95% old value to stop jitter
+        self.cached_psi += (target_psi - self.cached_psi) * 0.05
+        self.cached_phi += (target_phi - self.cached_phi) * 0.05
+        self.cached_omega += (target_omega - self.cached_omega) * 0.05
+
+        self.tech_tree.update_fields(self.cached_psi, self.cached_phi, self.cached_omega)
+        return self.cached_psi, self.cached_phi, self.cached_omega
 
     # --- WHITEPAPER: THERMODYNAMICS UPDATE ---
     def process_metabolism(self, scaled_dt, add_msg_fn):
@@ -1584,52 +1657,42 @@ class World:
     def apply_corner_desires(self, scaled_dt):
         if len(self.tets) < 2: return
 
-        # Genesis Protocol: Modulate desire by Psi field (Awareness)
         psi_mod = 1.0 + self.cached_psi
-
         tet_list = list(self.tets)
+
         all_corners, corner_colors, corner_tets, corner_indices = [], [], [], []
+
+        # 1. Gather ACTIVE corners
         for idx, t in enumerate(tet_list):
             if not np.all(np.isfinite(t.pos)): continue
             verts = t.verts()
             for c_idx in range(4):
-                # === VALENCY CHECK ===
-                # Only process this corner if it is Active (State 1)
-                # 0=Inert, 2=Bonded, 3=LonePair
-                if hasattr(t, 'corner_states') and t.corner_states[c_idx] != 1:
-                    continue
-                # =====================
-                all_corners.append(verts[c_idx]); corner_tets.append(idx); corner_indices.append(c_idx)
-                corner_color = None
+                # VALENCY CHECK: Only process Active (1) corners
+                if hasattr(t, 'corner_states') and t.corner_states[c_idx] != 1: continue
+
+                all_corners.append(verts[c_idx])
+                corner_tets.append(idx)
+                corner_indices.append(c_idx)
+
+                # Determine Color
+                corner_color = 'N'
                 for f_idx in range(4):
                     if c_idx in Tetrahedron.FACE_TO_CORNERS[f_idx]:
                         face_color = t.colors[f_idx] if t.colors else Tetrahedron.FACE_COLORS[f_idx]
                         if face_color == (255, 0, 0): corner_color = 'R'; break
                         elif face_color == (0, 255, 255): corner_color = 'C'; break
-                corner_colors.append(corner_color or 'N')
-        all_corners = np.array(all_corners); tree = cKDTree(all_corners)
+                corner_colors.append(corner_color)
 
-#        if not all_corners: return
-
+        if not all_corners: return
         all_corners_np = np.array(all_corners)
 
-        # === CRASH FIX START ===
+        # CRASH SAFETY
         if not np.all(np.isfinite(all_corners_np)):
-            # Something exploded. Find the broken TETs and reset them.
-            print("⚠️ Desire Singularity Detected: Resetting broken geometry.")
-            for t in self.tets:
-                if not np.all(np.isfinite(t.pos)) or not np.all(np.isfinite(t.local)):
-                    # Scatter reset to prevent loop
-                    t.pos = self.center_of_mass + np.random.uniform(-20, 20, 3)
-                    t.pos_prev = t.pos.copy()
-                    t.local = Tetrahedron.REST_NP.copy()
-            return # Skip physics this frame to allow stabilization
-        # === CRASH FIX END ===
+            return
 
         try:
             tree = cKDTree(all_corners_np)
 
-            # 3. Calculate Forces
             for i in range(len(all_corners_np)):
                 if corner_colors[i] not in ['R', 'C']: continue
 
@@ -1638,81 +1701,29 @@ class World:
 
                 for j in nearby_idx:
                     if i == j: continue
+                    if corner_tets[i] == corner_tets[j]: continue # Self check
 
-                    # Same TET check (don't desire yourself)
-                    if corner_tets[i] == corner_tets[j]: continue
-
-                    # Check Compatibility (Red <-> Cyan)
                     c1, c2 = corner_colors[i], corner_colors[j]
                     if (c1 == 'R' and c2 == 'C') or (c1 == 'C' and c2 == 'R'):
-
-                        # Double Check Valency of Target (Optimization)
+                        # Neighbor Valency Check
                         t_target = tet_list[corner_tets[j]]
                         idx_target = corner_indices[j]
-                        if hasattr(t_target, 'corner_states') and t_target.corner_states[idx_target] != 1:
-                            continue
+                        if hasattr(t_target, 'corner_states') and t_target.corner_states[idx_target] != 1: continue
 
                         delta = all_corners_np[j] - all_corners_np[i]
                         dist = np.linalg.norm(delta)
 
                         if dist > 1e-6:
                             direction = delta / dist
-                            # Force calculation
                             forces += direction * (K_CORNER_DESIRE * psi_mod * (1.0 - dist / CORNER_DESIRE_RANGE))
 
                 if np.any(forces):
                     t1 = tet_list[corner_tets[i]]
-                    # Apply force to vertex (Torque/Rotation)
                     t1.local[corner_indices[i]] += forces * scaled_dt * 0.5
-                    # Apply force to body (Translation)
                     t1.pos += forces * scaled_dt * 0.5
 
         except ValueError:
-            pass # Catch any residual math errors
-
-        for i in range(len(all_corners)):
-            nearby_idx = tree.query_ball_point(all_corners[i], CORNER_DESIRE_RANGE)
-            t1 = tet_list[corner_tets[i]]
-            idx1 = corner_indices[i]
-
-            # === CRITICAL CHECK ===
-            # Only pull if this corner is ACTIVE (1)
-            if t1.corner_states[idx1] != 1:
-                continue
-            # ======================
-
-            # ... KDTree query ...
-            forces = np.zeros(3)
-            for j in nearby_idx:
-                if i == j: continue
-
-                t2 = tet_list[corner_tets[j]]
-                idx2 = corner_indices[j]
-
-                # Check neighbor state too
-                if t2.corner_states[idx2] != 1:
-                    continue
-                delta = all_corners[j] - all_corners[i]; dist = norm_njit(delta)
-                forces += dist * (K_CORNER_DESIRE * psi_mod * (1.0 - np.linalg.norm(delta) / CORNER_DESIRE_RANGE))
-
-#        for i in range(len(all_corners)):
-
-            # NEW CHECK: Is this specific corner active on its parent TET?
-#            parent_tet = tet_list[corner_tets[i]]
-#            corner_idx = corner_indices[i]
-
-#            if not parent_tet.active_corners[corner_idx]:
-#                continue # This corner is dormant/inert. No desire.
-#            nearby_idx = tree.query_ball_point(all_corners[i], CORNER_DESIRE_RANGE)
-#            forces = np.zeros(3)
-#            for j in nearby_idx:
-#                if i == j: continue
-#                if (corner_colors[i] == 'R' and corner_colors[j] == 'C') or (corner_colors[i] == 'C' and corner_colors[j] == 'R'):
-#                    delta = all_corners[j] - all_corners[i]; dist = norm_njit(delta)
-                    # Force scaled by Psi
-#                    forces += dist * (K_CORNER_DESIRE * psi_mod * (1.0 - np.linalg.norm(delta) / CORNER_DESIRE_RANGE))
-#            if np.any(forces):
-#                t1 = tet_list[corner_tets[i]]; t1.local[corner_indices[i]] += forces * scaled_dt * 0.5; t1.pos += forces * scaled_dt * 0.5
+            pass
 
     def apply_same_pole_repulsion(self, scaled_dt):
         positive_poles = [t for t in self.tets if t.is_magnetized and t.magnetism > 0]
@@ -2086,12 +2097,296 @@ class World:
 
     def calculate_dynamic_center(self):
         if not self.tets: return np.zeros(3)
-        positions = np.array([t.pos for t in self.tets])
-        center = np.nanmean(positions, axis=0)
-        if np.any(np.isnan(center)):
+
+        # Use cached positions if available for speed
+        if len(self.cached_pos) == len(self.tets):
+            positions = self.cached_pos
+        else:
+            positions = np.array([t.pos for t in self.tets])
+
+        if len(positions) == 0: return np.zeros(3)
+        mask_valid = np.all(np.isfinite(positions), axis=1)
+        valid_positions = positions[mask_valid]
+        if len(valid_positions) == 0:
             return np.zeros(3)
+
+        # === FIX: Use Median instead of Mean ===
+        # Mean is dragged by outliers (flying TETs), causing the "Hop".
+        # Median stays locked to the dense cluster.
+        try:
+            center = np.mean(positions, axis=0)
+        except Exception:
+            return np.zeros(3)
+
+        if not np.all(np.isfinite(center)):
+            return np.zeros(3)
+
         return center
 
+    def rebuild_optimization_cache(self):
+        """Syncs Python Object data into Numpy Arrays for JIT processing."""
+        count = len(self.tets)
+        if count == 0: return
+
+        # Re-allocate only if size changed (Memory Optimization)
+        if self.cached_pos.shape[0] != count:
+            self.cached_pos = np.zeros((count, 3))
+            self.cached_prev = np.zeros((count, 3))
+            self.cached_local = np.zeros((count, 4, 3))
+            self.cached_local_prev = np.zeros((count, 4, 3))
+            self.cached_bat = np.zeros(count)
+            self.cached_coh = np.zeros(count)
+            self.cached_bias = np.zeros((count, 3))
+
+        # Fast copy loop
+        for i, t in enumerate(self.tets):
+            self.cached_pos[i] = t.pos
+            self.cached_prev[i] = t.pos_prev
+            self.cached_local[i] = t.local
+            self.cached_local_prev[i] = t.local_prev
+
+            if math.isnan(t.battery) or math.isinf(t.battery):
+                t.battery = 0.5
+
+            if math.isnan(t.erd_coherence) or math.isinf(t.erd_coherence):
+                t.erd_coherence = 0.0
+
+            self.cached_bat[i] = t.battery
+            self.cached_coh[i] = t.erd_coherence
+            self.cached_bias[i] = t.orientation_bias
+
+    def update_logic(self, scaled_dt, add_msg_fn, cam=None):
+        """Heavy Logic: Runs ONCE per frame."""
+        if not self.tets: return
+
+        self.check_magnetization()
+        self.calculate_global_fields()
+        self.update_magnetic_batteries(scaled_dt)
+        self.process_metabolism(scaled_dt, add_msg_fn)
+
+        # Chemistry & Quantum
+        self._last_synth_reactions = self.attempt_synthesis_reactions(scaled_dt, add_msg_fn)
+        self._last_quantum_events = self.attempt_decomposition_reactions(scaled_dt, add_msg_fn)
+        self.center_of_mass = self.calculate_dynamic_center()
+
+        # Bot Minds (Only update every ~60 frames or so if you want, but once/frame is fine for <50 tets)
+        if len(self.tets) > 0:
+            cached_positions = self.cached_pos
+            cached_batteries = self.cached_bat
+            cached_coherences = self.cached_coh
+
+            def efficient_get_fields(pos):
+                return calculate_fields_jit(cached_positions, cached_batteries, cached_coherences, pos)
+
+            for t in self.tets:
+                if t.mind:
+                    nearby = [o for o in self.tets if np.linalg.norm(o.pos - t.pos) < 5]
+                    t.mind.perceive(nearby, [])
+                    t.mind.decide_goal(world_fields_func=efficient_get_fields, my_pos=t.pos)
+                    desire = t.mind.get_desire_vector(t.pos, nearby)
+                    t.pos += desire * 0.01
+        self.center_of_mass = self.calculate_dynamic_center()
+
+        # === ORIGIN RE-CENTERING (Floating Origin) ===
+        # If the cluster drifts > 10 edge lengths (20 units) from (0,0,0)
+        drift_dist_sq = np.sum(self.center_of_mass**2)
+        THRESHOLD_SQ = (EDGE_LEN * 100.0)**2
+
+        if drift_dist_sq > THRESHOLD_SQ:
+            # Move everything half the distance back towards (0,0,0)
+            shift_vec = -self.center_of_mass * 0.5
+
+            # 1. Shift all TETs
+            for t in self.tets:
+                t.pos += shift_vec
+                t.pos_prev =t.pos #+= shift_vec # Preserve velocity
+
+            # 2. Shift the Optimization Cache (Critical for physics stability)
+            self.cached_pos += shift_vec
+            self.cached_prev += shift_vec
+
+            # 3. Update the calculated center
+            self.center_of_mass += shift_vec
+
+            # 4. Shift the Camera (So the player sees NO movement)
+            if cam:
+                cam.pan += shift_vec
+
+            # print(f"🌍 World Drift Corrected: Origin Shifted by {shift_vec}")
+
+    def update_physics_only(self, dt, time_scale, spin_multiplier):
+        """Pure Physics: Runs MANY times per frame (Sub-Stepping)."""
+        if not self.tets: return
+
+        # 1. Update pointers to cached arrays
+        positions = self.cached_pos
+        positions_prev = self.cached_prev
+        locals_arr = self.cached_local
+        locals_prev = self.cached_local_prev
+        batteries = self.cached_bat
+        coherences = self.cached_coh
+        orientation_biases = self.cached_bias
+
+        # 2. Apply Object-Level Forces
+        self.apply_corner_desires(dt)
+        self.apply_same_pole_repulsion(dt)
+        self.apply_negative_pole_orientation(dt)
+
+        # 3. RE-SYNC POSITIONS
+        for i, t in enumerate(self.tets):
+            positions[i] = t.pos
+            locals_arr[i] = t.local
+
+        # 4. Prepare Indexes for JIT
+        id_to_idx = {t.id: i for i, t in enumerate(self.tets)}
+
+        if self.joints:
+            valid_joints = [j for j in self.joints if j.A.id in id_to_idx and j.B.id in id_to_idx]
+            joints_data = np.array([[id_to_idx[j.A.id], j.ia, id_to_idx[j.B.id], j.ib] for j in valid_joints], dtype=np.int32)
+        else: joints_data = np.empty((0, 4), dtype=np.int32)
+
+        valid_pairs = []
+        ages = []
+        for p in self.sticky_pairs:
+            if p[0].id in id_to_idx and p[2].id in id_to_idx:
+                valid_pairs.append([id_to_idx[p[0].id], p[1], id_to_idx[p[2].id], p[3]])
+                pair_key = tuple(sorted((p[0].id, p[2].id)))
+                ages.append(self.pair_ages.get(pair_key, 0.0))
+
+        sticky_data = np.array(valid_pairs, dtype=np.int32) if valid_pairs else np.empty((0, 4), dtype=np.int32)
+        ages_data = np.array(ages, dtype=np.float64) if ages else np.empty(0, dtype=np.float64)
+
+        magnet_indices = np.array([i for i, t in enumerate(self.tets) if t.is_magnetized], dtype=np.int32)
+        magnet_polarities = np.array([t.magnetism for t in self.tets if t.is_magnetized], dtype=np.float64) if magnet_indices.size > 0 else np.empty(0, dtype=np.float64)
+
+        # 5. EXECUTE JIT PHYSICS
+        positions, positions_prev, locals_arr, locals_prev, batteries = world_update_physics_jit(
+            positions, positions_prev, locals_arr, locals_prev, batteries, coherences,
+            dt, time_scale, Tetrahedron.EDGES_NP, sticky_data, ages_data,
+            joints_data, spin_multiplier, magnet_indices
+        )
+
+        locals_arr, orientation_biases = update_magnetic_effects_jit(
+            locals_arr, orientation_biases, positions, magnet_indices, magnet_polarities, dt
+        )
+
+        positions_prev = conserve_momentum_jit(positions, positions_prev)
+
+        # === CRASH SAFETY CHECK ===
+        # If JIT returned Infinity/NaN, reset those specific particles BEFORE creating cKDTree
+        if not np.all(np.isfinite(positions)):
+            mask_bad = ~np.all(np.isfinite(positions), axis=1)
+            bad_indices = np.where(mask_bad)[0]
+
+            if len(bad_indices) > 0:
+                #print(f"⚠️ Physics Singularity: Resetting {len(bad_indices)} particles.")
+                respawn_center = self.center_of_mass
+                if not np.all(np.isfinite(respawn_center)):
+                    respawn_center = cam.position
+
+                for i, idx in enumerate(bad_indices):
+                    #self.sever_bonds(idx) # <--- CUT THE RUBBER BAND
+                    safe_pos = respawn_center + np.random.uniform(-1.0, 1.0, 3)
+
+                    positions[idx] = safe_pos
+                    positions_prev[idx] = safe_pos # Kill velocity
+                    locals_arr[idx] = Tetrahedron.REST_NP.copy()
+                    locals_prev[idx] = Tetrahedron.REST_NP.copy()
+                    batteries[idx] = 0.5        # Reset to half charge
+                    coherences[idx] = 0.0       # Reset quantum state
+                    orientation_biases[idx] = np.zeros(3) # Stop spinning
+                    t = self.tets[idx]
+                    t.battery = 0.5
+                    t.erd_coherence = 0.0
+                    t.orientation_bias = np.zeros(3)
+
+        # === UNIVERSE BOUNDARY (The Slingshot Fix) ===
+        # Check against Median Center to avoid tracking the outlier itself
+        center_ref = self.center_of_mass
+        dist_sq = np.sum((positions - center_ref)**2, axis=1)
+
+        # If > 1000 units away, it's gone.
+        mask_far = dist_sq > 1000**2
+
+        if np.any(mask_far):
+            far_indices = np.where(mask_far)[0]
+            for idx in far_indices:
+                #self.sever_bonds(idx) # <--- CUT THE RUBBER BAND
+
+                # Teleport back to edge of cluster (Radius 50)
+                # Give it a gentle nudge inward to reintegrate
+                dir_to_center = center_ref - positions[idx]
+                dir_norm = dir_to_center / (np.linalg.norm(dir_to_center) + 1e-9)
+
+                positions[idx] = center_ref - (dir_norm * 10)
+                positions_prev[idx] = positions[idx] - (dir_norm * 0.1) # Gentle push inward
+
+                positions[idx] = center_ref - (dir_norm * 70.0)
+
+                # Scale inward kick by how far it was (clamped)
+                # Caps at speed 2.0 (very fast) if distance was > 2000
+                kick_strength = min(0.0001, np.sqrt(dist_sq.all()) * 0.0000001)
+
+                positions_prev[idx] = positions[idx] - (dir_norm * kick_strength)
+                #print(f"🌌 Recalled lost TET {idx}")
+        # ============================================
+
+        # 6. Collision & Constraints
+        mask_far = np.sum((positions - self.center_of_mass)**2, axis=1) > 1000**2
+        if np.any(mask_far):
+            bad_indices = np.where(mask_far)[0]
+            for idx in bad_indices:
+                positions[idx] = self.center_of_mass + np.random.uniform(-1.0, 1.0, 3)
+                positions_prev[idx] = positions[idx]
+
+        # Safe to create Tree now
+        tree = cKDTree(positions)
+        pairs = tree.query_pairs(r=COLLISION_RADIUS * 2)
+        if pairs: positions = resolve_collisions_jit(positions, np.array(list(pairs)))
+        if joints_data.shape[0] > 0:
+             for _ in range(3): locals_arr = resolve_joints_jit(locals_arr, joints_data)
+
+        # 7. Snapping Logic
+        MAX_DESIRE_DIST_SQ = 300.0**2
+        for pair in self.sticky_pairs[:]:
+            t1, i1, t2, i2 = pair
+            dist_sq = np.sum((t1.pos - t2.pos)**2)
+
+            # Check 2: Universe Boundary (Double check for lost TETs)
+            t1_far = np.sum((t1.pos - self.center_of_mass)**2) > 300**2
+            t2_far = np.sum((t2.pos - self.center_of_mass)**2) > 300**2
+
+            if dist_sq > MAX_DESIRE_DIST_SQ or t1_far or t2_far:
+#                self.sticky_pairs.remove(pair)
+
+                # Optional: If they were lost in space, reset them here too
+                if t1_far:
+                    t1.pos = self.center_of_mass + np.random.uniform(-0.01, 0.01, 3)
+                    t1.pos_prev = t1.pos.copy()
+                if t2_far:
+                    t2.pos = self.center_of_mass + np.random.uniform(-0.01, 0.01, 3)
+                    t2.pos_prev = t2.pos.copy()
+                #t1.pos_prev = t1.pos.copy()
+                #t2.pos_prev = t2.pos.copy()
+            if t1.id not in id_to_idx or t2.id not in id_to_idx: continue
+            idx1, idx2 = id_to_idx[t1.id], id_to_idx[t2.id]
+            p1 = locals_arr[idx1, i1] + positions[idx1]
+            p2 = locals_arr[idx2, i2] + positions[idx2]
+            if np.linalg.norm(p2 - p1) < SNAP_DIST:
+                if self.try_snap(t1, i1, t2, i2):
+                    self.sticky_pairs.remove(pair)
+
+        # 8. Sync Back
+        for i, t in enumerate(self.tets):
+            if not t.pos.all()==t.pos_prev.all():
+                t.pos = positions[i]
+                t.pos_prev = positions_prev[i]
+            t.local = locals_arr[i]
+            t.local_prev = locals_prev[i]
+            t.battery = batteries[i]
+            t.orientation_bias = orientation_biases[i]
+
+    """
     def update(self, scaled_dt, unscaled_dt, time_scale, add_msg_fn, spin_multiplier=1.0):
         if not self.tets: return
         self.check_magnetization()
@@ -2234,9 +2529,11 @@ class World:
                 self.sticky_pairs.remove(pair)
                 add_msg_fn(f"{t1.label} joined to {t2.label}", duration=5)
                 print(f"{t1.label} joined to {t2.label}")
+                self.tech_tree.add_progress(0)
 
         for i, t in enumerate(self.tets):
             t.pos, t.pos_prev, t.local, t.local_prev, t.battery, t.orientation_bias = positions[i], positions_prev[i], locals_arr[i], locals_prev[i], batteries[i], orientation_biases[i]
+"""
 
     def get_state(self):
         tet_states = [{'id': t.id, 'pos': t.pos, 'pos_prev': t.pos_prev, 'local': t.local, 'local_prev': t.local_prev, 'battery': t.battery, 'colors': t.colors, 'label': t.label, 'orientation_bias': t.orientation_bias} for t in self.tets]
@@ -2683,11 +2980,11 @@ def gradio_interface_loop():
     def get_frame():
         if GRADIO_FRAME_BUFFER is not None: return GRADIO_FRAME_BUFFER
         return np.zeros((HEIGHT, WIDTH, 3), dtype=np.uint8)
-    with gr.Interface(fn=get_frame, inputs=None, outputs=gr.Image(label="Hit the 'Generate' button!"), live=True, title="TET~CRAFT: The Fourth Temple v5.1D", description="Live simulation of DigitizingHumanity.com's Gamified, Decentralized, Salted, 5D Communication Manifold and Physics/Chemistry Simulator <br /> (A simulated player is adding one new TET/fact each hour to be misunderstood, warping time for the 15 min before that, has a thought and new perspective plain each minute, while each second it orbits)<br />Hit the 'Generate' button bellow for a fresh screenshot") as demo:
+    with gr.Interface(fn=get_frame, inputs=None, outputs=gr.Image(label="Hit the 'Generate' button!"), live=True, title="TET~CRAFT: The Fourth Temple v5.2D", description="Live simulation of DigitizingHumanity.com's Gamified, Decentralized, Salted, 5D Communication Manifold and Physics/Chemistry Simulator <br /> (A simulated player is adding one new TET/fact each hour to be misunderstood, warping time for the 15 min before that, has a thought and new perspective plain each minute, while each second it orbits)<br />Hit the 'Generate' button bellow for a fresh screenshot") as demo:
         demo.launch(server_name="0.0.0.0", server_port=7860)
 
 def main(threaded=False):
-    print("\n\nIf needed create and fill with 1 IP per line blacklist.cfg\n\nCLI Options:\n  -connect <ip>:<port> (Initiate guest mode)\n  -listen <port> (Initiate host mode port)\n  -file <filename> (Load saved instant [json])\n  -m (Mute sound)\n  -t <scale> -z <zoom> -o <x,y,z>\n\nTET~CRAFT v5.1D Initializing...\n\n")
+    print("\n\nIf needed create and fill with 1 IP per line blacklist.cfg\n\nCLI Options:\n  -connect <ip>:<port> (Initiate guest mode)\n  -listen <port> (Initiate host mode port)\n  -file <filename> (Load saved instant [json])\n  -m (Mute sound)\n  -t <scale> -z <zoom> -o <x,y,z>\n\nTET~CRAFT v5.2D Initializing...\n\n")
     cli_connect_addr, cli_listen_port, cli_load_file = None, None, None
     cli_time_scale, cli_zoom_factor, cli_cam_pan = None, None, None
     cli_mute = False
@@ -2731,7 +3028,7 @@ def main(threaded=False):
 
 
     else: screen = pygame.display.set_mode((WIDTH, HEIGHT), pygame.RESIZABLE)
-    pygame.display.set_caption("TET~CRAFT v5.1D The Fourth Temple")
+    pygame.display.set_caption("TET~CRAFT v5.2D The Fourth Temple")
     clock = pygame.time.Clock(); font_l = pygame.font.SysFont('Georgia', 32); font_s = pygame.font.SysFont(None, 24)
     world = World(boing_sound); cam = Camera()
 
@@ -2815,6 +3112,9 @@ def main(threaded=False):
     if not (loaded_from_save or cli_connect_addr or cli_listen_port): show_void_screen(screen, world)
 
     if ON_HUGGINGFACE: host_instance = Host(world, lambda x: net_messages.append([x, time.time()+8]), ping_sound, DEFAULT_PORT); game_mode = 'host'
+    camera_follow_mode = False
+    last_step_size = 0.0
+
     while GAME_RUNNING:
         unscaled_dt = min(0.1, clock.tick(FPS) / 1000.0)
         now = time.time()
@@ -2840,11 +3140,20 @@ def main(threaded=False):
                 dist_sq = np.sum((curr_verts_screen - mouse_arr)**2, axis=1)
                 if dist_sq.size > 0 and np.min(dist_sq) < SELECTION_RADIUS**2:
                     min_idx = np.argmin(dist_sq)
-                    if curr_verts_screen[min_idx][0] > -9000: hovered_vertex = (world.tets[min_idx // 4], min_idx % 4)
+                    if curr_verts_screen[min_idx][0] > -9000:
+                        hovered_vertex = (world.tets[min_idx // 4], min_idx % 4)
+                        pygame.mouse.set_cursor(pygame.SYSTEM_CURSOR_HAND)
+                else:
+                    hovered_vertex = None
+                    # === NEW: Cursor Reset ===
+                    if not dragging:
+                        pygame.mouse.set_cursor(pygame.SYSTEM_CURSOR_ARROW)
+
         else: curr_verts_screen = np.empty((0,2))
 
         if is_interactive and hovered_vertex and not dragging:
             h_tet = hovered_vertex[0]; h_tet.pos_prev[:] = h_tet.pos[:]; h_tet.local_prev[:] = h_tet.local[:]
+            h_tet.battery = min(1.0, h_tet.battery + 0.01)
 
         # 3. Thoughts (moved from inside bot vision section, hugging face only)
         if now - last_bot_thought > 61:
@@ -2962,6 +3271,9 @@ def main(threaded=False):
                     if e.key == pygame.K_x:
                         cam.dist = DEFAULT_CAM_DIST
                         cam.pan = world.center_of_mass.copy()
+                        camera_follow_mode = not camera_follow_mode
+                        for t in world.tets:
+                            t.pos_prev = t.pos.copy() # Velocity = 0
                     if e.key == pygame.K_c: time_scale = min(10.0, time_scale + 0.5)
                     if e.key == pygame.K_z: time_scale = max(0.1, time_scale - 0.5)
                     if e.key == pygame.K_TAB: (discover_and_join() if game_mode == 'single_player' else stop_guest_mode())
@@ -3049,7 +3361,9 @@ def main(threaded=False):
                         if e.button == 3: rotating = False
                     if e.type == pygame.MOUSEWHEEL:
                         if ctrl_held: time_scale = np.clip(time_scale * (1.1 if e.y > 0 else 0.9), 0.1, 10.0)
-                        elif alt_held: cam.pan += np.array([math.cos(cam.yaw), 0, -math.sin(cam.yaw)]) * (e.y * 20.0 * unscaled_dt)
+                        elif alt_held:
+#                            camera_follow_mode = False
+                            cam.pan += np.array([math.cos(cam.yaw), 0, -math.sin(cam.yaw)]) * (e.y * 20.0 * unscaled_dt)
                         else: cam.zoom(ZOOM_SPEED if e.y < 0 else 1/ZOOM_SPEED)
 
             keys = pygame.key.get_pressed()
@@ -3115,24 +3429,53 @@ def main(threaded=False):
         if game_mode != 'guest':
             zf = DEFAULT_CAM_DIST / cam.dist; spin = np.clip(1/np.log(zf + 1) + 1, 0.1, 2.0)
 
-            # === FIX: Physics Sub-Stepping ===
-            # Split the massive time jump into safe, bite-sized physics chunks (max 0.03s).
-            # This prevents the "Cannonball Effect" when spawning at high time scale.
+            # 1. Prepare Arrays (ONCE per frame)
+            world.rebuild_optimization_cache()
 
+            # 2. Run Logic (ONCE per frame)
+            world.update_logic(scaled_dt, lambda t, duration=2: msgs.append([t, 0, pygame.time.get_ticks() + duration * 1000]),cam=cam)
+
+            # 3. Sub-Stepped Physics (MANY times per frame)
+            # This keeps the physics stable even at high time scales
             remaining_dt = scaled_dt
-            SAFE_DT = 0.03 # 30ms is the stability limit for this physics model
-
-            # Determine how many steps we need (limit to 20 to prevent CPU freeze)
+            SAFE_DT = 0.03 # Max 30ms per step
             num_steps = int(remaining_dt / SAFE_DT) + 1
+
             if num_steps > 20:
                 num_steps = 20
-                remaining_dt = 20 * SAFE_DT # Cap the max simulation speed
+                remaining_dt = 20 * SAFE_DT # Cap max speed to prevent freeze
 
             step_size = remaining_dt / num_steps
 
+            # === FIX: VERLET MOMENTUM RESCALING ===
+            # If time slows down, we must shrink the gap between pos and pos_prev
+            # otherwise the old momentum looks like 1000x speed in the new timeframe.
+            if last_step_size > 0 and abs(step_size - last_step_size) > 1e-9:
+                time_correction = step_size / last_step_size
+
+                # Clamp correction to prevent explosions if time pauses/unpauses
+                time_correction = max(0.0, min(time_correction, 5.0))
+
+                if abs(time_correction - 1.0) > 0.01:
+                    # Apply scaling to the optimization cache directly for speed
+                    # Vel = (Pos - Prev) -> NewVel = Vel * Ratio -> NewPrev = Pos - NewVel
+
+                    # Update Cached Arrays
+                    velocity_vectors = world.cached_pos - world.cached_prev
+                    world.cached_prev = world.cached_pos - (velocity_vectors * time_correction)
+
+                    # Update Objects
+                    for i, t in enumerate(world.tets):
+                        t.pos_prev = t.pos - (t.pos - t.pos_prev) * time_correction
+
+                    # print(f"Time Warp: Momentum Rescaled by {time_correction:.4f}")
+
+            last_step_size = step_size
+
             for _ in range(num_steps):
-                world.update(step_size, unscaled_dt, time_scale, lambda t, duration=2: msgs.append([t, 0, pygame.time.get_ticks() + duration * 1000]), spin)
-            # =================================
+                # Run pure physics
+                world.update_physics_only(step_size, time_scale, spin)
+
 
             if len(world.tets) == 1 and not flags['t0']: flags['t0'] = True
             if len(world.tets) >= 2 and not flags['t2']: flags['t2'] = True; world.sticky_pairs.extend([(world.tets[0], v, world.tets[1], v) for v in range(4)])
@@ -3150,11 +3493,14 @@ def main(threaded=False):
         if len(world.tets) >= 2 and not flags['t2']: flags['t2'] = True
         if len(world.tets) >= 2 and world.joints and not flags['j1']: flags['j1'] = True
         if len(world.tets) >= 3 and flags['j1'] and not flags['t3']: flags['t3'] = True
-        if ON_HUGGINGFACE and world.tets:
+        mouse_busy = pygame.mouse.get_pressed()[0] or pygame.mouse.get_pressed()[2] or rotating or dragging
+        if (ON_HUGGINGFACE or camera_follow_mode) and world.tets and not mouse_busy:
+
              target_pan = world.center_of_mass.copy()
-             # Sanity check to ensure we don't look at Infinity/NaN
              if np.all(np.isfinite(target_pan)):
-                 cam.pan = target_pan
+                 # Smoothly interpolate for a nicer feel (Optional, or just use =)
+                 # cam.pan = target_pan
+                 cam.pan += (target_pan - cam.pan) * 0.1 # Soft follow (10% per frame)
 
         # Rendering
         tl = np.clip((time_scale - 0.1) / 9.9, 0, 1)
@@ -3190,13 +3536,16 @@ def main(threaded=False):
             sorted_indices = np.argsort(z_depths)
 
             for idx in sorted_indices:
-                t = world.tets[idx]; screen_pts = asv[idx]; world_verts = awv[idx*4:(idx+1)*4]
+                t = world.tets[idx];
+                if not np.all(np.isfinite(t.pos)): continue
+                screen_pts = asv[idx]; world_verts = awv[idx*4:(idx+1)*4]
                 cc = list(t.colors) if t.colors else list(Tetrahedron.FACE_COLORS)
                 if t.is_magnetized: cc = [(0,0,0)]*4; cc[2 if t.magnetism==1 else 3] = Tetrahedron.FACE_COLORS[2 if t.magnetism==1 else 3]
 
                 dist_from_cam = np.linalg.norm(t.pos - (cam.pan + cam.forward * cam.dist))
                 dist_from_origin = np.linalg.norm(t.pos - world.center_of_mass)
                 combined_alpha = min(np.clip(1.0 - (dist_from_cam / 500.0), 0.2, 1.0), np.clip(1.0 - (dist_from_origin / 300.0), 0.3, 1.0)) * t.battery
+                if math.isnan(combined_alpha): combined_alpha = 0.1
 
                 if t.aura_color and t.magnetic_strength > 0:
                     center_screen = cam.project(t.pos)
@@ -3268,7 +3617,7 @@ def main(threaded=False):
         top_leg = font_s.render(status_text, True, (0,255,255))
         screen.blit(top_leg, top_leg.get_rect(center=(WIDTH//2, 20)))
 
-        uptime_surf = font_s.render(f"v5.1D Up: {str(datetime.timedelta(seconds=int(time.time() - START_TIME)))} FPS: {int(fps)}", True, (100, 255, 150))
+        uptime_surf = font_s.render(f"v5.2D Up: {str(datetime.timedelta(seconds=int(time.time() - START_TIME)))} FPS: {int(fps)}", True, (100, 255, 150))
         screen.blit(uptime_surf, (WIDTH - uptime_surf.get_width() - 10, 30))
         bot_leg1 = font_s.render("RMB Label | LMB Pull/Join TETs | WASD/RMB Orbit | X/Alt+RMB Center | V Save Instant", True, (0,255,255))
         bot_leg2 = font_s.render("H Host Mode | TAB Client Mode | R/F/Scroll Zoom | Q/E/Alt+Scroll Pan | Z/C/Ctrl+Scroll Timescale", True, (0,255,255))
