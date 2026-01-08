@@ -1590,8 +1590,15 @@ class World:
         tet_list = list(self.tets)
         all_corners, corner_colors, corner_tets, corner_indices = [], [], [], []
         for idx, t in enumerate(tet_list):
+            if not np.all(np.isfinite(t.pos)): continue
             verts = t.verts()
             for c_idx in range(4):
+                # === VALENCY CHECK ===
+                # Only process this corner if it is Active (State 1)
+                # 0=Inert, 2=Bonded, 3=LonePair
+                if hasattr(t, 'corner_states') and t.corner_states[c_idx] != 1:
+                    continue
+                # =====================
                 all_corners.append(verts[c_idx]); corner_tets.append(idx); corner_indices.append(c_idx)
                 corner_color = None
                 for f_idx in range(4):
@@ -1601,6 +1608,67 @@ class World:
                         elif face_color == (0, 255, 255): corner_color = 'C'; break
                 corner_colors.append(corner_color or 'N')
         all_corners = np.array(all_corners); tree = cKDTree(all_corners)
+
+        if not all_corners: return
+
+        all_corners_np = np.array(all_corners)
+
+        # === CRASH FIX START ===
+        if not np.all(np.isfinite(all_corners_np)):
+            # Something exploded. Find the broken TETs and reset them.
+            print("⚠️ Desire Singularity Detected: Resetting broken geometry.")
+            for t in self.tets:
+                if not np.all(np.isfinite(t.pos)) or not np.all(np.isfinite(t.local)):
+                    # Scatter reset to prevent loop
+                    t.pos = self.center_of_mass + np.random.uniform(-20, 20, 3)
+                    t.pos_prev = t.pos.copy()
+                    t.local = Tetrahedron.REST_NP.copy()
+            return # Skip physics this frame to allow stabilization
+        # === CRASH FIX END ===
+
+        try:
+            tree = cKDTree(all_corners_np)
+
+            # 3. Calculate Forces
+            for i in range(len(all_corners_np)):
+                if corner_colors[i] not in ['R', 'C']: continue
+
+                nearby_idx = tree.query_ball_point(all_corners_np[i], CORNER_DESIRE_RANGE)
+                forces = np.zeros(3)
+
+                for j in nearby_idx:
+                    if i == j: continue
+
+                    # Same TET check (don't desire yourself)
+                    if corner_tets[i] == corner_tets[j]: continue
+
+                    # Check Compatibility (Red <-> Cyan)
+                    c1, c2 = corner_colors[i], corner_colors[j]
+                    if (c1 == 'R' and c2 == 'C') or (c1 == 'C' and c2 == 'R'):
+
+                        # Double Check Valency of Target (Optimization)
+                        t_target = tet_list[corner_tets[j]]
+                        idx_target = corner_indices[j]
+                        if hasattr(t_target, 'corner_states') and t_target.corner_states[idx_target] != 1:
+                            continue
+
+                        delta = all_corners_np[j] - all_corners_np[i]
+                        dist = np.linalg.norm(delta)
+
+                        if dist > 1e-6:
+                            direction = delta / dist
+                            # Force calculation
+                            forces += direction * (K_CORNER_DESIRE * psi_mod * (1.0 - dist / CORNER_DESIRE_RANGE))
+
+                if np.any(forces):
+                    t1 = tet_list[corner_tets[i]]
+                    # Apply force to vertex (Torque/Rotation)
+                    t1.local[corner_indices[i]] += forces * scaled_dt * 0.5
+                    # Apply force to body (Translation)
+                    t1.pos += forces * scaled_dt * 0.5
+
+        except ValueError:
+            pass # Catch any residual math errors
 
         for i in range(len(all_corners)):
             nearby_idx = tree.query_ball_point(all_corners[i], CORNER_DESIRE_RANGE)
@@ -1643,8 +1711,8 @@ class World:
 #                    delta = all_corners[j] - all_corners[i]; dist = norm_njit(delta)
                     # Force scaled by Psi
 #                    forces += dist * (K_CORNER_DESIRE * psi_mod * (1.0 - np.linalg.norm(delta) / CORNER_DESIRE_RANGE))
-            if np.any(forces):
-                t1 = tet_list[corner_tets[i]]; t1.local[corner_indices[i]] += forces * scaled_dt * 0.5; t1.pos += forces * scaled_dt * 0.5
+#            if np.any(forces):
+#                t1 = tet_list[corner_tets[i]]; t1.local[corner_indices[i]] += forces * scaled_dt * 0.5; t1.pos += forces * scaled_dt * 0.5
 
     def apply_same_pole_repulsion(self, scaled_dt):
         positive_poles = [t for t in self.tets if t.is_magnetized and t.magnetism > 0]
