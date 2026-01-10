@@ -1690,8 +1690,8 @@ class World:
         tet2.apply_valency(t.molecule_type, self)
         msg = self.tech_tree.add_progress(0)
         if msg: self.notification_queue.append(msg)
-
-        print(f"{tet1.label} spawned desiring {tet2.label}")
+        if not ON_HUGGINGFACE:
+           print(f"A {tet1.label} spawned desiring {tet2.label} B")
 
     def get_fields_at(self, pos):
         """Helper to call JIT field calculator"""
