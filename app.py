@@ -2786,7 +2786,7 @@ def show_intro(screen, cam):
 def show_name_input_screen(screen):
     global WIDTH, HEIGHT, PLAYER_NAME, SAVE_FILENAME
     if ON_HUGGINGFACE:
-        PLAYER_NAME = "Host_Traveler"; SAVE_FILENAME = "Host_Traveler.json"; return
+        PLAYER_NAME = "Seeker"; SAVE_FILENAME = "Seeker.json"; return
     font_lg = pygame.font.SysFont('Georgia', 40); font_sm = pygame.font.SysFont('Arial', 24); active = True; input_text = ""
     while active:
         for e in pygame.event.get():
@@ -2818,10 +2818,12 @@ def show_void_screen(screen, world):
         screen.fill((10,10,20));
         line1 = font_lg.render(f"Welcome, {PLAYER_NAME}... to the VOID of (mis)Understanding!", True, (200,200,200));
         line2 = font_sm.render("(Press SPACE to begin)", True, (150,150,150));
-        line3 = font_sm.render("There is nothing here but unbound, Loving Potential - OH the bliss... but we must earn it!", True, (255,150,255))
+        line3 = font_sm.render("There is nothing here but unbound, Loving Potential", True, (255,150,255))
+        line4 = font_sm.render("OH the bliss... but we must earn it!", True, (255,150,255))
         screen.blit(line1, line1.get_rect(center=(WIDTH//2, HEIGHT//2-60)));
         screen.blit(line2, line2.get_rect(center=(WIDTH//2, HEIGHT//2+20)));
         screen.blit(line3, line3.get_rect(center=(WIDTH//2, HEIGHT//2+60)));
+        screen.blit(line4, line4.get_rect(center=(WIDTH//2, HEIGHT//2+100)));
         pygame.display.flip(); clock.tick(15)
 
 def find_molecules(world):
@@ -2924,8 +2926,7 @@ def get_molecule_name(group, world):
         COMMON_NAMES = {
             "H2O": "Water", "CO2": "Carbon Dioxide", "CH4": "Methane",
             "O2": "Oxygen", "C2H6": "Ethane", "Fe2O3": "Rust",
-            "H2": "Hydrogen", "N2": "Nitrogen", "NH3": "Ammonia",
-            "NaCl": "Salt", "C6H12O6": "Glucose"
+            "H2": "Hydrogen", "N2": "Nitrogen", "NH3": "Ammonia", "C6H12O6": "Glucose"
         }
         return COMMON_NAMES.get(full_name, full_name)
 
@@ -3621,12 +3622,12 @@ def main(threaded=False):
                 locked_sticky_target = current_hover_target
         else:
             now = time.time()
-            if now - last_bot_spawn > 2700: # 2700 seconds = 45 minutes
-                time_scale = 10.0
-            elif now - last_bot_spawn < 2000:
-                time_scale = 0.00001
-            if now - last_bot_spawn > 2700 and now - last_bot_spawn > 3300:
-                time_scale = 0.001
+#            if now - last_bot_spawn > 2700: # 2700 seconds = 45 minutes
+#                time_scale = 10.0
+#            elif now - last_bot_spawn < 2000:
+#                time_scale = 0.00001
+#            if now - last_bot_spawn > 2700 and now - last_bot_spawn > 3300:
+#                time_scale = 0.001
 
             if world.tets:
                 cam.pan = world.center_of_mass.copy()
@@ -3705,7 +3706,10 @@ def main(threaded=False):
                 # Run pure physics
                 world.update_physics_only(step_size, time_scale, spin)
             if len(world.tets) == 1 and not flags['t0']: flags['t0'] = True
-            if len(world.tets) >= 2 and not flags['t2']: flags['t2'] = True; world.sticky_pairs.extend([(world.tets[0], v, world.tets[1], v) for v in range(4)])
+            if len(world.tets) >= 2 and not flags['t2']:
+                flags['t2'] = True
+                msgs.append(["Let time have somewhere to return to!", -50, pygame.time.get_ticks() + 6000])
+                world.sticky_pairs.extend([(world.tets[0], v, world.tets[1], v) for v in range(4)])
             if len(world.tets) >= 2 and world.joints and not flags['j1']:
                 flags['j1'] = True
                 msgs.append(["God said: Let there be LIGHT!", -50, pygame.time.get_ticks() + 6000])
