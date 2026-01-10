@@ -3622,6 +3622,7 @@ def main(threaded=False):
                 locked_sticky_target = current_hover_target
         else:
             now = time.time()
+# If you speed up time with unbound tets, bad news!
 #            if now - last_bot_spawn > 2700: # 2700 seconds = 45 minutes
 #                time_scale = 10.0
 #            elif now - last_bot_spawn < 2000:
