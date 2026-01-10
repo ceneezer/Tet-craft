@@ -321,7 +321,7 @@ BOND_CAPACITY = { #max
 }
 
 # --- PHYSICS REFINEMENT (Whitepaper v1.0) ---
-K_RESET_POS = 10.0
+K_RESET_POS = 0.1
 K_WP_ATTRACT = 50.0
 K_WP_REPEL = K_WP_ATTRACT * 100.0
 WP_EQUILIBRIUM_DIST = EDGE_LEN * 0.9
@@ -3390,7 +3390,7 @@ def main(threaded=False):
             h_tet = hovered_vertex[0]; h_tet.pos_prev[:] = h_tet.pos[:]; h_tet.local_prev[:] = h_tet.local[:]
             h_tet.battery = min(1.0, h_tet.battery + 0.01)
 
-        # 3. Thoughts (moved from inside bot vision section, hugging face only)
+        # 3. Thoughts
         if now - last_bot_thought > 61:
             if len(world.tets) > 1:
                  # --- Helper: Find physical neighbors ---
@@ -3620,12 +3620,14 @@ def main(threaded=False):
                         if d_sq < best_dist_sq: best_dist_sq = d_sq; current_hover_target = (tt, vidx)
                 locked_sticky_target = current_hover_target
         else:
-            if (now - last_bot_spawn > 2700): # 2700 seconds = 45 minutes
+            now = time.time()
+            if now - last_bot_spawn > 2700: # 2700 seconds = 45 minutes
                 time_scale = 10.0
-            elif (now - last_bot_spawn > 500):
+            elif now - last_bot_spawn < 2000:
+                time_scale = 0.00001
+            if now - last_bot_spawn > 2700 and now - last_bot_spawn > 3300:
                 time_scale = 0.001
 
-            now = time.time()
             if world.tets:
                 cam.pan = world.center_of_mass.copy()
             if now - last_bot_move > 59:
