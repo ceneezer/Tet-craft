@@ -2554,7 +2554,11 @@ class World:
     def update_physics_only(self, dt, time_scale, spin_multiplier):
         """Pure Physics: Runs MANY times per frame (Sub-Stepping)."""
         if not self.tets: return
+
         self.apply_lone_pair_repulsion(dt)
+        if self.cached_pos.shape[0] != len(self.tets):
+            self.rebuild_optimization_cache()
+
         # 1. Update pointers to cached arrays
         positions = self.cached_pos
         positions_prev = self.cached_prev
