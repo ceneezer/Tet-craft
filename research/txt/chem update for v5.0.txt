@@ -538,3 +538,5 @@ To accurately model Era 5 (Life), the "tax on existence" known as Entropy Leakag
 • Thermal Feedback: Synthesis must release a calculated energy burst that refills the batteries of nearby units, raising the local "temperature" and allowing for metabolic chain reactions.
 6. Structural Allotropy and Pressure
 The system can distinguish between different forms of the same element based on Multi-Face Pressure. For instance, Diamond requires a four-face lock of white faces (W4), while Graphite results from black faces (B4). Expanding these rules to include more complex crystal lattices would increase the chemical realism of the structural Kingdom (Malkhut).
+
+hotkey to encode a typed message, using existing tets or new? salting? chemical? backwards compatible?
